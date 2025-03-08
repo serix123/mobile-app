@@ -21,9 +21,20 @@ class ResponsiveLayout extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraints) {
       if(constraints.maxWidth < 600){
         return Scaffold(
+          drawer: const CustomNavigationDrawer(
+            // currentRoute: currentRoute,
+          ),
           body: mobileBody,
           appBar: AppBar(
             title: Text(title),
+            leading: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                );
+              },
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.person),

@@ -4,12 +4,12 @@ import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dar
 
 class VisitorListItem extends StatelessWidget {
   final Visitor visitor;
-  final Function(String) onStatusChanged;
+  // final Function(String) onStatusChanged;
 
   const VisitorListItem({
     super.key,
     required this.visitor,
-    required this.onStatusChanged,
+    // required this.onStatusChanged,
   });
 
   @override
@@ -75,9 +75,7 @@ class VisitorListItem extends StatelessWidget {
           child: Text(entry.value),
         );
       }).toList(),
-      onChanged: (value) {
-        if (value != null) onStatusChanged(value);
-      },
+      onChanged: (value) {},
     );
   }
 

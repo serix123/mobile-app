@@ -16,39 +16,66 @@ class VisitProvider with ChangeNotifier {
 
   Future<void> loadVisitors() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
-
     try {
       final PaginatedVisitors paginatedVisits = await apiService.getVisitors();
       _visits = paginatedVisits.results;
-      _error = null;
     } catch (e) {
       _error = e.toString();
+      notifyListeners();
     }
-
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> updateVisitStatus(int visitId, String newStatus) async {
+  Future<void> updateVisitor(VisitorDTO visitor) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
     try {
-      await apiService.updateStatus(visitId, newStatus);
-      final index = _visits.indexWhere((v) => v.id == visitId);
-      _visits[index] = _visits[index].copyWith(status: newStatus);
+      // final visitorDTO = VisitorDTO(id:visitor.id, name: visitor.name, visitDate: visitor.visitDate, visitPurpose: visitor.visitPurpose);
+      final visitId = visitor.id;
+      await apiService.updateVisitor(visitor);
+      final index = _visits.indexWhere((v) => v.id == visitor.id);
+      _visits[index] = _visits[index].copyWith(visitor);
       notifyListeners();
     } catch (e) {
-      throw Exception('Failed to update status: $e');
+      _error = e.toString();
+      notifyListeners();
     }
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<void> createVisitor(VisitorDTO visitor) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     try {
       await apiService.createVisitor(visitor);
       notifyListeners();
     } catch (e) {
-      throw Exception('Failed to update status: $e');
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> deleteVisitor(int visitId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      bool success = await apiService.deleteVisitor(visitId);
+      if (success) {
+        _visits.removeWhere((visit) => visit.id == visitId);
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
     }
     _isLoading = false;
     notifyListeners();

@@ -44,14 +44,14 @@ class Visitor {
     );
   }
 
-  Visitor copyWith({String? status}) {
+  Visitor copyWith(VisitorDTO visitor) {
     return Visitor(
       id: id,
-      name: name,
+      name: visitor.name,
       residentName: residentName,
-      visitDate: visitDate,
-      visitPurpose: visitPurpose,
-      status: status ?? this.status,
+      visitDate: visitor.visitDate,
+      visitPurpose: visitor.visitPurpose,
+      status: status ?? "",
       checkInTime: checkInTime,
       checkOutTime: checkOutTime,
       residence: residence,
@@ -85,17 +85,12 @@ class PaginatedVisitors {
 }
 
 class VisitorDTO {
-  // final int id;
+  final int? id;
   final String name;
   final DateTime visitDate;
   final String visitPurpose;
 
-  VisitorDTO(
-      {
-      // required this.id,
-      required this.name,
-      required this.visitDate,
-      required this.visitPurpose});
+  VisitorDTO({this.id, required this.name, required this.visitDate, required this.visitPurpose});
 
   factory VisitorDTO.fromJson(Map<String, dynamic> json) {
     return VisitorDTO(

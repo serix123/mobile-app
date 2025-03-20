@@ -47,12 +47,11 @@ dependencies:
   share: ^2.0.0
     # create pdf document
   pdf: ^3.1.0
-
   # save file
   path_provider: ^2.0.1
-
   # open pdf document
   open_file: ^3.1.0
+  auto_size_text: ^3.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

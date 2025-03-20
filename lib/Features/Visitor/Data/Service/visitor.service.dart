@@ -59,12 +59,13 @@ class VisitApiService extends TokenService {
       throw Exception('Failed to create visit: $e');
     }
   }
-  Future<VisitorDTO> updateVisitor(VisitorDTO visitor, id) async {
+
+  Future<VisitorDTO> updateVisitor(VisitorDTO visitor) async {
     try {
       String? token = await getAccessToken(storage);
       final body = json.encode(visitor.toJson());
-      final response = await client.post(
-        Uri.parse('baseUrl/$id/'),
+      final response = await client.patch(
+        Uri.parse('$baseUrl${visitor.id!}/'),
         body: body,
         headers: {
           'Authorization': 'Bearer $token',
@@ -82,23 +83,23 @@ class VisitApiService extends TokenService {
     }
   }
 
-  Future<void> updateStatus(int visitId, String newStatus) async {
+  Future<bool> deleteVisitor(int visitId) async {
     try {
       String? token = await getAccessToken(storage);
-      final response = await client.put(
-        Uri.parse('$baseUrl/$visitId/'),
-        body: json.encode({'status': newStatus}),
+      final response = await client.delete(
+        Uri.parse('$baseUrl$visitId/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update status');
+      if (response.statusCode == 204) {
+        // 201 Created
+        return true;
       }
     } catch (e) {
-      throw Exception('Status update failed: $e');
+      throw Exception('Failed to delete visit: $e');
     }
+    return false;
   }
 }

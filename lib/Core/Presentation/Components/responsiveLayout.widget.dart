@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 
-import 'navigationDrawer.widget.dart';
+import '../../../Core/Presentation/Components/navigationDrawer.widget.dart';
 
 class ResponsiveLayout extends StatelessWidget {
   final Widget mobileBody;
   final Widget desktopBody;
   final String currentRoute;
   final String title;
+  final List<Widget>? actions;
 
   const ResponsiveLayout({
     super.key,
     required this.mobileBody,
     required this.desktopBody,
     required this.currentRoute,
-    required this.title,
+    required this.title, this.actions,
   });
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if(constraints.maxWidth < 600){
+      if(constraints.maxWidth < 800){
         return Scaffold(
           drawer: const CustomNavigationDrawer(
             // currentRoute: currentRoute,
@@ -36,6 +37,7 @@ class ResponsiveLayout extends StatelessWidget {
               },
             ),
             actions: [
+              ...?actions,
               IconButton(
                 icon: const Icon(Icons.person),
                 onPressed: () {},
@@ -58,6 +60,7 @@ class ResponsiveLayout extends StatelessWidget {
                 appBar: AppBar(
                   title: Text(title),
                   actions: [
+                    ...?actions,
                     IconButton(
                       icon: const Icon(Icons.person),
                       onPressed: () {},

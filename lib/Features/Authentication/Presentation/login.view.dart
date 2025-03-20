@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
+import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
+import 'package:online_reservation/Features/FormModule/Presentation/form.view.dart';
 import 'package:provider/provider.dart';
 
-import 'package:online_reservation/Presentation/Modules/Widgets/customCard.widget.dart';
-import 'package:online_reservation/Presentation/route/route.generator.dart';
+import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/config/app.color.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +19,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController emailController;
   late TextEditingController passwordController;
+  late AuthProvider authProvider;
   @override
   void initState() {
     super.initState();
@@ -34,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final authProvider = context.watch<AuthProvider>();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -67,11 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: kPurpleDark, width: 2),
+                      borderSide: const BorderSide(color: kPurpleDark, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -96,26 +100,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: kPurpleDark, width: 2),
+                      borderSide: const BorderSide(color: kPurpleDark, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   obscureText: true,
                 ),
                 const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
+                if (authProvider.isLoading)
+                  const CircularProgressIndicator()
+                else
+                  ElevatedButton(
+                    onPressed: () async => await authProvider.login(emailController.text, passwordController.text).then((_) {
+                        if (authProvider.error == null) {
+                          Navigator.of(context).pushReplacementNamed(RouteGenerator.visitorListScreen,
+                              arguments: ScreenConfig(mode: FormMode.create, onSubmit: (e) {}));
+                        } else {
+                          final snackBar = SnackBar(content: Text('Login Failed. Please try again. ${authProvider.error!}'));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                      }),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text('Login'),
                   ),
-                  child: const Text('Login'),
-                ),
                 TextButton(
                   onPressed: () {
-                    // Navigator.of(context)
-                    //     .pushReplacementNamed(RouteGenerator.registerScreen);
+                    Navigator.of(context).pushReplacementNamed(RouteGenerator.registerScreen);
                   },
                   child: const Text('Don\'t have an account? Register'),
                 ),

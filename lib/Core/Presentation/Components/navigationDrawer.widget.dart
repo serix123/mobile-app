@@ -1,19 +1,19 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:online_reservation/Presentation/route/route.generator.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
+import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 
 import 'package:online_reservation/config/app.color.dart';
 import 'package:provider/provider.dart';
 
 class CustomNavigationDrawer extends StatelessWidget {
   // final String currentRoute;
-
   const CustomNavigationDrawer({super.key
     // ,    required this.currentRoute
   });
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
     // Provider.of<EmployeeViewModel>(context,listen: false).fetchProfile();
     return Drawer(
       child: Column(
@@ -94,6 +94,18 @@ class CustomNavigationDrawer extends StatelessWidget {
               ),
               title: const Text('Logout'),
               onTap: () {
+                authProvider.logout();
+                {
+                  const snackBar = SnackBar(content: Text('User will be logged out'));
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  RouteGenerator.loginScreen,
+                      (Route<dynamic> route) =>
+                  false, // This condition ensures all other screens are removed
+                );
+                print("User has logged out.");
               },
             ),
           ),

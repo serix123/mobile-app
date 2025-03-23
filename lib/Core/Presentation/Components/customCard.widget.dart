@@ -25,6 +25,30 @@ class CustomCard extends StatelessWidget {
         ));
   }
 }
+class CustomCardWhite extends StatelessWidget {
+  const CustomCardWhite({
+    super.key,
+    required this.child,
+  });
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        color: Colors.white,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 8, 8),
+          child: SingleChildScrollView(
+            child: child,
+          ),
+        ));
+  }
+}
 // class CustomFormView extends StatefulWidget {
 //   const CustomFormView({super.key});
 //

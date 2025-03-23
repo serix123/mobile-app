@@ -1,8 +1,8 @@
 // visits_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
+import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
 import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
@@ -52,13 +52,15 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.add),
-          onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
+          onPressed: () => Navigator.of(context).pushNamed(
+              RouteGenerator.visitorFormScreen,
               arguments: VisitorScreenConfig(
                   mode: FormMode.create,
                   onSubmit: (visitor) => context
                       .read<VisitProvider>()
                       .createVisitor(visitor)
-                      .then((_) => context.read<VisitProvider>().loadVisitors()))),
+                      .then((_) =>
+                          context.read<VisitProvider>().loadVisitors()))),
         )
       ],
       desktopBody: _buildTable(),
@@ -99,7 +101,11 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final visit = provider.visits[index];
-            return VisitorListItem(visitor: visit);
+            return VisitorListItem(
+              visitor: visit,
+              onDelete: () => _handleDeleteVisit(context, visit.id),
+              onEdit: () => _handleUpdateVisit(context, visit),
+            );
           },
         );
       },
@@ -109,40 +115,47 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
   Consumer<VisitProvider> _buildTable() {
     return Consumer<VisitProvider>(
       builder: (context, provider, _) {
-        if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+        if (provider.isLoading)
+          return const Center(child: CircularProgressIndicator());
         if (provider.error != null) return _buildErrorState(provider);
         if (provider.visits.isEmpty) return _buildEmptyState();
 
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Card(
-            elevation: 4,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                headingTextStyle: _tableHeaderStyle,
-                dataTextStyle: _tableCellStyle,
-                columns: const [
-                  DataColumn(label: Text('Visitor Name')),
-                  DataColumn(label: Text('Resident')),
-                  DataColumn(label: Text('Purpose')),
-                  DataColumn(label: Text('Visit Date')),
-                  DataColumn(label: Text('Check In')),
-                  DataColumn(label: Text('Actions')),
-                  // DataColumn(label: Text('Status')),
-                ],
-                rows: provider.visits.map((visit) => _buildDataRow(visit)).toList(),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
-                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
-                    }
-                    return null; // Use default row color
-                  },
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: CustomCardWhite(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingTextStyle: _tableHeaderStyle,
+                  dataTextStyle: _tableCellStyle,
+                  columns: const [
+                    DataColumn(label: Text('Visitor Name')),
+                    DataColumn(label: Text('Resident')),
+                    DataColumn(label: Text('Purpose')),
+                    DataColumn(label: Text('Visit Date')),
+                    DataColumn(label: Text('Check In')),
+                    DataColumn(label: Text('Actions')),
+                    // DataColumn(label: Text('Status')),
+                  ],
+                  rows: provider.visits
+                      .map((visit) => _buildDataRow(visit))
+                      .toList(),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                    (Set<WidgetState> states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.08);
+                      }
+                      return null; // Use default row color
+                    },
+                  ),
                 ),
               ),
             ),
@@ -228,9 +241,12 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
       description: 'When new visit requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(
+            RouteGenerator.visitorFormScreen,
             arguments: VisitorScreenConfig(
-                mode: FormMode.create, onSubmit: (visitor) => context.read<VisitProvider>().createVisitor(visitor))),
+                mode: FormMode.create,
+                onSubmit: (visitor) =>
+                    context.read<VisitProvider>().createVisitor(visitor))),
         child: const Text('Create New Visit'),
       ),
     );
@@ -242,9 +258,12 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
       description: 'When new visit requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(
+            RouteGenerator.visitorFormScreen,
             arguments: VisitorScreenConfig(
-                mode: FormMode.create, onSubmit: (visitor) => context.read<VisitProvider>().createVisitor(visitor))),
+                mode: FormMode.create,
+                onSubmit: (visitor) =>
+                    context.read<VisitProvider>().createVisitor(visitor))),
         child: const Text('Create New Visit'),
       ),
     );
@@ -297,8 +316,12 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
           )
         },
         initialData: VisitorDTO(
-            id: visitor.id, name: visitor.name, visitDate: visitor.visitDate, visitPurpose: visitor.visitPurpose),
-        onSubmit: (v) async => await context.read<VisitProvider>().updateVisitor(v),
+            id: visitor.id,
+            name: visitor.name,
+            visitDate: visitor.visitDate,
+            visitPurpose: visitor.visitPurpose),
+        onSubmit: (v) async =>
+            await context.read<VisitProvider>().updateVisitor(v),
       ),
     );
   }

@@ -12,7 +12,7 @@ class CustomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
         clipBehavior: Clip.antiAliasWithSaveLayer,
-        color: Colors.deepPurple[100],
+        color: Colors.green[100],
         elevation: 3,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -104,7 +104,7 @@ class CustomCardWhite extends StatelessWidget {
 //                     style: TextStyle(
 //                         fontSize: 20,
 //                         fontWeight: FontWeight.bold,
-//                         color: kPurpleDark),
+//                         color: kGreenNormal),
 //                   ),
 //                 ),
 //                 Form(

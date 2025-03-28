@@ -8,14 +8,18 @@ abstract class TokenService {
 
   final http.Client client;
   final FlutterSecureStorage storage;
+  // late String? _accessKey;
+  // late String? _refreshKey;
 
   TokenService({required this.storage,required this.client});
 
   Future<String?> getAccessToken(final FlutterSecureStorage storage) async {
+    // _accessKey = await storage.read(key: "access");
     return await storage.read(key: "access");
   }
 
   Future<String?> getRefreshToken(final FlutterSecureStorage storage) async {
+    // _refreshKey = await storage.read(key: "refresh");
     return await storage.read(key: "refresh");
   }
 

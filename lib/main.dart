@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
+import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dart';
+import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
+import 'package:online_reservation/Features/Profile/Data/Service/profile.service.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/Users/Data/Service/user.service.dart';
+import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -12,7 +18,6 @@ import 'package:online_reservation/Features/Authentication/Data/Service/auth.ser
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Visitor/Data/Service/visitor.service.dart';
 import 'package:online_reservation/Features/Visitor/Domain/visitor.repository.dart';
-
 
 void main() async {
   if (!kIsWeb) {
@@ -39,38 +44,39 @@ class MyApp extends StatelessWidget {
         Provider(create: (_) => http.Client()),
         Provider(
             create: (context) =>
-                AuthService(
-                    storage: context.read<FlutterSecureStorage>(),
-                    client: context.read<http.Client>()
-                )
-        ),
+                AuthService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         Provider(
             create: (context) =>
-                VisitApiService(
-                    storage: context.read<FlutterSecureStorage>(),
-                    client: context.read<http.Client>()
-                )),
+                VisitApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                IssueApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                ProfileApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                UserApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
-        ChangeNotifierProvider(
-          create: (context) => VisitProvider(context.read<VisitApiService>()),
-        ),
+        ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
+        ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
+        ChangeNotifierProvider(create: (context) => ProfileProvider(context.read<ProfileApiService>()..getProfile())),
+        ChangeNotifierProvider(create: (context) => UserProvider(context.read<UserApiService>()..getUsers())),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Online Residence App',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-              useMaterial3: true,
-            ),
-            // home: const LoginScreen(),
-            initialRoute:authProvider.isLoggedIn ? RouteGenerator.visitorListScreen : RouteGenerator.loginScreen,
-            // initialRoute: RouteGenerator.approvalListScreen,
-            onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings, authProvider.isLoggedIn,context),
-          );
-        }
-      ),
+      child: Consumer<AuthProvider>(builder: (context, authProvider, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Online Residence App',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+            useMaterial3: true,
+          ),
+          // home: const LoginScreen(),
+          initialRoute: authProvider.isLoggedIn ? RouteGenerator.visitorListScreen : RouteGenerator.loginScreen,
+          // initialRoute: RouteGenerator.approvalListScreen,
+          onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings, authProvider.isLoggedIn, context),
+        );
+      }),
     );
   }
 }

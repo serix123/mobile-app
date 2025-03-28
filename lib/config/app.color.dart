@@ -10,7 +10,7 @@ const kGreenDark = Color(0xff54c8ba);
 
 const kGreenNormal = Color(0xff228d65);
 
-const kGreenLight = Color(0xff5ecb93);
+const kGreenLight = Color(0xff66CC99);
 
 const kBackgroundGrey = Color(0xffeeeeee);
 

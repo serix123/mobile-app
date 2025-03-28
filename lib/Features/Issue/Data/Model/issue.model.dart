@@ -1,32 +1,50 @@
 // models/issue.dart
+// models/issue.dart
 class Issue {
-  final int id;
+  final int? id;
   final String title;
   final String description;
-  final String status;
-  final DateTime reportedDate;
+  final String? status;
+  final DateTime? reportedDate;
   final DateTime? resolvedDate;
-  final String residentName;
+  final String? residentName;
 
   Issue({
-    required this.id,
+    this.id,
     required this.title,
     required this.description,
-    required this.status,
-    required this.reportedDate,
+    this.status,
+    this.reportedDate,
     this.resolvedDate,
-    required this.residentName,
+    this.residentName,
   });
 
   factory Issue.fromJson(Map<String, dynamic> json) => Issue(
-    id: json['id'],
-    title: json['title'],
-    description: json['description'],
-    status: json['status'],
-    reportedDate: DateTime.parse(json['reported_date']),
-    resolvedDate: json['resolved_date'] != null
-        ? DateTime.parse(json['resolved_date'])
-        : null,
-    residentName: json['resident_name'],
-  );
+        id: json['id'],
+        title: json['title'],
+        description: json['description'],
+        status: json['status'],
+        reportedDate: json['reported_date'] != null ? DateTime.parse(json['reported_date']) : null,
+        resolvedDate: json['resolved_date'] != null ? DateTime.parse(json['resolved_date']) : null,
+        residentName: json['resident_name'],
+      );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+    };
+  }
+
+  Issue copyWith(Issue issue) {
+    return Issue(
+      id: id,
+      title: issue.title,
+      description: issue.description,
+      status: issue.status,
+      reportedDate: issue.reportedDate,
+      resolvedDate: issue.resolvedDate,
+      residentName: residentName,
+    );
+  }
 }

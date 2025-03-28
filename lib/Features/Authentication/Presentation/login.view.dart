@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/FormModule/Presentation/form.view.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:provider/provider.dart';
 
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
@@ -39,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
     final authProvider = context.watch<AuthProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -56,23 +58,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: emailController,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.deepPurple.shade50,
+                    fillColor: Colors.green.shade50,
                     labelText: 'Email',
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.deepPurple.shade50,
+                        color: Colors.green.shade50,
                         width: 2,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.deepPurple.shade50,
+                        color: Colors.green.shade50,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kPurpleDark, width: 2),
+                      borderSide: const BorderSide(color: kGreenDark, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     prefixIcon: const Icon(Icons.email),
@@ -85,22 +87,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     filled: true,
-                    fillColor: Colors.deepPurple.shade50,
+                    fillColor: Colors.green.shade50,
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.deepPurple.shade50,
+                        color: Colors.green.shade50,
                         width: 2,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.deepPurple.shade50,
+                        color: Colors.green.shade50,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kPurpleDark, width: 2),
+                      borderSide: const BorderSide(color: kGreenDark, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     prefixIcon: const Icon(Icons.lock),
@@ -112,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const CircularProgressIndicator()
                 else
                   ElevatedButton(
-                    onPressed: () async => await authProvider.login(emailController.text, passwordController.text).then((_) {
+                    onPressed: () async => await authProvider.login(emailController.text, passwordController.text).then((_) async => await profileProvider.getProfile()).then((_) {
                         if (authProvider.error == null) {
                           Navigator.of(context).pushReplacementNamed(RouteGenerator.visitorListScreen,
                               arguments: ScreenConfig(mode: FormMode.create, onSubmit: (e) {}));

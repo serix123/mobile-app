@@ -110,30 +110,15 @@ class AuthService extends TokenService {
   //   return await storage.read(key: "refresh");
   // }
   //
-  // Future<bool> refreshAccessToken() async {
-  //   String? refreshToken = await getRefreshToken();
-  //   if (refreshToken == null) return false;
-  //
-  //   try {
-  //     var response = await client.post(
-  //       Uri.parse('${authURL}token/refresh/'),
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: jsonEncode({'refresh': refreshToken}),
-  //     );
-  //     if (response.statusCode == 200) {
-  //       var token = TokenResponse.fromJson(jsonDecode(response.body));
-  //       await storage.write(key: "access", value: token.accessToken);
-  //       await storage.write(key: "refresh", value: token.refreshToken);
-  //       return true;
-  //     } else {
-  //       throw Exception(
-  //           'Failed to get refresh token. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //     return false;
-  //   }
-  // }
+  Future<bool> refreshToken() async {
+    return await super.refreshAccessToken(storage, client);
+  }
+
+  Future<bool> getAccToken() async {
+    var token = await super.getAccessToken(storage);
+    // Assume a simple validation check or prepare for a token validation API call
+    return token != null && token.isNotEmpty;
+  }
 
   Future<void> logout() async {
     await storage.delete(key: "accessToken");

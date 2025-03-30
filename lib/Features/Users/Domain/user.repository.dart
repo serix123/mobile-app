@@ -5,12 +5,12 @@ import 'package:online_reservation/Features/Users/Data/Service/user.service.dart
 
 class UserProvider with ChangeNotifier{
 
-  final UserApiService apiService;
+  final UserApiService _apiService;
   PaginatedResults<User>? _paginatedUsers;
   bool _isLoading = false;
   String? _error;
 
-  UserProvider(this.apiService);
+  UserProvider(this._apiService);
 
   List<User> get users => _paginatedUsers?.results ?? [];
   bool get isLoading => _isLoading;
@@ -23,7 +23,7 @@ class UserProvider with ChangeNotifier{
     _error = null;
     notifyListeners();
     try {
-      _paginatedUsers = await apiService.getUsers(page: page);
+      _paginatedUsers = await _apiService.getUsers(page: page);
       _error = null;
     } catch (e) {
       _error = e.toString();

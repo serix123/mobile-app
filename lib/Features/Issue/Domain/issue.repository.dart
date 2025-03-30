@@ -4,12 +4,12 @@ import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
 import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dart';
 
 class IssueProvider with ChangeNotifier {
-  final IssueApiService apiService;
+  final IssueApiService _apiService;
   List<Issue> _issues = [];
   bool _isLoading = false;
   String? _error;
 
-  IssueProvider(this.apiService);
+  IssueProvider(this._apiService);
 
   List<Issue> get issues => _issues;
   bool get isLoading => _isLoading;
@@ -20,7 +20,7 @@ class IssueProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final PaginatedResults<Issue> paginatedIssues = await apiService.getIssues(page: page);
+      final PaginatedResults<Issue> paginatedIssues = await _apiService.getIssues(page: page);
       _issues = paginatedIssues.results;
     } catch (e) {
       _error = e.toString();
@@ -36,7 +36,7 @@ class IssueProvider with ChangeNotifier {
     notifyListeners();
     try {
       final issueId = issue.id;
-      await apiService.updateIssue(issue: issue);
+      await _apiService.updateIssue(issue: issue);
       final index = _issues.indexWhere((v) => v.id == issue.id);
       _issues[index] = _issues[index].copyWith(issue);
       notifyListeners();
@@ -53,7 +53,7 @@ class IssueProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await apiService.createIssue(issue: issue);
+      await _apiService.createIssue(issue: issue);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -68,7 +68,7 @@ class IssueProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      bool success = await apiService.deleteIssue(issueId);
+      bool success = await _apiService.deleteIssue(issueId);
       if (success) {
         _issues.removeWhere((issue) => issue.id == issueId);
         notifyListeners();

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_reservation/Core/Data/API_Services/token.service.dart';
+import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/config/host.dart';
 import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 
@@ -18,18 +19,21 @@ class VisitApiService extends TokenService {
 
   VisitApiService({required super.storage, required super.client});
 
-  Future<PaginatedVisitors> getVisitors() async {
+  Future<PaginatedResults<Visitor>> getVisitors({int page = 1}) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse(baseUrl),
+        Uri.parse('$baseUrl?page=$page'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
       if (response.statusCode == 200) {
-        return PaginatedVisitors.fromJson(json.decode(response.body));
+        return PaginatedResults<Visitor>.fromJson(
+          jsonDecode(response.body),
+              (json) => Visitor.fromJson(json),
+        );
       }
       throw Exception('Failed to load visits');
     } catch (e) {

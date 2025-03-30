@@ -1,26 +1,30 @@
 import 'package:flutter/foundation.dart';
+import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 import 'package:online_reservation/Features/Visitor/Data/Service/visitor.service.dart';
 
 class VisitProvider with ChangeNotifier {
-  final VisitApiService apiService;
+  final VisitApiService _apiService;
+  PaginatedResults<Visitor>? _paginatedVisits;
   List<Visitor> _visits = [];
   bool _isLoading = false;
   String? _error;
 
-  VisitProvider(this.apiService);
+  VisitProvider(this._apiService);
 
   List<Visitor> get visits => _visits;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get hasNext => _paginatedVisits?.next != null;
+  bool get hasPrevious => _paginatedVisits?.previous != null;
 
-  Future<void> loadVisitors() async {
+  Future<void> loadVisitors({int page = 1}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      final PaginatedVisitors paginatedVisits = await apiService.getVisitors();
-      _visits = paginatedVisits.results;
+      _paginatedVisits = await _apiService.getVisitors(page: page);
+      _visits = _paginatedVisits?.results ?? [];
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -36,7 +40,7 @@ class VisitProvider with ChangeNotifier {
     try {
       // final visitorDTO = VisitorDTO(id:visitor.id, name: visitor.name, visitDate: visitor.visitDate, visitPurpose: visitor.visitPurpose);
       final visitId = visitor.id;
-      await apiService.updateVisitor(visitor);
+      await _apiService.updateVisitor(visitor);
       final index = _visits.indexWhere((v) => v.id == visitor.id);
       _visits[index] = _visits[index].copyWith(visitor);
       notifyListeners();
@@ -53,7 +57,7 @@ class VisitProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await apiService.createVisitor(visitor);
+      await _apiService.createVisitor(visitor);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -68,7 +72,7 @@ class VisitProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      bool success = await apiService.deleteVisitor(visitId);
+      bool success = await _apiService.deleteVisitor(visitId);
       if (success) {
         _visits.removeWhere((visit) => visit.id == visitId);
         notifyListeners();
@@ -79,5 +83,25 @@ class VisitProvider with ChangeNotifier {
     }
     _isLoading = false;
     notifyListeners();
+  }
+
+
+  Future<void> loadNextPage() async {
+    if (hasNext) {
+      final nextPage = _getPageFromUrl(_paginatedVisits!.next!);
+      await loadVisitors(page: nextPage);
+    }
+  }
+
+  Future<void> loadPreviousPage() async {
+    if (hasPrevious) {
+      final prevPage = _getPageFromUrl(_paginatedVisits!.previous!);
+      await loadVisitors(page: prevPage);
+    }
+  }
+
+  int _getPageFromUrl(String url) {
+    final uri = Uri.parse(url);
+    return int.parse(uri.queryParameters['page'] ?? '1');
   }
 }

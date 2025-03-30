@@ -26,6 +26,16 @@ class UserListScreen extends StatelessWidget {
   Column body() {
     return Column(
       children: [
+        Consumer<UserProvider>(
+          builder: (context, provider, _) {
+            return PaginationControls(
+              hasNext: provider.hasNext,
+              hasPrevious: provider.hasPrevious,
+              onNext: provider.loadNextPage,
+              onPrevious: provider.loadPreviousPage,
+            );
+          },
+        ),
         Expanded(
           child: Consumer<UserProvider>(
             builder: (context, provider, _) {
@@ -43,7 +53,8 @@ class UserListScreen extends StatelessWidget {
               if (provider.users.isEmpty) {
                 return const GenericEmptyState(
                   title: 'No Users Found',
-                  description: 'No users are currently registered in the system',
+                  description:
+                      'No users are currently registered in the system',
                 );
               }
 
@@ -59,16 +70,6 @@ class UserListScreen extends StatelessWidget {
             },
           ),
         ),
-        Consumer<UserProvider>(
-          builder: (context, provider, _) {
-            return PaginationControls(
-              hasNext: provider.hasNext,
-              hasPrevious: provider.hasPrevious,
-              onNext: provider.loadNextPage,
-              onPrevious: provider.loadPreviousPage,
-            );
-          },
-        )
       ],
     );
   }

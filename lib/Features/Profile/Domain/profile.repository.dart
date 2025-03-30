@@ -4,12 +4,12 @@ import 'package:online_reservation/Features/Profile/Data/Service/profile.service
 
 class ProfileProvider with ChangeNotifier{
 
-  final ProfileApiService apiService;
+  final ProfileApiService _apiService;
   late User? _user;
   bool _isLoading = false;
   String? _error;
 
-  ProfileProvider(this.apiService);
+  ProfileProvider(this._apiService);
 
   User? get user => _user;
   bool get isLoading => _isLoading;
@@ -20,7 +20,7 @@ class ProfileProvider with ChangeNotifier{
     _error = null;
     notifyListeners();
     try {
-      _user = await apiService.getProfile();
+      _user = await _apiService.getProfile();
     } catch (e) {
       _error = e.toString();
       notifyListeners();

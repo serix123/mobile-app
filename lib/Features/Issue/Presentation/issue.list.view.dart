@@ -117,37 +117,35 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         if (provider.error != null) return _buildErrorState(provider);
         if (provider.issues.isEmpty) return _buildEmptyState();
 
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomCardWhite(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingTextStyle: _tableHeaderStyle,
-                  dataTextStyle: _tableCellStyle,
-                  columns: const [
-                    DataColumn(label: Text('Title')),
-                    DataColumn(label: Text('Description')),
-                    DataColumn(label: Text('Author')),
-                    DataColumn(label: Text('Report Date')),
-                    DataColumn(label: Text('Resolve Date')),
-                    DataColumn(label: Text('Actions')),
-                    // DataColumn(label: Text('Status')),
-                  ],
-                  rows: provider.issues.map((visit) => _buildDataRow(visit)).toList(),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
-                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                    (Set<WidgetState> states) {
-                      if (states.contains(WidgetState.selected)) {
-                        return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
-                      }
-                      return null; // Use default row color
-                    },
-                  ),
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CustomCardWhite(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingTextStyle: _tableHeaderStyle,
+                dataTextStyle: _tableCellStyle,
+                columns: const [
+                  DataColumn(label: Text('Title')),
+                  DataColumn(label: Text('Description')),
+                  DataColumn(label: Text('Author')),
+                  DataColumn(label: Text('Report Date')),
+                  DataColumn(label: Text('Resolve Date')),
+                  DataColumn(label: Text('Actions')),
+                  // DataColumn(label: Text('Status')),
+                ],
+                rows: provider.issues.map((visit) => _buildDataRow(visit)).toList(),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+                    }
+                    return null; // Use default row color
+                  },
                 ),
               ),
             ),

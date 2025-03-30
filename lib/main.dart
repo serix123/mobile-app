@@ -7,6 +7,8 @@ import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dar
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
 import 'package:online_reservation/Features/Profile/Data/Service/profile.service.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/Resident/Data/Service/resident.service.dart';
+import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
 import 'package:online_reservation/Features/Users/Data/Service/user.service.dart';
 import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
 import 'package:provider/provider.dart';
@@ -57,11 +59,15 @@ class MyApp extends StatelessWidget {
         Provider(
             create: (context) =>
                 UserApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                ResidentApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
         ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
         ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
         ChangeNotifierProvider(create: (context) => ProfileProvider(context.read<ProfileApiService>()..getProfile())),
         ChangeNotifierProvider(create: (context) => UserProvider(context.read<UserApiService>()..getUsers())),
+        ChangeNotifierProvider(create: (context) => ResidentProvider(context.read<ResidentApiService>()..getResidents())),
       ],
       child: Consumer<AuthProvider>(builder: (context, authProvider, _) {
         return MaterialApp(

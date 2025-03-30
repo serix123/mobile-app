@@ -120,7 +120,7 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
         if (provider.error != null) return _buildErrorState(provider);
         if (provider.visits.isEmpty) return _buildEmptyState();
 
-        return Center(
+        return Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: CustomCardWhite(
@@ -177,26 +177,28 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
     }
     return DataRow(
       cells: [
-        DataCell(Text(visitor.name)),
-        DataCell(Text(visitor.residentName)),
-        DataCell(Text(visitor.visitPurpose)),
-        DataCell(Text(visitDateTime)),
-        DataCell(Text(visitor.checkInTime != null ? checkInDateTime : "-")),
+        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.name))),
+        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.residentName))),
+        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.visitPurpose))),
+        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitDateTime))),
+        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.checkInTime != null ? checkInDateTime : "-"))),
         DataCell(
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildActionButton(
-                icon: Icons.edit,
-                color: Colors.blue,
-                onPressed: () => _handleUpdateVisit(context, visitor),
-              ),
-              _buildActionButton(
-                icon: Icons.delete,
-                color: Colors.red,
-                onPressed: () => _handleDeleteVisit(context, visitor.id),
-              ),
-            ],
+          Container(width: (MediaQuery.of(context).size.width / 10) ,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildActionButton(
+                  icon: Icons.edit,
+                  color: Colors.blue,
+                  onPressed: () => _handleUpdateVisit(context, visitor),
+                ),
+                _buildActionButton(
+                  icon: Icons.delete,
+                  color: Colors.red,
+                  onPressed: () => _handleDeleteVisit(context, visitor.id),
+                ),
+              ],
+            ),
           ),
         ),
         // DataCell(

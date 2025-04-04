@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
+import 'package:online_reservation/Features/CommunityResources/Data/Service/community_resource.service.dart';
+import 'package:online_reservation/Features/CommunityResources/Domain/community_resource.repository.dart';
 import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
 import 'package:online_reservation/Features/Profile/Data/Service/profile.service.dart';
@@ -62,12 +64,16 @@ class MyApp extends StatelessWidget {
         Provider(
             create: (context) =>
                 ResidentApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                ResourceApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
         ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
         ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
         ChangeNotifierProvider(create: (context) => ProfileProvider(context.read<ProfileApiService>()..getProfile())),
         ChangeNotifierProvider(create: (context) => UserProvider(context.read<UserApiService>()..getUsers())),
-        ChangeNotifierProvider(create: (context) => ResidentProvider(context.read<ResidentApiService>()..getResidents())),
+        ChangeNotifierProvider(create: (context) => ResidentProvider(context.read<ResidentApiService>())),
+        ChangeNotifierProvider(create: (context) => ResourceProvider(context.read<ResourceApiService>())),
       ],
       child: Consumer<AuthProvider>(builder: (context, authProvider, _) {
         return MaterialApp(
@@ -105,12 +111,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return ResponsiveLayout(
       currentRoute: MyHomePage.screenId,
-      title: "Home Page",
+      title: const Text("Home Page"),
       desktopBody: ListView(
         children: <Widget>[
           cardTile(
             context,
-            title: "Online Reservation",
+            title: "GL1 Hub",
             icon: Icons.book_online,
             routeName: RouteGenerator.visitorFormScreen,
           ),

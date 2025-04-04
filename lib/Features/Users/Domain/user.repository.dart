@@ -18,16 +18,51 @@ class UserProvider with ChangeNotifier{
   bool get hasNext => _paginatedUsers?.next != null;
   bool get hasPrevious => _paginatedUsers?.previous != null;
 
-  Future<void> getUsers({int page = 1}) async {
+  Future<void> getUsers({int page = 1, String query = ""}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedUsers = await _apiService.getUsers(page: page);
+      _paginatedUsers = await _apiService.getUsers(page: page, query: query);
       _error = null;
     } catch (e) {
       _error = e.toString();
       _paginatedUsers = null;
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> deleteUser(int issueId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      bool success = await _apiService.deleteUser(issueId);
+      if (success) {
+        _paginatedUsers?.results.removeWhere((issue) => issue.id == issueId);
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> updateUser(User user) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _apiService.updatePermission(user: user);
+      final index = _paginatedUsers!.results.indexWhere((v) => v.id == user.id);
+      _paginatedUsers!.results[index] = _paginatedUsers!.results[index].copyWith(user);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
     }
     _isLoading = false;
     notifyListeners();

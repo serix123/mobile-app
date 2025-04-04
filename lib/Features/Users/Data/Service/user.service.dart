@@ -1,5 +1,3 @@
-
-
 import 'dart:convert';
 import 'package:online_reservation/Core/Data/API_Services/token.service.dart';
 import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
@@ -15,12 +13,12 @@ class UserApiService extends TokenService{
     required super.client,
   });
 
-  Future<PaginatedResults<User>> getUsers({int page = 1}) async {
+  Future<PaginatedResults<User>> getUsers({int page = 1, String query = ""}) async {
     // final pageURL =
     try{
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page'),
+        Uri.parse('$baseUrl?page=$page&q=$query'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -41,9 +39,50 @@ class UserApiService extends TokenService{
   Future<User> updatePermission({required User user}) async {
     try {
       String? token = await getAccessToken(storage);
-      final body = json.encode(user.permissionToJson());
+      final body = json.encode(user.toJson());
       final response = await client.patch(
         Uri.parse('${authURL}admin/users/${user.id}/permissions/'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return User.fromJson(jsonDecode(response.body));
+      }
+      throw Exception('Failed to update issue: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to update issue: $e');
+    }
+  }
+
+  Future<bool> deleteUser(int userId) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.delete(
+        Uri.parse('${authURL}delete/$userId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 204) {
+        // 201 Created
+        return true;
+      }
+    } catch (e) {
+      throw Exception('Failed to delete visit: $e');
+    }
+    return false;
+  }
+
+  Future<User> updateUser({required User user}) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final body = json.encode(user.toJson());
+      final response = await client.patch(
+        Uri.parse('$baseUrl${user.id}/'),
         body: body,
         headers: {
           'Authorization': 'Bearer $token',

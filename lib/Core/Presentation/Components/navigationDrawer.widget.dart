@@ -49,6 +49,16 @@ class CustomNavigationDrawer extends StatelessWidget {
                       selected:
                       currentRoute == RouteGenerator.visitorListScreen,
                     ),
+
+                    _createDrawerItem(
+                      context: context,
+                      icon: Icons.menu_book,
+                      text: 'Resource Index',
+                      onTap: () => Navigator.of(context)
+                          .pushNamed(RouteGenerator.resourceListScreen),
+                      selected:
+                      currentRoute == RouteGenerator.resourceListScreen,
+                    ),
                     _createDrawerItem(
                       context: context,
                       icon: Icons.approval,
@@ -58,15 +68,25 @@ class CustomNavigationDrawer extends StatelessWidget {
                       selected:
                       currentRoute == RouteGenerator.issuesListScreen,
                     ),
+                    // if(provider.user!.isSuperuser)
+                    // _createDrawerItem(
+                    //   context: context,
+                    //   icon: Icons.people,
+                    //   text: 'Users',
+                    //   onTap: () => Navigator.of(context)
+                    //       .pushNamed(RouteGenerator.userListScreen),
+                    //   selected:
+                    //   currentRoute == RouteGenerator.userListScreen,
+                    // ),
                     if(provider.user!.isSuperuser)
                     _createDrawerItem(
                       context: context,
                       icon: Icons.people,
-                      text: 'Users',
+                      text: 'Residents',
                       onTap: () => Navigator.of(context)
-                          .pushNamed(RouteGenerator.userListScreen),
+                          .pushNamed(RouteGenerator.residentListScreen),
                       selected:
-                      currentRoute == RouteGenerator.userListScreen,
+                      currentRoute == RouteGenerator.residentListScreen,
                     ),
                     // _createDrawerItem(
                     //   context: context,
@@ -124,7 +144,6 @@ class CustomNavigationDrawer extends StatelessWidget {
                       (Route<dynamic> route) =>
                   false, // This condition ensures all other screens are removed
                 );
-                print("User has logged out.");
               },
             ),
           ),

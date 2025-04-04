@@ -45,6 +45,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
@@ -58,9 +59,33 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _error = e.toString();
     }
-
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<bool> register(String firstName, String lastName, String email, String password) async {
+    RegistrationCredentials credentials = RegistrationCredentials(
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      password: password,
+      password2: password,
+    );
+    try {
+      bool registered = await _authService.register(credentials);
+      if (registered) {
+        // _isLoggedIn = true;
+        notifyListeners();
+      } else {
+        // _isLoggedIn = false;
+      }
+      return registered;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Registration error: $e");
+      }
+      return false;
+    }
   }
 
   Future<void> logout() async {

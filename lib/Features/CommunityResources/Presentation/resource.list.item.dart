@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
-import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
+import 'package:online_reservation/Features/CommunityResources/Data/Model/community_resources.model.dart';
+import 'package:online_reservation/config/app.color.dart';
 
-class IssueListItem extends StatelessWidget {
-  final Issue issue;
-  final VoidCallback onResolve;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
+class ResourceListItem extends StatelessWidget {
+  final Resource resource;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
   // final Function(String) onStatusChanged;
 
-  const IssueListItem({
+  const ResourceListItem({
     super.key,
-    required this.issue,
-    required this.onResolve,
-    this.onEdit,
-    this.onDelete,
+    required this.resource,
+    required this.onEdit,
+    required this.onDelete,
     // required this.onStatusChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return buildItemList();
+    return buildResourceList();
   }
 
-  Card buildItemList() {
+  Card buildResourceList() {
     return Card(
       child: Stack(
         children: [
@@ -33,12 +31,30 @@ class IssueListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Title', issue.title),
-                _buildInfoRow('Description', issue.description),
-                if(issue.residentName != null)
-                _buildInfoRow('Author', issue.residentName!),
-                if(issue.reportedDate != null)
-                _buildInfoRow('Date reported', _formatDate(issue.reportedDate!)),
+                _buildInfoRow('Resource Name', resource.name),
+                _buildInfoRow('Description', resource.description),
+                _buildInfoRow('Contact', resource.contactInfo),
+                _buildInfoRow('In-Charge', resource.manageBy?.fullName ?? ""),
+                // _buildInfoRow('Manager', _formatDate(resource.registrationDate)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: resource.status.color,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(resource.status.icon,color: Colors.white, size: 18,),
+                      const SizedBox(width: 8),
+                      Text(
+                        resource.status.displayName,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 8),
                 // _buildStatusDropdown(),
               ],
@@ -50,13 +66,6 @@ class IssueListItem extends StatelessWidget {
             child: PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
-                const PopupMenuItem<String>(
-                  value: 'resolve',
-                  child: ListTile(
-                    leading: Icon(Icons.check_box, color: Colors.green),
-                    title: Text('Resolve'),
-                  ),
-                ),
                 const PopupMenuItem<String>(
                   value: 'edit',
                   child: ListTile(
@@ -73,9 +82,8 @@ class IssueListItem extends StatelessWidget {
                 ),
               ],
               onSelected: (String value) {
-                if (value == 'resolve') onResolve();
-                if (value == 'edit') onEdit ?? (){};
-                if (value == 'delete') onDelete ?? (){};
+                if (value == 'edit') onEdit();
+                if (value == 'delete') onDelete();
               },
             ),
           ),
@@ -90,8 +98,8 @@ class IssueListItem extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 100,
-            child: Text('$label:',
+            width: 150,
+            child: Text('$label: ',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 )),
@@ -102,29 +110,8 @@ class IssueListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusDropdown() {
-    const statusOptions = {
-      'open': 'Open',
-      'resolved': 'Resolved',
-    };
-
-    return DropdownButtonFormField<String>(
-      value: issue.status,
-      decoration: const InputDecoration(
-        labelText: 'Status',
-        border: OutlineInputBorder(),
-      ),
-      items: statusOptions.entries.map((entry) {
-        return DropdownMenuItem<String>(
-          value: entry.key,
-          child: Text(entry.value),
-        );
-      }).toList(),
-      onChanged: (value) {},
-    );
-  }
-
   String _formatDate(DateTime date) {
     return DateFormat('MMM dd, yyyy - hh:mm a').format(date);
   }
+
 }

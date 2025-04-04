@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:online_reservation/Core/Data/API_Services/token.service.dart';
 import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/config/host.dart';
@@ -19,11 +17,11 @@ class VisitApiService extends TokenService {
 
   VisitApiService({required super.storage, required super.client});
 
-  Future<PaginatedResults<Visitor>> getVisitors({int page = 1}) async {
+  Future<PaginatedResults<Visitor>> getVisitors({int page = 1, String query = "",}) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page'),
+        Uri.parse('$baseUrl?page=$page&q=$query'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -32,7 +30,7 @@ class VisitApiService extends TokenService {
       if (response.statusCode == 200) {
         return PaginatedResults<Visitor>.fromJson(
           jsonDecode(response.body),
-              (json) => Visitor.fromJson(json),
+          (json) => Visitor.fromJson(json),
         );
       }
       throw Exception('Failed to load visits');
@@ -100,6 +98,73 @@ class VisitApiService extends TokenService {
       if (response.statusCode == 204) {
         // 201 Created
         return true;
+      }
+    } catch (e) {
+      throw Exception('Failed to delete visit: $e');
+    }
+    return false;
+  }
+
+  Future<VisitorDTO> checkInVisitorOfficer(VisitorDTO visitor) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final body = json.encode(visitor.toJson());
+      final response = await client.post(
+        Uri.parse('${baseUrl}security-checkin/'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 201) {
+        // 201 Created
+        return VisitorDTO.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to create visit: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create visit: $e');
+    }
+  }
+
+  Future<bool> checkInVisitor(int visitId) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl$visitId/check_in/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 204) {
+        // 201 Created
+        return true;
+      } else {
+        throw (response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to delete visit: $e');
+    }
+    return false;
+  }
+
+  Future<bool> checkOutVisitor(int visitId) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl$visitId/check_out/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 204) {
+        // 201 Created
+        return true;
+      } else {
+        throw (response.body);
       }
     } catch (e) {
       throw Exception('Failed to delete visit: $e');

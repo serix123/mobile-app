@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
-import 'package:online_reservation/Features/FormModule/Presentation/form.view.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:provider/provider.dart';
 
@@ -37,8 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
+    // final emailController = TextEditingController();
+    // final passwordController = TextEditingController();
     final authProvider = context.watch<AuthProvider>();
     final profileProvider = context.watch<ProfileProvider>();
     return Scaffold(
@@ -114,15 +113,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   const CircularProgressIndicator()
                 else
                   ElevatedButton(
-                    onPressed: () async => await authProvider.login(emailController.text, passwordController.text).then((_) async => await profileProvider.getProfile()).then((_) {
-                        if (authProvider.error == null) {
-                          Navigator.of(context).pushReplacementNamed(RouteGenerator.visitorListScreen,
-                              arguments: ScreenConfig(mode: FormMode.create, onSubmit: (e) {}));
-                        } else {
-                          final snackBar = SnackBar(content: Text('Login Failed. Please try again. ${authProvider.error!}'));
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        }
-                      }),
+                    onPressed: () async => await authProvider
+                        .login(emailController.text, passwordController.text)
+                        .then((_) async => await profileProvider.getProfile())
+                        .then((_) {
+                      emailController.clear();
+                      passwordController.clear();
+                    }).then((_) {
+                      if (authProvider.error == null) {
+                        Navigator.of(context).pushReplacementNamed(RouteGenerator.visitorListScreen,
+                            arguments: ScreenConfig(mode: FormMode.create, onSubmit: (e) {}));
+                      } else {
+                        final snackBar =
+                            SnackBar(content: Text('Login Failed. Please try again. ${authProvider.error!}'));
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      }
+                    }),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
                     ),

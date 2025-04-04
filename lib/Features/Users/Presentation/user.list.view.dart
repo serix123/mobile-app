@@ -18,7 +18,7 @@ class UserListScreen extends StatelessWidget {
     return ResponsiveLayout(
       desktopBody: body(),
       mobileBody: body(),
-      title: title,
+      title: const Text(title),
       currentRoute: screenId,
     );
   }

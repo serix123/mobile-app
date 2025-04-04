@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
-
-
+import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -44,76 +43,86 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
 
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("Register"),
+        title: const Text("Register"),
       ),
-      body: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(30, 30, 30, 30),
-        child: CustomCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: <Widget>[
-                TextField(
-                  controller: firstNameController,
-                  decoration: InputDecoration(labelText: 'First Name'),
-                ),
-                TextField(
-                  controller: lastNameController,
-                  decoration: InputDecoration(labelText: 'Last Name'),
-                ),
-                TextField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: 'Email'),
-                ),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: 'Password'),
-                ),
-                TextField(
-                  controller: confirmPasswordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: 'Confirm Password'),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
+      body: body(context),
+    );
+  }
+
+  Widget body(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        return Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(30, 30, 30, 30),
+          child: CustomCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    controller: firstNameController,
+                    decoration: const InputDecoration(labelText: 'First Name'),
                   ),
-                  onPressed: () {
-                    if (passwordController.text ==
-                        confirmPasswordController.text) {
-                      // viewModel
-                      //     .register(
-                      //       firstNameController.text,
-                      //       lastNameController.text,
-                      //       emailController.text,
-                      //       passwordController.text,
-                      //     )
-                      //     .then((isRegistered) => Navigator.of(context)
-                      //         .pushReplacementNamed('/login'));
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Passwords do not match!')));
-                    }
-                  },
-                  child: Text('Register'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/login');
-                  },
-                  child: Text('Already have an account? Login'),
-                ),
-              ],
+                  TextField(
+                    controller: lastNameController,
+                    decoration: const InputDecoration(labelText: 'Last Name'),
+                  ),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                  ),
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Confirm Password'),
+                  ),
+                  const SizedBox(height: 20),
+                  if (authProvider.isLoading)
+                    const CircularProgressIndicator()
+                  else
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    onPressed: () {
+                      if (passwordController.text ==
+                          confirmPasswordController.text) {
+                        authProvider
+                            .register(
+                          firstNameController.text,
+                          lastNameController.text,
+                          emailController.text,
+                          passwordController.text,
+                        )
+                            .then((isRegistered) => Navigator.of(context)
+                            .pushReplacementNamed('/login'));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Passwords do not match!')));
+                      }
+                    },
+                    child: const Text('Register'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed('/login');
+                    },
+                    child: const Text('Already have an account? Login'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

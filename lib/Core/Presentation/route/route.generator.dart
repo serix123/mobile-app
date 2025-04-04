@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
+import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
+import 'package:online_reservation/Features/CommunityResources/Presentation/resource.view.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Profile/Presentation/profile.view.dart';
+import 'package:online_reservation/Features/Resident/Presentation/residence.list.dart';
+import 'package:online_reservation/Features/Resident/Presentation/residence.view.dart';
 import 'package:online_reservation/Features/Users/Presentation/user.list.view.dart';
+import 'package:online_reservation/Features/Users/Presentation/user.view.dart';
 import 'package:online_reservation/Features/Visitor/Presentation/visitor.list.view.dart';
 import 'package:online_reservation/Features/Visitor/Presentation/visitor.view.dart';
 import 'package:online_reservation/Features/Visitor/list.view.dart';
@@ -23,7 +28,12 @@ class RouteGenerator {
   static const issueFormScreen = IssueFormScreen.screenId;
   static const issuesListScreen = IssuesListScreen.screenId;
   static const profileScreen = ProfileScreen.screenId;
+  static const residentListScreen = ResidentListScreen.screenId;
+  static const residenceFormScreen = ResidenceFormScreen.screenId;
   static const userListScreen = UserListScreen.screenId;
+  static const userScreen = UserScreen.screenId;
+  static const resourceListScreen = ResourceListScreen.screenId;
+  static const resourceFormScreen = ResourceFormScreen.screenId;
 
   static Route<dynamic> generateRoute(RouteSettings settings, bool isLoggedIn, BuildContext context) {
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
@@ -50,6 +60,26 @@ class RouteGenerator {
               ),
             );
           }
+
+        case resourceFormScreen:
+          if (args is ResourceScreenConfig) {
+            return MaterialPageRoute(
+              builder: (_) => ResourceFormScreen(
+                mode: args.mode,
+                onSubmit: args.onSubmit,
+                initialData: args.initialData,
+                onDelete: args.onDelete,
+              ),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (_) => ResourceFormScreen(
+                mode: FormMode.create,
+                onSubmit: (item) {},
+                onDelete: () {},
+              ),
+            );
+          }
         case issueFormScreen:
           if (args is IssueScreenConfig) {
             return MaterialPageRoute(
@@ -69,17 +99,49 @@ class RouteGenerator {
               ),
             );
           }
+        case userScreen:
+          if (args is UserScreenConfig) {
+            return MaterialPageRoute(
+              builder: (_) => UserScreen(
+                user: args.user,
+              ),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (_) => const UserScreen(
+                user: null,
+              ),
+            );
+          }
         case userListScreen:
-          if(profileProvider.user!.isSuperuser){
+          if (profileProvider.user!.isSuperuser) {
             return MaterialPageRoute(builder: (_) => const UserListScreen());
           }
           return _errorRoute();
+        case residenceFormScreen:
+          if (profileProvider.user!.isSuperuser) {
+            if (args is ResidenceScreenConfig) {
+              return MaterialPageRoute(
+                  builder: (_) => ResidenceFormScreen(
+                        onSubmit: args.onSubmit,
+                        initialData: args.initialData,
+                        onDelete: args.onDelete,
+                      ));
+            }
+          }
+          return _errorRoute();
+        case resourceListScreen:
+          return MaterialPageRoute(builder: (_) => const ResourceListScreen());
+        case residentListScreen:
+          return MaterialPageRoute(builder: (_) => const ResidentListScreen());
         case issuesListScreen:
           return MaterialPageRoute(builder: (_) => const IssuesListScreen());
         case visitorListScreen:
           return MaterialPageRoute(builder: (_) => const VisitsListScreen());
         case profileScreen:
           return MaterialPageRoute(builder: (_) => const ProfileScreen());
+        case loginScreen:
+          return MaterialPageRoute(builder: (_) => const LoginScreen());
         default:
           return _errorRoute();
       }

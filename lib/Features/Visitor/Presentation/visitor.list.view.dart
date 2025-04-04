@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/search.widget.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
@@ -23,7 +26,7 @@ const _tableCellStyle = TextStyle(
 
 class VisitsListScreen extends StatefulWidget {
   static const String screenId = "/visitors";
-  static const String title = "visit requests";
+  static const String title = "Visit Logs";
   const VisitsListScreen({super.key});
 
   @override
@@ -42,9 +45,12 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isStaff = Provider.of<ProfileProvider>(context, listen: false).user!.isStaff;
+    final isSuperuser = Provider.of<ProfileProvider>(context, listen: false).user!.isSuperuser;
+
     return ResponsiveLayout(
       currentRoute: VisitsListScreen.screenId,
-      title: VisitsListScreen.title,
+      title: appBar(),
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -52,47 +58,69 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.add),
-          onPressed: () => Navigator.of(context).pushNamed(
-              RouteGenerator.visitorFormScreen,
+          onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
               arguments: VisitorScreenConfig(
                   mode: FormMode.create,
-                  onSubmit: (visitor) => context
-                      .read<VisitProvider>()
-                      .createVisitor(visitor)
-                      .then((_) =>
-                          context.read<VisitProvider>().loadVisitors()))),
+                  onSubmit: (visitor) async {
+                    if (isStaff ^ isSuperuser) {
+                      return await context
+                          .read<VisitProvider>()
+                          .checkInVisitorOfficer(visitor)
+                          .then((_) => context.read<VisitProvider>().loadVisitors());
+                    }
+                    return context
+                        .read<VisitProvider>()
+                        .createVisitor(visitor)
+                        .then((_) => context.read<VisitProvider>().loadVisitors());
+                  })),
         )
       ],
       desktopBody: _buildTable(),
-      mobileBody: buildConsumer(),
+      mobileBody: _buildMobile(),
     );
   }
 
-  Consumer<VisitProvider> buildConsumer() {
-    return Consumer<VisitProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
+  Widget appBar() {
+    return Row(
+      children: [
+        const Expanded(flex: 1, child: Text(VisitsListScreen.title)),
+        const SizedBox(width: 8,),
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Consumer<VisitProvider>(
+              builder: (context, visitorProvider, child) {
+                return SearchField(
+                  onSearchChanged: (query) => visitorProvider.loadVisitors(query: query),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobile() {
+    return Consumer2<ProfileProvider, VisitProvider>(
+      builder: (context, profileProvider, provider, _) {
+        if (provider.isLoading || profileProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (provider.error != null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Error: ${provider.error}'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => provider.loadVisitors(),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
+        if (provider.error != null || profileProvider.error != null) {
+          return GenericErrorState(
+            errorMessage: provider.error!,
+            onRetry: () => provider.loadVisitors(),
           );
         }
 
         if (provider.visits.isEmpty) {
-          return const Center(child: Text('No visit requests found'));
+          return const GenericEmptyState(
+            title: 'No Visitors Found',
+            description: 'No visitors are currently registered in the system',
+          );
         }
 
         return ListView.separated(
@@ -101,73 +129,87 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final visit = provider.visits[index];
-            return VisitorListItem(
-              visitor: visit,
-              onDelete: () => _handleDeleteVisit(context, visit.id),
-              onEdit: () => _handleUpdateVisit(context, visit),
-            );
+            final isSuperUser = profileProvider.user!.isSuperuser;
+            if (isSuperUser) {
+              return VisitorListItem(
+                visitor: visit,
+                onCheckIn: () => _handleCheckInVisit(context, visit.id),
+                onCheckOut: () => _handleCheckOutVisit(context, visit.id),
+                onDelete: () => _handleDeleteVisit(context, visit.id),
+                onEdit: () => _handleUpdateVisit(context, visit),
+              );
+            } else {
+              return VisitorListItem(
+                visitor: visit,
+                onCheckIn: () => _handleCheckInVisit(context, visit.id),
+                onCheckOut: () => _handleCheckOutVisit(context, visit.id),
+              );
+            }
           },
         );
       },
     );
   }
 
-  Consumer<VisitProvider> _buildTable() {
-    return Consumer<VisitProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading)
-          return const Center(child: CircularProgressIndicator());
-        if (provider.error != null) return _buildErrorState(provider);
-        if (provider.visits.isEmpty) return _buildEmptyState();
+  Widget _buildTable() {
+    return Expanded(
+      child: Center(
+        child: Column(
+          children: [
+            Expanded(
+              child: Consumer2<ProfileProvider, VisitProvider>(
+                builder: (context, profileProvider, provider, _) {
+                  if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+                  if (provider.error != null) return _buildErrorState(provider);
+                  if (provider.visits.isEmpty) return _buildEmptyState();
 
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomCardWhite(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingTextStyle: _tableHeaderStyle,
-                  dataTextStyle: _tableCellStyle,
-                  columns: const [
-                    DataColumn(label: Text('Visitor Name')),
-                    DataColumn(label: Text('Resident')),
-                    DataColumn(label: Text('Purpose')),
-                    DataColumn(label: Text('Visit Date')),
-                    DataColumn(label: Text('Check In')),
-                    DataColumn(label: Text('Actions')),
-                    // DataColumn(label: Text('Status')),
-                  ],
-                  rows: provider.visits
-                      .map((visit) => _buildDataRow(visit))
-                      .toList(),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
-                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                    (Set<WidgetState> states) {
-                      if (states.contains(WidgetState.selected)) {
-                        return Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withValues(alpha: 0.08);
-                      }
-                      return null; // Use default row color
-                    },
-                  ),
-                ),
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: CustomCardWhite(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingTextStyle: _tableHeaderStyle,
+                          dataTextStyle: _tableCellStyle,
+                          columns: [
+                            const DataColumn(label: Text('Visitor Name')),
+                            const DataColumn(label: Text('Resident')),
+                            const DataColumn(label: Text('Purpose')),
+                            const DataColumn(label: Text('Visit Date')),
+                            const DataColumn(label: Text('Check In')),
+                            const DataColumn(label: Text('Actions')),
+                            if (profileProvider.user!.isSuperuser) const DataColumn(label: Text('Admin Actions')),
+                            // DataColumn(label: Text('Status')),
+                          ],
+                          rows: provider.visits.map((visit) => _buildDataRow(visit)).toList(),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+                          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                            (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.selected)) {
+                                return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+                              }
+                              return null; // Use default row color
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
   DataRow _buildDataRow(Visitor visitor) {
-    String visitDateTime =
-        "${DateFormat('yyyy-mm-dd').format(visitor.visitDate.toLocal())} ${DateFormat().add_Hm().format(visitor.visitDate.toLocal())}";
+    String visitDateTime = DateFormat('yyyy-mm-dd').format(visitor.visitDate.toLocal());
+        // "${DateFormat('yyyy-mm-dd').format(visitor.visitDate.toLocal())} ${DateFormat().add_Hm().format(visitor.visitDate.toLocal())}";
     String checkInDateTime;
     if (visitor.checkInTime != null) {
       checkInDateTime =
@@ -175,24 +217,45 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
     } else {
       checkInDateTime = "N/A"; // Or any default value you prefer
     }
+    final isSuperuser = Provider.of<ProfileProvider>(context, listen: false).user!.isSuperuser;
     return DataRow(
       cells: [
-        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.name))),
-        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.residentName))),
-        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.visitPurpose))),
-        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitDateTime))),
-        DataCell(Container(width: (MediaQuery.of(context).size.width / 10) ,child: Text(visitor.checkInTime != null ? checkInDateTime : "-"))),
+        DataCell(Text(visitor.name)),
+        DataCell(Text(visitor.residentName)),
+        DataCell(Text(visitor.visitPurpose)),
+        DataCell(Text(visitDateTime)),
+        DataCell(Text(visitor.checkInTime != null ? checkInDateTime : "-")),
+
         DataCell(
-          Container(width: (MediaQuery.of(context).size.width / 10) ,
-            child: Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (visitor.checkInTime == null)
+                _buildActionButton(
+                  icon: Icons.check_box,
+                  color: Colors.green,
+                  onPressed: () => _handleCheckInVisit(context, visitor.id),
+                )
+              else
+                _buildActionButton(
+                  icon: Icons.exit_to_app,
+                  color: Colors.red,
+                  onPressed: () => _handleCheckOutVisit(context, visitor.id),
+                ),
+            ],
+          ),
+        ),
+        if (isSuperuser)
+          DataCell(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildActionButton(
+                _buildAdminActionButton(
                   icon: Icons.edit,
                   color: Colors.blue,
                   onPressed: () => _handleUpdateVisit(context, visitor),
                 ),
-                _buildActionButton(
+                _buildAdminActionButton(
                   icon: Icons.delete,
                   color: Colors.red,
                   onPressed: () => _handleDeleteVisit(context, visitor.id),
@@ -200,7 +263,7 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
               ],
             ),
           ),
-        ),
+
         // DataCell(
         //   DropdownButton<String>(
         //     value: visitor.status,
@@ -232,6 +295,22 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
         icon: Icon(icon, size: 20),
         color: color,
         onPressed: onPressed,
+        tooltip: icon == Icons.check_box ? 'Check In' : 'Check Out',
+      ),
+    );
+  }
+
+  Widget _buildAdminActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 40),
+      child: IconButton(
+        icon: Icon(icon, size: 20),
+        color: color,
+        onPressed: onPressed,
         tooltip: icon == Icons.edit ? 'Edit visit' : 'Delete visit',
       ),
     );
@@ -243,12 +322,9 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
       description: 'When new visit requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(
-            RouteGenerator.visitorFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
             arguments: VisitorScreenConfig(
-                mode: FormMode.create,
-                onSubmit: (visitor) =>
-                    context.read<VisitProvider>().createVisitor(visitor))),
+                mode: FormMode.create, onSubmit: (visitor) => context.read<VisitProvider>().createVisitor(visitor))),
         child: const Text('Create New Visit'),
       ),
     );
@@ -260,15 +336,86 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
       description: 'When new visit requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(
-            RouteGenerator.visitorFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.visitorFormScreen,
             arguments: VisitorScreenConfig(
-                mode: FormMode.create,
-                onSubmit: (visitor) =>
-                    context.read<VisitProvider>().createVisitor(visitor))),
+                mode: FormMode.create, onSubmit: (visitor) => context.read<VisitProvider>().createVisitor(visitor))),
         child: const Text('Create New Visit'),
       ),
     );
+  }
+
+  Future<void> _handleCheckInVisit(BuildContext context, int visitId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Check In'),
+        content: const Text('Are you sure you want to do this action?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Check In'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        Future.wait([
+          context.read<VisitProvider>().checkInVisitor(visitId).then((_) => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Visit Checked Out successfully')),
+              )),
+          context.read<VisitProvider>().loadVisitors()
+        ]);
+        // await context.read<VisitProvider>().checkInVisitor(visitId).then((_)=> ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('Visit Checked Out successfully')),
+        // ));
+        // await context.read<VisitProvider>().loadVisitors();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Check In failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleCheckOutVisit(BuildContext context, int visitId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Check Out'),
+        content: const Text('Are you sure you want to do this action?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Check Out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await context
+            .read<VisitProvider>()
+            .checkOutVisitor(visitId)
+            .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Visit Checked Out successfully')),
+                ));
+
+        await context.read<VisitProvider>().loadVisitors();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Check Out failed: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _handleDeleteVisit(BuildContext context, int visitId) async {
@@ -318,33 +465,20 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
           )
         },
         initialData: VisitorDTO(
-            id: visitor.id,
-            name: visitor.name,
-            visitDate: visitor.visitDate,
-            visitPurpose: visitor.visitPurpose),
-        onSubmit: (v) async =>
-            await context.read<VisitProvider>().updateVisitor(v),
+            id: visitor.id, name: visitor.name, visitDate: visitor.visitDate, visitPurpose: visitor.visitPurpose),
+        onSubmit: (visitor) async {
+          final isStaff = Provider.of<ProfileProvider>(context, listen: false).user!.isStaff;
+          final isSuperuser = Provider.of<ProfileProvider>(context, listen: false).user!.isSuperuser;
+
+          if (!isStaff && !isSuperuser) {
+            return await context.read<VisitProvider>().checkInVisitor(visitor.id!);
+          }
+          if (!isSuperuser) {
+            return await context.read<VisitProvider>().checkInVisitorOfficer(visitor);
+          }
+          return context.read<VisitProvider>().updateVisitor(visitor);
+        },
       ),
-    );
-  }
-}
-
-class ResponsiveText extends StatelessWidget {
-  final String text;
-
-  const ResponsiveText(this.text, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final fontSize = constraints.maxWidth < 200 ? 12.0 : 14.0;
-        return Text(
-          text,
-          style: TextStyle(fontSize: fontSize),
-          overflow: TextOverflow.ellipsis,
-        );
-      },
     );
   }
 }

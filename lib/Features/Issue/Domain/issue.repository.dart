@@ -15,12 +15,12 @@ class IssueProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> getIssues({int page = 1}) async {
+  Future<void> getIssues({int page = 1, String query = ""}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      final PaginatedResults<Issue> paginatedIssues = await _apiService.getIssues(page: page);
+      final PaginatedResults<Issue> paginatedIssues = await _apiService.getIssues(page: page, query: query);
       _issues = paginatedIssues.results;
     } catch (e) {
       _error = e.toString();
@@ -35,7 +35,6 @@ class IssueProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final issueId = issue.id;
       await _apiService.updateIssue(issue: issue);
       final index = _issues.indexWhere((v) => v.id == issue.id);
       _issues[index] = _issues[index].copyWith(issue);
@@ -71,6 +70,23 @@ class IssueProvider with ChangeNotifier {
       bool success = await _apiService.deleteIssue(issueId);
       if (success) {
         _issues.removeWhere((issue) => issue.id == issueId);
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> resolveIssue(int issueId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      bool success = await _apiService.resolveIssue(issueId);
+      if (success) {
         notifyListeners();
       }
     } catch (e) {

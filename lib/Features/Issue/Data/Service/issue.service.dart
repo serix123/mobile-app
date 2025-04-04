@@ -55,11 +55,11 @@ class IssueApiService extends TokenService {
     }
   }
 
-  Future<PaginatedResults<Issue>> getIssues({int page = 1}) async {
+  Future<PaginatedResults<Issue>> getIssues({int page = 1, String query = "",}) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page'),
+        Uri.parse('$baseUrl?page=$page&q=$query'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -92,7 +92,27 @@ class IssueApiService extends TokenService {
         return true;
       }
     } catch (e) {
-      throw Exception('Failed to delete visit: $e');
+      throw Exception('Failed to delete issue: $e');
+    }
+    return false;
+  }
+
+  Future<bool> resolveIssue(int issueId) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl$issueId/resolve/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        // 201 Created
+        return true;
+      }
+    } catch (e) {
+      throw Exception('Failed to resolve issue: $e');
     }
     return false;
   }

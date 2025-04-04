@@ -1,39 +1,63 @@
-// screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
-import 'package:online_reservation/Features/Profile/Data/Model/profile.model.dart';
-import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
+import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
+import 'package:online_reservation/Features/Users/Data/Model/user.model.dart';
+import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
 import 'package:online_reservation/Utils/utils.dart';
 import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatelessWidget {
-  static const String screenId = "/Profile";
-  const ProfileScreen({super.key});
+class UserScreenConfig {
+  final User? user;
+  final Resident? resident;
+  UserScreenConfig({this.user, this.resident,});
+}
+
+
+class UserScreen extends StatefulWidget {
+  static const String screenId = "/User";
+  final User? user;
+  const UserScreen({super.key, this.user});
 
   @override
-  Widget build(BuildContext context) {
-    context.read<ProfileProvider>().getProfile();
+  State<UserScreen> createState() => _UserScreenState();
+}
+
+class _UserScreenState extends State<UserScreen> {
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Load data when screen initializes
+    // WidgetsBinding.instance.addPostFrameCallback((_)  {
+    //   if (mounted) context.read<ResidentProvider>().getResident(residentId: widget.user!.id);
+    // });
+  }
+
+  @override  Widget build(BuildContext context) {
     return ResponsiveLayout(mobileBody: body(), desktopBody: body(), title: const Text('My Profile'));
   }
 
-  Consumer<ProfileProvider> body() {
-    return Consumer<ProfileProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
+  Widget body() {
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        String? error = userProvider.error;
+        if (userProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (provider.error != null) {
+        if (error != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline, size: 50),
                 const SizedBox(height: 16),
-                Text(provider.error!),
+                Text(error),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: provider.getProfile,
+                  onPressed: ()=> Navigator.pop(context),
                   child: const Text('Retry'),
                 ),
               ],
@@ -41,8 +65,7 @@ class ProfileScreen extends StatelessWidget {
           );
         }
 
-        final user = provider.user;
-        if (user == null) {
+        if (widget.user == null) {
           return const Center(child: Text('No profile data available'));
         }
 
@@ -50,9 +73,9 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildProfileHeader(user),
+              _buildProfileHeader(widget.user!),
               const SizedBox(height: 24),
-              if (user.residence != null) _buildResidenceCard(user.residence!),
+              _buildResidenceCard(widget.user!),
             ],
           ),
         );
@@ -78,8 +101,8 @@ class ProfileScreen extends StatelessWidget {
               subtitle: Text(user.isSuperuser
                   ? 'Administrator'
                   : user.isStaff
-                      ? 'Security'
-                      : 'Regular User'),
+                  ? 'Security'
+                  : 'Regular User'),
             ),
           ],
         ),
@@ -87,19 +110,18 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResidenceCard(Residence residence) {
+  Widget _buildResidenceCard(User user) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Residence Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('User Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _buildInfoRow('Role', residence.role),
-            _buildInfoRow('Contact', residence.formattedContact),
-            _buildInfoRow('Address', residence.fullAddress),
-            _buildInfoRow('Registered', Utils.formatDate(residence.registrationDate)),
+            _buildInfoRow('Full Name', user.fullName),
+            _buildInfoRow('Role', user.role),
+            _buildInfoRow('Email', user.email),
           ],
         ),
       ),

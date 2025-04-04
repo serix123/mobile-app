@@ -1,6 +1,9 @@
-// widgets/user_list_item.dart
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/Users/Data/Model/user.model.dart';
+import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
+import 'package:online_reservation/Features/Users/Presentation/user.view.dart';
+import 'package:provider/provider.dart';
 
 class UserListItem extends StatelessWidget {
   final User user;
@@ -29,9 +32,70 @@ class UserListItem extends StatelessWidget {
               child: Text(user.role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
             ),
             const SizedBox(width: 12),
-            const Icon(Icons.more_vert),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: ListTile(
+                    leading: Icon(Icons.edit, color: Colors.blue),
+                    title: Text('Edit User'),
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete, color: Colors.red),
+                    title: Text('Delete User'),
+                  ),
+                ),
+              ],
+              onSelected: (String value) {
+                switch (value) {
+                  case 'edit':
+                    _handleEditUser(context, user);
+                    break;
+                  case 'delete':
+                    _handleDeleteUser(context, user.id);
+                    break;
+                }
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Add these handler methods
+  void _handleEditUser(BuildContext context, User user) async {
+        Navigator.of(context)
+            .pushNamed(RouteGenerator.userScreen, arguments: UserScreenConfig(user: user));
+    // Navigate to edit screen
+    // Navigator.of(context)
+    //     .pushNamed(RouteGenerator.userScreen, arguments: UserScreenConfig(user: user, resident: resident));
+  }
+
+  void _handleDeleteUser(BuildContext context, int userId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: const Text('Are you sure you want to delete this user?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          Consumer<UserProvider>(
+            builder: (context, provider, child) => TextButton(
+              onPressed: () async {
+                await provider.deleteUser(userId).then((_) => Navigator.pop(context));
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -27,8 +27,11 @@ class User {
     );
   }
 
-  Map<String, dynamic> permissionToJson() {
+  Map<String, dynamic> toJson() {
     return {
+      'email': email,
+      'first_name': firstName,
+      'last_name': lastName,
       'is_staff': isStaff,
       'is_superuser': isSuperuser,
     };
@@ -39,6 +42,10 @@ class User {
     if (isSuperuser) return 'Super Admin';
     if (isStaff) return 'Staff';
     return 'Regular User';
+  }
+
+  User copyWith(User user) {
+    return user;
   }
 }
 

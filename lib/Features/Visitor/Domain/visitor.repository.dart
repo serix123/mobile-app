@@ -18,12 +18,12 @@ class VisitProvider with ChangeNotifier {
   bool get hasNext => _paginatedVisits?.next != null;
   bool get hasPrevious => _paginatedVisits?.previous != null;
 
-  Future<void> loadVisitors({int page = 1}) async {
+  Future<void> loadVisitors({int page = 1, String query = ""}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedVisits = await _apiService.getVisitors(page: page);
+      _paginatedVisits = await _apiService.getVisitors(page: page, query: query);
       _visits = _paginatedVisits?.results ?? [];
     } catch (e) {
       _error = e.toString();
@@ -38,8 +38,6 @@ class VisitProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      // final visitorDTO = VisitorDTO(id:visitor.id, name: visitor.name, visitDate: visitor.visitDate, visitPurpose: visitor.visitPurpose);
-      final visitId = visitor.id;
       await _apiService.updateVisitor(visitor);
       final index = _visits.indexWhere((v) => v.id == visitor.id);
       _visits[index] = _visits[index].copyWith(visitor);
@@ -85,7 +83,6 @@ class VisitProvider with ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<void> loadNextPage() async {
     if (hasNext) {
       final nextPage = _getPageFromUrl(_paginatedVisits!.next!);
@@ -103,5 +100,58 @@ class VisitProvider with ChangeNotifier {
   int _getPageFromUrl(String url) {
     final uri = Uri.parse(url);
     return int.parse(uri.queryParameters['page'] ?? '1');
+  }
+
+  Future<void> checkInVisitorOfficer(VisitorDTO visitor) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _apiService.checkInVisitorOfficer(visitor);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> checkInVisitor(int visitId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      bool success = await _apiService.checkInVisitor(visitId);
+      if (success) {
+
+      }else{
+
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> checkOutVisitor(int visitId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      bool success = await _apiService.checkOutVisitor(visitId);
+      if (success) {
+
+      }else{
+
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
   }
 }

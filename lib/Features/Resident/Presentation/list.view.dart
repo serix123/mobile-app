@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
+import 'package:online_reservation/config/app.color.dart';
 
 class ResidentListItem extends StatelessWidget {
   final Resident resident;
@@ -18,10 +19,10 @@ class ResidentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildVisitorList();
+    return buildResidentList();
   }
 
-  Card buildVisitorList() {
+  Card buildResidentList() {
     return Card(
       child: Stack(
         children: [
@@ -30,12 +31,23 @@ class ResidentListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Visitor', resident.fullName),
-                _buildInfoRow('Resident', resident.userEmail),
-                _buildInfoRow('Purpose', resident.role),
-                _buildInfoRow('Purpose', resident.formattedAddress),
-                _buildInfoRow('Purpose', resident.formattedContact),
-                _buildInfoRow('Visit Date', _formatDate(resident.registrationDate)),
+                _buildInfoRow('Full Name', resident.fullName),
+                _buildInfoRow('Email', resident.userEmail),
+                _buildInfoRow('Address', resident.formattedAddress),
+                _buildInfoRow('Contact', resident.formattedContact),
+                _buildInfoRow('Reg. Date', _formatDate(resident.registrationDate)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getRoleColor(resident.role),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    resident.role,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 // _buildStatusDropdown(),
               ],
@@ -93,5 +105,16 @@ class ResidentListItem extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return DateFormat('MMM dd, yyyy - hh:mm a').format(date);
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return Colors.red.shade700;
+      case 'officer':
+        return kGreenNormal;
+      default:
+        return Colors.grey.shade600;
+    }
   }
 }

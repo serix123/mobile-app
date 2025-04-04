@@ -4,6 +4,7 @@ import 'package:online_reservation/Core/Presentation/Components/formContainer.wi
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 import 'package:online_reservation/Features/Visitor/Domain/visitor.repository.dart';
 import 'package:provider/provider.dart';
@@ -112,7 +113,7 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveLayout(
-      title: widget.mode == FormMode.create ? 'Apply Visitor' : 'Update Visitor',
+      title: Text(widget.mode == FormMode.create ? 'Apply Visitor' : 'Update Visitor'),
       desktopBody: FormContainer(
         width: MediaQuery.of(context).size.width,
         child: buildForm(context),
@@ -124,74 +125,61 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
     );
   }
 
-  Padding buildForm(BuildContext context) {
-    final visitProvider = context.watch<VisitProvider>();
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          children: <Widget>[
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name of Visitor'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _purposeController,
-              decoration: const InputDecoration(labelText: 'Purpose of Visitor'),
-              // maxLines: 2,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a description';
-                }
-                return null;
-              },
-            ),
-            // Status Dropdown
-            SizedBox(height: 26),
-            const SizedBox(height: 26),
-            Row(
-              children: [
-                Text(
-                  'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                TextButton(
-                  onPressed: () => _selectDate(context),
-                  child: const Text('Select Date'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            if (widget.mode == FormMode.create)
-              if (visitProvider.isLoading)
-                const CircularProgressIndicator()
-              else
-                ElevatedButton(
-                  onPressed: () {
-                    _submitForm();
-                    if (visitProvider.error == null) {
-                      Navigator.of(context).pop();
-                    } else {
-                      final snackBar =
-                          SnackBar(content: Text('Submission Failed. Please try again. ${visitProvider.error!}'));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  Widget buildForm(BuildContext context) {
+    // final visitProvider = context.watch<VisitProvider>();
+    // final profileProvider = context.watch<ProfileProvider>();
+    return Consumer2<VisitProvider, ProfileProvider>(
+      builder: (context, visitProvider, profileProvider, child) {
+        final isStaff = profileProvider.user!.isStaff;
+        final isSuperuser = profileProvider.user!.isSuperuser;
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: <Widget>[
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Name of Visitor'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a title';
                     }
+                    return null;
                   },
-                  child: const Text('Create Item'),
                 ),
-            if (widget.mode == FormMode.edit)
-              if (visitProvider.isLoading)
-                const Center(child: CircularProgressIndicator())
-              else
-                Column(
-                  children: [
+                TextFormField(
+                  controller: _purposeController,
+                  decoration: const InputDecoration(labelText: 'Purpose of Visitor'),
+                  // maxLines: 2,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a description';
+                    }
+                    return null;
+                  },
+                ),
+                // Status Dropdown
+                SizedBox(height: 26),
+                const SizedBox(height: 26),
+                if (!(isStaff ^ isSuperuser))
+                  Row(
+                    children: [
+                      Text(
+                        'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      TextButton(
+                        onPressed: () => _selectDate(context),
+                        child: const Text('Select Date'),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 32),
+                if (widget.mode == FormMode.create)
+                  if (visitProvider.isLoading)
+                    const CircularProgressIndicator()
+                  else
                     ElevatedButton(
                       onPressed: () {
                         _submitForm();
@@ -203,21 +191,42 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         }
                       },
-                      child: const Text('Update Item'),
+                      child: const Text('Create Item'),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _confirmDelete,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text('Delete Item'),
+                if (widget.mode == FormMode.edit)
+                  if (visitProvider.isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            _submitForm();
+                            if (visitProvider.error == null) {
+                              Navigator.of(context).pop();
+                            } else {
+                              final snackBar = SnackBar(
+                                  content: Text('Submission Failed. Please try again. ${visitProvider.error!}'));
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            }
+                          },
+                          child: const Text('Update Item'),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _confirmDelete,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          child: const Text('Delete Item'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,8 @@
 // models/resident.dart
 import 'package:intl/intl.dart';
 
+enum RoleType { ADMIN, OFFICER, RESIDENT, ALL }
+
 class Resident {
   final int id;
   final String userEmail;
@@ -35,6 +37,31 @@ class Resident {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      // 'user_email': userEmail,
+      // 'first_name': firstName,
+      // 'last_name': lastName,
+      'role': role,
+      'contact_number': contactNumber,
+      'address': address,
+      // 'registration_date': registrationDate,
+    };
+  }
+
+  Resident copyWith(Resident resident) {
+    return Resident(
+      id: id,
+      userEmail: resident.userEmail,
+      firstName: resident.firstName,
+      lastName: resident.lastName,
+      role: resident.role,
+      contactNumber:  resident.contactNumber,
+      address: resident.address,
+      registrationDate: resident.registrationDate,
+    );
+  }
+
   String get fullName => '$firstName $lastName';
   String get formattedContact => contactNumber?.isEmpty ?? true
       ? 'N/A'
@@ -44,4 +71,6 @@ class Resident {
       : address!;
   String get formattedRegistrationDate =>
       DateFormat.yMMMd().format(registrationDate);
+
+
 }

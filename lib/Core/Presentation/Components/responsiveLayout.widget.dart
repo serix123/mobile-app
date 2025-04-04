@@ -7,7 +7,7 @@ class ResponsiveLayout extends StatelessWidget {
   final Widget mobileBody;
   final Widget desktopBody;
   final String currentRoute;
-  final String title;
+  final Widget title;
   final List<Widget>? actions;
 
   const ResponsiveLayout({
@@ -30,7 +30,7 @@ class ResponsiveLayout extends StatelessWidget {
             ),
             body: mobileBody,
             appBar: AppBar(
-              title: Text(title),
+              title: title,
               leading: Builder(
                 builder: (BuildContext context) {
                   return IconButton(
@@ -60,7 +60,7 @@ class ResponsiveLayout extends StatelessWidget {
               Expanded(
                 child: Scaffold(
                   appBar: AppBar(
-                    title: Text(title),
+                    title: title,
                     actions: [
                       ...?actions,
                       IconButton(

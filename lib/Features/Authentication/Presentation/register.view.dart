@@ -61,6 +61,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: <Widget>[
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Image.asset(
+                        'assets/images/LOGO.png',
+                        fit: BoxFit.cover,
+                      )
+                  ),
                   TextField(
                     controller: firstNameController,
                     decoration: const InputDecoration(labelText: 'First Name'),

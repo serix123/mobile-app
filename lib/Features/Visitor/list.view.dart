@@ -43,65 +43,102 @@ class VisitorListItem extends StatelessWidget {
                     _buildInfoRow('Resident', visitor.residentName),
                     _buildInfoRow('Purpose', visitor.visitPurpose),
                     _buildInfoRow('Visit Date', _formatDate(visitor.visitDate)),
-                    if (visitor.checkInTime != null) _buildInfoRow('Check-in', _formatDate(visitor.checkInTime!)),
-                    if (visitor.checkOutTime != null) _buildInfoRow('Check-out', _formatDate(visitor.checkOutTime!)),
+                    if (visitor.checkInTime != null)
+                      _buildInfoRow(
+                          'Check-in', _formatDate(visitor.checkInTime!)),
+                    if (visitor.checkOutTime != null)
+                      _buildInfoRow(
+                          'Check-out', _formatDate(visitor.checkOutTime!)),
                     const SizedBox(height: 8),
                     // _buildStatusDropdown(),
                   ],
                 ),
               ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  itemBuilder: (BuildContext context) => [
-                    if (visitor.checkInTime == null)
-                      const PopupMenuItem<String>(
-                        value: 'checkin',
-                        child: ListTile(
-                          leading: Icon(Icons.check_box, color: Colors.green),
-                          title: Text('Check In'),
+              if (isSuperUser)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    itemBuilder: (BuildContext context) => [
+                      if (visitor.checkInTime == null &&
+                          visitor.checkOutTime == null)
+                        const PopupMenuItem<String>(
+                          value: 'checkin',
+                          child: ListTile(
+                            leading: Icon(Icons.check_box, color: Colors.green),
+                            title: Text('Check In'),
+                          ),
+                        )
+                      else if (visitor.checkInTime != null &&
+                          visitor.checkOutTime == null)
+                        const PopupMenuItem<String>(
+                          value: 'checkout',
+                          child: ListTile(
+                            leading: Icon(Icons.exit_to_app, color: Colors.red),
+                            title: Text('Check Out'),
+                          ),
                         ),
-                      )
-                    else
-                      const PopupMenuItem<String>(
-                        value: 'checkout',
-                        child: ListTile(
-                          leading: Icon(Icons.exit_to_app, color: Colors.red),
-                          title: Text('Check Out'),
+                      if (isSuperUser)
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: ListTile(
+                            leading: Icon(Icons.edit, color: Colors.blue),
+                            title: Text('Edit'),
+                          ),
                         ),
-                      ),
-                    if (isSuperUser)
-                    const PopupMenuItem<String>(
-                      value: 'edit',
-                      child: ListTile(
-                        leading: Icon(Icons.edit, color: Colors.blue),
-                        title: Text('Edit'),
-                      ),
-                    ),
-                    if (isSuperUser)
-                    const PopupMenuItem<String>(
-                      value: 'delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text('Delete'),
-                      ),
-                    ),
-                  ],
-                  onSelected: (String value) {
-                    if (value == 'checkin') onCheckIn();
-                    if (value == 'checkout') onCheckOut();
-                    if (value == 'edit') onEdit!();
-                    if (value == 'delete') onDelete!();
-                  },
+                      if (isSuperUser)
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete, color: Colors.red),
+                            title: Text('Delete'),
+                          ),
+                        ),
+                    ],
+                    onSelected: (String value) {
+                      if (value == 'checkin') onCheckIn();
+                      if (value == 'checkout') onCheckOut();
+                      if (value == 'edit') onEdit!();
+                      if (value == 'delete') onDelete!();
+                    },
+                  ),
+                )
+              else
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    itemBuilder: (BuildContext context) => [
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: ListTile(
+                            leading: Icon(Icons.edit, color: Colors.blue),
+                            title: Text('Edit'),
+                          ),
+                        ),
+                      if (isSuperUser)
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete, color: Colors.red),
+                            title: Text('Delete'),
+                          ),
+                        ),
+                    ],
+                    onSelected: (String value) {
+                      if (value == 'checkin') onCheckIn();
+                      if (value == 'checkout') onCheckOut();
+                      if (value == 'edit') onEdit!();
+                      if (value == 'delete') onDelete!();
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         );
       },
-
     );
   }
 

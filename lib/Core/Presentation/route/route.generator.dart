@@ -39,7 +39,7 @@ class RouteGenerator {
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     final args = settings.arguments;
 
-    if (isLoggedIn && profileProvider.user != null) {
+    if (isLoggedIn) {
       switch (settings.name) {
         case visitorFormScreen:
           if (args is VisitorScreenConfig) {

@@ -83,8 +83,8 @@ class _RoleFilterDropdownState extends State<RoleFilterDropdown> {
                   child: ListTile(
                     dense: isMobile,
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      size: isMobile ? 12 : 24,
+                    leading: isMobile? null:  Icon(
+                      size: 24,
                       role.icon,
                       color: Colors.grey[600],
                     ),

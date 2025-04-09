@@ -1,5 +1,6 @@
 // screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/Profile/Data/Model/profile.model.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
@@ -99,7 +100,7 @@ class ProfileScreen extends StatelessWidget {
             _buildInfoRow('Role', residence.role),
             _buildInfoRow('Contact', residence.formattedContact),
             _buildInfoRow('Address', residence.fullAddress),
-            _buildInfoRow('Registered', Utils.formatDate(residence.registrationDate)),
+            _buildInfoRow('Registered', DateFormat('d MMMM yyyy').format(residence.registrationDate.toLocal())),
           ],
         ),
       ),

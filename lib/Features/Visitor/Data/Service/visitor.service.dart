@@ -160,8 +160,7 @@ class VisitApiService extends TokenService {
           'Content-Type': 'application/json',
         },
       );
-      if (response.statusCode == 204) {
-        // 201 Created
+      if (response.statusCode == 200) {
         return true;
       } else {
         throw (response.body);

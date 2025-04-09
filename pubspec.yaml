@@ -42,10 +42,7 @@ dependencies:
   collection: ^1.18.0
 #  screenshot: ^3.0.0
   intl: ^0.20.1
-  image_gallery_saver: ^2.0.3
   permission_handler: ^11.3.1
-  share: ^2.0.0
-    # create pdf document
   pdf: ^3.1.0
   # save file
   path_provider: ^2.0.1

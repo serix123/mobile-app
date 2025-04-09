@@ -73,16 +73,18 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     }
   }
 
-  void _submitForm() {
+  bool _submitForm() {
     if (_formKey.currentState!.validate()) {
       final newItem = Issue(
         id: widget.initialData?.id ?? 0,
         title: _titleController.text,
         description: _descriptionController.text,
-        // visitDate: _selectedDate,
+        // issueDate: _selectedDate,
       );
       widget.onSubmit(newItem);
+      return true;
     }
+    return false;
   }
 
   Future<void> _confirmDelete() async {
@@ -113,7 +115,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveLayout(
-      title: Text(widget.mode == FormMode.create ? 'Apply Visitor' : 'Update Visitor'),
+      title: Text(widget.mode == FormMode.create ? 'Report Issue' : 'Update Issue'),
       desktopBody: FormContainer(
         width: MediaQuery.of(context).size.width,
         child: buildForm(context),
@@ -176,13 +178,15 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               else
                 ElevatedButton(
                   onPressed: () {
-                    _submitForm();
-                    if (issueProvider.error == null) {
-                      Navigator.of(context).pop();
-                    } else {
-                      final snackBar =
-                      SnackBar(content: Text('Submission Failed. Please try again. ${issueProvider.error!}'));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    if(_submitForm()) {
+                      if (issueProvider.error == null) {
+                        Navigator.of(context).pop();
+                      } else {
+                        final snackBar = SnackBar(
+                            content: Text(
+                                'Submission Failed. Please try again. ${issueProvider.error!}'));
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      }
                     }
                   },
                   child: const Text('Create Item'),

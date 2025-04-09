@@ -54,7 +54,8 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.add),
-          onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen,
+          onPressed: () => Navigator.of(context).pushNamed(
+              RouteGenerator.issueFormScreen,
               arguments: IssueScreenConfig(
                   mode: FormMode.create,
                   onSubmit: (issue) => context
@@ -82,7 +83,8 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
             child: Consumer<IssueProvider>(
               builder: (context, issueProvider, child) {
                 return SearchField(
-                  onSearchChanged: (query) => issueProvider.getIssues(query: query),
+                  onSearchChanged: (query) =>
+                      issueProvider.getIssues(query: query),
                 );
               },
             ),
@@ -95,7 +97,9 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
   Widget _buildMobile() {
     return Consumer2<ProfileProvider, IssueProvider>(
       builder: (context, profileProvider, provider, _) {
-        if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
         if (provider.error != null) return _buildErrorState();
         if (provider.issues.isEmpty) return _buildEmptyState();
 
@@ -109,14 +113,14 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
             if (isSuperUser) {
               return IssueListItem(
                 issue: issue,
-                onResolve: () => _handleResolveVisit(context, issue.id!),
-                onDelete: () => _handleDeleteVisit(context, issue.id!),
-                onEdit: () => _handleUpdateVisit(context, issue),
+                onResolve: () => _handleResolveIssue(context, issue.id!),
+                onDelete: () => _handleDeleteIssue(context, issue.id!),
+                onEdit: () => _handleUpdateIssue(context, issue),
               );
             } else {
               return IssueListItem(
                 issue: issue,
-                onResolve: () => _handleResolveVisit(context, issue.id!),
+                onResolve: () => _handleResolveIssue(context, issue.id!),
               );
             }
           },
@@ -133,7 +137,9 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
             Expanded(
               child: Consumer2<ProfileProvider, IssueProvider>(
                 builder: (context, profileProvider, provider, _) {
-                  if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   if (provider.error != null) return _buildErrorState();
                   if (provider.issues.isEmpty) return _buildEmptyState();
 
@@ -152,18 +158,25 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                             const DataColumn(label: Text('Report Date')),
                             const DataColumn(label: Text('Resolve Date')),
                             const DataColumn(label: Text('Actions')),
-                            if (profileProvider.user!.isSuperuser) const DataColumn(label: Text('Admin Actions')),
+                            if (profileProvider.user!.isSuperuser)
+                              const DataColumn(label: Text('Admin Actions')),
                             // DataColumn(label: Text('Status')),
                           ],
-                          rows: provider.issues.map((visit) => _buildDataRow(visit)).toList(),
+                          rows: provider.issues
+                              .map((issue) => _buildDataRow(issue))
+                              .toList(),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                           ),
-                          headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+                          headingRowColor:
+                              WidgetStateProperty.all(Colors.grey.shade100),
                           dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                             (Set<WidgetState> states) {
                               if (states.contains(WidgetState.selected)) {
-                                return Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+                                return Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.08);
                               }
                               return null; // Use default row color
                             },
@@ -197,14 +210,16 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     } else {
       resolvedDateTime = "N/A"; // Or any default value you prefer
     }
-    final isSuperuser = Provider.of<ProfileProvider>(context, listen: false).user!.isSuperuser;
+    final isSuperuser =
+        Provider.of<ProfileProvider>(context, listen: false).user!.isSuperuser;
     return DataRow(
       cells: [
         DataCell(Text(issue.title)),
         DataCell(Text(issue.description)),
         DataCell(Text(issue.residentName!)),
         DataCell(Text(issue.reportedDate != null ? reportedDateTime : "-")),
-        DataCell(Text(issue.reportedDate != null ? resolvedDateTime : "Ongoing")),
+        DataCell(
+            Text(issue.reportedDate != null ? resolvedDateTime : "Ongoing")),
         DataCell(
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -213,7 +228,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                 _buildActionButton(
                   icon: Icons.checklist,
                   color: Colors.green,
-                  onPressed: () => _handleResolveVisit(context, issue.id!),
+                  onPressed: () => _handleResolveIssue(context, issue.id!),
                 )
             ],
           ),
@@ -226,19 +241,19 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                 _buildAdminActionButton(
                   icon: Icons.edit,
                   color: Colors.blue,
-                  onPressed: () => _handleUpdateVisit(context, issue),
+                  onPressed: () => _handleUpdateIssue(context, issue),
                 ),
                 _buildAdminActionButton(
                   icon: Icons.delete,
                   color: Colors.red,
-                  onPressed: () => _handleDeleteVisit(context, issue.id!),
+                  onPressed: () => _handleDeleteIssue(context, issue.id!),
                 ),
               ],
             ),
           ),
         // DataCell(
         //   DropdownButton<String>(
-        //     value: visitor.status,
+        //     value: issueor.status,
         //     underline: const SizedBox(),
         //     items: const [
         //       DropdownMenuItem(value: 'pending', child: Text('Pending')),
@@ -247,7 +262,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         //     ],
         //     onChanged: (newStatus) {
         //       if (newStatus != null) {
-        //         _handleStatusChange(context, visitor.id, newStatus);
+        //         _handleStatusChange(context, issueor.id, newStatus);
         //       }
         //     },
         //   ),
@@ -294,9 +309,12 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(
+            RouteGenerator.issueFormScreen,
             arguments: IssueScreenConfig(
-                mode: FormMode.create, onSubmit: (data) => context.read<IssueProvider>().createIssue(data))),
+                mode: FormMode.create,
+                onSubmit: (data) =>
+                    context.read<IssueProvider>().createIssue(data))),
         child: const Text('Create New Issue'),
       ),
     );
@@ -308,16 +326,18 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen,
+        onPressed: () => Navigator.of(context).pushNamed(
+            RouteGenerator.issueFormScreen,
             arguments: IssueScreenConfig(
                 mode: FormMode.create,
-                onSubmit: (data) async => await context.read<IssueProvider>().createIssue(data))),
+                onSubmit: (data) async =>
+                    await context.read<IssueProvider>().createIssue(data))),
         child: const Text('Create New Issue'),
       ),
     );
   }
 
-  Future<void> _handleResolveVisit(BuildContext context, int issueId) async {
+  Future<void> _handleResolveIssue(BuildContext context, int issueId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -339,9 +359,13 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     if (confirmed == true) {
       try {
         Future.wait([
-          context.read<IssueProvider>().resolveIssue(issueId).then((_) => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Issue resolved successfully')),
-              )),
+          context
+              .read<IssueProvider>()
+              .resolveIssue(issueId)
+              .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Issue resolved successfully')),
+                  )),
           context.read<IssueProvider>().getIssues()
         ]);
       } catch (e) {
@@ -352,7 +376,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     }
   }
 
-  Future<void> _handleDeleteVisit(BuildContext context, int issueId) async {
+  Future<void> _handleDeleteIssue(BuildContext context, int issueId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -386,7 +410,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     }
   }
 
-  void _handleUpdateVisit(BuildContext context, Issue issue) {
+  void _handleUpdateIssue(BuildContext context, Issue issue) {
     Navigator.of(context).pushNamed(
       RouteGenerator.issueFormScreen,
       arguments: IssueScreenConfig(
@@ -398,8 +422,14 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
             const SnackBar(content: Text('Issue deleted successfully')),
           )
         },
-        initialData: Issue(id: issue.id, title: issue.title, description: issue.description),
-        onSubmit: (data) async => await context.read<IssueProvider>().updateIssue(data),
+        initialData: issue,
+        // onSubmit: (data) {},
+        onSubmit: (data) async {
+          Future.wait([
+            context.read<IssueProvider>().updateIssue(data),
+            context.read<IssueProvider>().getIssues(),
+          ]);
+        },
       ),
     );
   }

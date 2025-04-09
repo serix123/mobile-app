@@ -53,6 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Image.asset(
+                    'assets/images/LOGO.png',
+                    fit: BoxFit.cover,
+                  )
+                ),
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -121,11 +128,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       passwordController.clear();
                     }).then((_) {
                       if (authProvider.error == null) {
-                        Navigator.of(context).pushReplacementNamed(RouteGenerator.visitorListScreen,
-                            arguments: ScreenConfig(mode: FormMode.create, onSubmit: (e) {}));
+                        Navigator.of(context).pushReplacementNamed(
+                            RouteGenerator.visitorListScreen,
+                            arguments: ScreenConfig(
+                                mode: FormMode.create, onSubmit: (e) {}));
                       } else {
-                        final snackBar =
-                            SnackBar(content: Text('Login Failed. Please try again. ${authProvider.error!}'));
+                        final snackBar = SnackBar(
+                            content: Text(
+                                'Login Failed. Please try again. ${authProvider.error!}'));
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       }
                     }),
@@ -136,7 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed(RouteGenerator.registerScreen);
+                    Navigator.of(context)
+                        .pushReplacementNamed(RouteGenerator.registerScreen);
                   },
                   child: const Text('Don\'t have an account? Register'),
                 ),

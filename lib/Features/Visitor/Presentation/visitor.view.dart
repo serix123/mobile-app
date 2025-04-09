@@ -73,7 +73,7 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
     }
   }
 
-  void _submitForm() {
+  bool _submitForm() {
     if (_formKey.currentState!.validate()) {
       final newItem = VisitorDTO(
         id: widget.initialData?.id ?? 0,
@@ -82,7 +82,9 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
         visitDate: _selectedDate,
       );
       widget.onSubmit(newItem);
+      return true;
     }
+    return false;
   }
 
   Future<void> _confirmDelete() async {
@@ -143,7 +145,7 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                   decoration: const InputDecoration(labelText: 'Name of Visitor'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
+                      return 'Please enter a name';
                     }
                     return null;
                   },
@@ -154,7 +156,7 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                   // maxLines: 2,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
+                      return 'Please enter a purpose';
                     }
                     return null;
                   },
@@ -182,13 +184,16 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                   else
                     ElevatedButton(
                       onPressed: () {
-                        _submitForm();
-                        if (visitProvider.error == null) {
-                          Navigator.of(context).pop();
-                        } else {
-                          final snackBar =
-                              SnackBar(content: Text('Submission Failed. Please try again. ${visitProvider.error!}'));
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        if(_submitForm()) {
+                          if (visitProvider.error == null) {
+                            Navigator.of(context).pop();
+                          } else {
+                            final snackBar = SnackBar(
+                                content: Text(
+                                    'Submission Failed. Please try again. ${visitProvider.error!}'));
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+                          }
                         }
                       },
                       child: const Text('Create Item'),
@@ -201,13 +206,16 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            _submitForm();
-                            if (visitProvider.error == null) {
-                              Navigator.of(context).pop();
-                            } else {
-                              final snackBar = SnackBar(
-                                  content: Text('Submission Failed. Please try again. ${visitProvider.error!}'));
-                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            if(_submitForm()) {
+                              if (visitProvider.error == null) {
+                                Navigator.of(context).pop();
+                              } else {
+                                final snackBar = SnackBar(
+                                    content: Text(
+                                        'Submission Failed. Please try again. ${visitProvider.error!}'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
                             }
                           },
                           child: const Text('Update Item'),

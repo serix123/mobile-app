@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
 
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
@@ -53,13 +54,17 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Image.asset(
-                    'assets/images/LOGO.png',
-                    fit: BoxFit.cover,
-                  )
+                SizedBox(
+                  height: 180,
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Image.asset(
+                      logoPath,
+                      fit: BoxFit.cover,
+                    )
+                  ),
                 ),
+                SizedBox(height: 10),
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(

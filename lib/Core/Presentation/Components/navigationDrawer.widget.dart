@@ -4,13 +4,12 @@ import 'package:online_reservation/Features/Authentication/Domain/auth.repositor
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 
 import 'package:online_reservation/config/app.color.dart';
+import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
 
 class CustomNavigationDrawer extends StatelessWidget {
   final String currentRoute;
-  const CustomNavigationDrawer({super.key
-    ,    required this.currentRoute
-  });
+  const CustomNavigationDrawer({super.key, required this.currentRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -22,63 +21,63 @@ class CustomNavigationDrawer extends StatelessWidget {
         children: [
           Expanded(
             flex: 9,
-            child: Consumer<ProfileProvider>(
-              builder: (BuildContext context, ProfileProvider provider, Widget? child) {
-                return ListView(
-                  padding: EdgeInsets.zero,
-                  children: <Widget>[
-                    DrawerHeader(
-                      decoration: const BoxDecoration(
-                        color: kBackgroundGrey,
-                      ),
-                      child: Image.asset('assets/images/LOGO.png', fit: BoxFit.cover,),
-                      // child: Text(
-                      //   'Navigation',
-                      //   style: TextStyle(
-                      //     color: Colors.white,
-                      //     fontSize: 24,
-                      //   ),
-                      // ),
+            child: Consumer<ProfileProvider>(builder: (BuildContext context,
+                ProfileProvider provider, Widget? child) {
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  DrawerHeader(
+                    decoration: const BoxDecoration(
+                      color: kBackgroundGrey,
                     ),
-                    _createDrawerItem(
-                      context: context,
-                      icon: Icons.book_online,
-                      text: 'Visitor\'s Log',
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RouteGenerator.visitorListScreen),
-                      selected:
-                      currentRoute == RouteGenerator.visitorListScreen,
+                    child: Image.asset(
+                      logoPath,
+                      fit: BoxFit.fitHeight,
                     ),
-
-                    _createDrawerItem(
-                      context: context,
-                      icon: Icons.menu_book,
-                      text: 'Resource Index',
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RouteGenerator.resourceListScreen),
-                      selected:
-                      currentRoute == RouteGenerator.resourceListScreen,
-                    ),
-                    _createDrawerItem(
-                      context: context,
-                      icon: Icons.approval,
-                      text: 'Report Issue',
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RouteGenerator.issuesListScreen),
-                      selected:
-                      currentRoute == RouteGenerator.issuesListScreen,
-                    ),
-                    // if(provider.user!.isSuperuser)
-                    // _createDrawerItem(
-                    //   context: context,
-                    //   icon: Icons.people,
-                    //   text: 'Users',
-                    //   onTap: () => Navigator.of(context)
-                    //       .pushNamed(RouteGenerator.userListScreen),
-                    //   selected:
-                    //   currentRoute == RouteGenerator.userListScreen,
+                    // child: Text(
+                    //   'Navigation',
+                    //   style: TextStyle(
+                    //     color: Colors.white,
+                    //     fontSize: 24,
+                    //   ),
                     // ),
-                    if(provider.user!.isSuperuser)
+                  ),
+                  _createDrawerItem(
+                    context: context,
+                    icon: Icons.book_online,
+                    text: 'Visitor\'s Log',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.visitorListScreen),
+                    selected: currentRoute == RouteGenerator.visitorListScreen,
+                  ),
+
+                  _createDrawerItem(
+                    context: context,
+                    icon: Icons.menu_book,
+                    text: 'Resource Index',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.resourceListScreen),
+                    selected: currentRoute == RouteGenerator.resourceListScreen,
+                  ),
+                  _createDrawerItem(
+                    context: context,
+                    icon: Icons.approval,
+                    text: 'Report Issue',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.issuesListScreen),
+                    selected: currentRoute == RouteGenerator.issuesListScreen,
+                  ),
+                  // if(provider.user!.isSuperuser)
+                  // _createDrawerItem(
+                  //   context: context,
+                  //   icon: Icons.people,
+                  //   text: 'Users',
+                  //   onTap: () => Navigator.of(context)
+                  //       .pushNamed(RouteGenerator.userListScreen),
+                  //   selected:
+                  //   currentRoute == RouteGenerator.userListScreen,
+                  // ),
+                  if (provider.user!.isSuperuser)
                     _createDrawerItem(
                       context: context,
                       icon: Icons.people,
@@ -86,37 +85,35 @@ class CustomNavigationDrawer extends StatelessWidget {
                       onTap: () => Navigator.of(context)
                           .pushNamed(RouteGenerator.residentListScreen),
                       selected:
-                      currentRoute == RouteGenerator.residentListScreen,
+                          currentRoute == RouteGenerator.residentListScreen,
                     ),
-                    // _createDrawerItem(
-                    //   context: context,
-                    //   icon: Icons.schedule,
-                    //   text: "Scheduled Reservations",
-                    //   onTap: () {},
-                    //   selected: true,
-                    // ),
-                    // _createDrawerItem(
-                    //   context: context,
-                    //   icon: Icons.list,
-                    //   text: "My Reservations",
-                    //   onTap: () {},
-                    //   selected: true,
-                    // ),
-                    // if (hasPICApproval)
-                    //   _createDrawerItem(
-                    //     context: context,
-                    //     icon: Icons.list,
-                    //     text: "For Person-in-Charge",
-                    //     onTap: () => Navigator.of(context)
-                    //         .pushNamed(RouteGenerator.approvalListScreen),
-                    //     selected:
-                    //         currentRoute == RouteGenerator.approvalListScreen,
-                    //   ),
-                  ],
-                );
-
-              }
-            ),
+                  // _createDrawerItem(
+                  //   context: context,
+                  //   icon: Icons.schedule,
+                  //   text: "Scheduled Reservations",
+                  //   onTap: () {},
+                  //   selected: true,
+                  // ),
+                  // _createDrawerItem(
+                  //   context: context,
+                  //   icon: Icons.list,
+                  //   text: "My Reservations",
+                  //   onTap: () {},
+                  //   selected: true,
+                  // ),
+                  // if (hasPICApproval)
+                  //   _createDrawerItem(
+                  //     context: context,
+                  //     icon: Icons.list,
+                  //     text: "For Person-in-Charge",
+                  //     onTap: () => Navigator.of(context)
+                  //         .pushNamed(RouteGenerator.approvalListScreen),
+                  //     selected:
+                  //         currentRoute == RouteGenerator.approvalListScreen,
+                  //   ),
+                ],
+              );
+            }),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 25.0),
@@ -135,14 +132,15 @@ class CustomNavigationDrawer extends StatelessWidget {
               onTap: () {
                 authProvider.logout();
                 {
-                  const snackBar = SnackBar(content: Text('User will be logged out'));
+                  const snackBar =
+                      SnackBar(content: Text('User will be logged out'));
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   RouteGenerator.loginScreen,
-                      (Route<dynamic> route) =>
-                  false, // This condition ensures all other screens are removed
+                  (Route<dynamic> route) =>
+                      false, // This condition ensures all other screens are removed
                 );
               },
             ),

@@ -1,0 +1,5 @@
+package com.example.online_reservation
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

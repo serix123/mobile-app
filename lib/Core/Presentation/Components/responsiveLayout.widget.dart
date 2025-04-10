@@ -24,31 +24,33 @@ class ResponsiveLayout extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 800) {
-          return Scaffold(
-            drawer: CustomNavigationDrawer(
-              currentRoute: currentRoute,
-            ),
-            body: mobileBody,
-            appBar: AppBar(
-              title: title,
-              leading: Builder(
-                builder: (BuildContext context) {
-                  return IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  );
-                },
+          return SafeArea(
+            child: Scaffold(
+              drawer: CustomNavigationDrawer(
+                currentRoute: currentRoute,
               ),
-              actions: [
-                ...?actions,
-                IconButton(
-                  icon: const Icon(Icons.person),
-                  onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.profileScreen),
-
-                  // isSelected: currentRoute == RouteGenerator.profileScreen,
+              body: mobileBody,
+              appBar: AppBar(
+                title: title,
+                leading: Builder(
+                  builder: (BuildContext context) {
+                    return IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    );
+                  },
                 ),
-                //  Add AppBar Items here
-              ],
+                actions: [
+                  ...?actions,
+                  IconButton(
+                    icon: const Icon(Icons.person),
+                    onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.profileScreen),
+            
+                    // isSelected: currentRoute == RouteGenerator.profileScreen,
+                  ),
+                  //  Add AppBar Items here
+                ],
+              ),
             ),
           );
         } else {

@@ -137,21 +137,13 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
           itemBuilder: (context, index) {
             final visit = provider.visits[index];
             final isSuperUser = profileProvider.user!.isSuperuser;
-            if (isSuperUser) {
-              return VisitorListItem(
-                visitor: visit,
-                onCheckIn: () => _handleCheckInVisit(context, visit.id),
-                onCheckOut: () => _handleCheckOutVisit(context, visit.id),
-                onDelete: () => _handleDeleteVisit(context, visit.id),
-                onEdit: () => _handleUpdateVisit(context, visit),
-              );
-            } else {
-              return VisitorListItem(
-                visitor: visit,
-                onCheckIn: () => _handleCheckInVisit(context, visit.id),
-                onCheckOut: () => _handleCheckOutVisit(context, visit.id),
-              );
-            }
+            return VisitorListItem(
+              visitor: visit,
+              onCheckIn: () => _handleCheckInVisit(context, visit.id),
+              onCheckOut: () => _handleCheckOutVisit(context, visit.id),
+              onDelete: () => _handleDeleteVisit(context, visit.id),
+              onEdit: () => _handleUpdateVisit(context, visit),
+            );
           },
         );
       },
@@ -320,7 +312,11 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
         icon: Icon(icon, size: 20),
         color: color,
         onPressed: onPressed,
-        tooltip: icon == Icons.check_box ? 'Check In' : icon == Icons.exit_to_app ? 'Check Out' : 'Checked Out',
+        tooltip: icon == Icons.check_box
+            ? 'Check In'
+            : icon == Icons.exit_to_app
+                ? 'Check Out'
+                : 'Checked Out',
       ),
     );
   }
@@ -395,16 +391,15 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
     );
     if (confirmed == true) {
       try {
-        Future.wait([
-          context
-              .read<VisitProvider>()
-              .checkInVisitor(visitId)
-              .then((_) => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Visit Checked Out successfully')),
-                  )),
-          context.read<VisitProvider>().loadVisitors()
-        ]);
+        await context
+            .read<VisitProvider>()
+            .checkInVisitor(visitId)
+            .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Visit Checked Out successfully')),
+                ));
+        await context.read<VisitProvider>().loadVisitors();
+
         // await context.read<VisitProvider>().checkInVisitor(visitId).then((_)=> ScaffoldMessenger.of(context).showSnackBar(
         //   const SnackBar(content: Text('Visit Checked Out successfully')),
         // ));
@@ -524,7 +519,7 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
                 .read<VisitProvider>()
                 .checkInVisitorOfficer(visitor);
           }
-          return context.read<VisitProvider>().updateVisitor(visitor);
+          return await context.read<VisitProvider>().updateVisitor(visitor);
         },
       ),
     );

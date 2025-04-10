@@ -50,7 +50,25 @@ class VisitorListItem extends StatelessWidget {
                       _buildInfoRow(
                           'Check-out', _formatDate(visitor.checkOutTime!)),
                     const SizedBox(height: 8),
-                    // _buildStatusDropdown(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: visitor.status.color,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(visitor.status.icon,color: Colors.white, size: 18,),
+                          const SizedBox(width: 8),
+                          Text(
+                            visitor.status.displayName,
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -61,8 +79,7 @@ class VisitorListItem extends StatelessWidget {
                   child: PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
                     itemBuilder: (BuildContext context) => [
-                      if (visitor.checkInTime == null &&
-                          visitor.checkOutTime == null)
+                      if (visitor.status == Status.PENDING)
                         const PopupMenuItem<String>(
                           value: 'checkin',
                           child: ListTile(
@@ -70,56 +87,30 @@ class VisitorListItem extends StatelessWidget {
                             title: Text('Check In'),
                           ),
                         )
-                      else if (visitor.checkInTime != null &&
-                          visitor.checkOutTime == null)
+                      else if (visitor.status == Status.CHECKED_IN)
                         const PopupMenuItem<String>(
                           value: 'checkout',
                           child: ListTile(
                             leading: Icon(Icons.exit_to_app, color: Colors.red),
                             title: Text('Check Out'),
                           ),
-                        ),
-                      if (isSuperUser)
+                        )
+                      else if (visitor.status == Status.CHECKED_OUT)
                         const PopupMenuItem<String>(
+                            value: 'checkedout',
+                            child: ListTile(
+                              leading: Icon(Icons.exit_to_app, color: Colors.grey),
+                              title: Text('Checked Out'),
+                            ),
+                          ),
+                      const PopupMenuItem<String>(
                           value: 'edit',
                           child: ListTile(
                             leading: Icon(Icons.edit, color: Colors.blue),
                             title: Text('Edit'),
                           ),
                         ),
-                      if (isSuperUser)
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: ListTile(
-                            leading: Icon(Icons.delete, color: Colors.red),
-                            title: Text('Delete'),
-                          ),
-                        ),
-                    ],
-                    onSelected: (String value) {
-                      if (value == 'checkin') onCheckIn();
-                      if (value == 'checkout') onCheckOut();
-                      if (value == 'edit') onEdit!();
-                      if (value == 'delete') onDelete!();
-                    },
-                  ),
-                )
-              else
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
-                    itemBuilder: (BuildContext context) => [
-                        const PopupMenuItem<String>(
-                          value: 'edit',
-                          child: ListTile(
-                            leading: Icon(Icons.edit, color: Colors.blue),
-                            title: Text('Edit'),
-                          ),
-                        ),
-                      if (isSuperUser)
-                        const PopupMenuItem<String>(
+                      const PopupMenuItem<String>(
                           value: 'delete',
                           child: ListTile(
                             leading: Icon(Icons.delete, color: Colors.red),
@@ -135,6 +126,61 @@ class VisitorListItem extends StatelessWidget {
                     },
                   ),
                 ),
+              // else
+              //   Positioned(
+              //     right: 0,
+              //     top: 0,
+              //     child: PopupMenuButton<String>(
+              //       icon: const Icon(Icons.more_vert),
+              //       itemBuilder: (BuildContext context) => [
+              //         if (visitor.status == Status.PENDING)
+              //           const PopupMenuItem<String>(
+              //             value: 'checkin',
+              //             child: ListTile(
+              //               leading: Icon(Icons.check_box, color: Colors.green),
+              //               title: Text('Check In'),
+              //             ),
+              //           )
+              //         else if (visitor.status == Status.CHECKED_IN)
+              //           const PopupMenuItem<String>(
+              //             value: 'checkout',
+              //             child: ListTile(
+              //               leading: Icon(Icons.exit_to_app, color: Colors.red),
+              //               title: Text('Check Out'),
+              //             ),
+              //           )
+              //         else if (visitor.status == Status.CHECKED_OUT)
+              //           const PopupMenuItem<String>(
+              //             value: 'checkedout',
+              //             child: ListTile(
+              //               leading: Icon(Icons.exit_to_app, color: Colors.grey),
+              //               title: Text('Checked Out'),
+              //             ),
+              //           ),
+              //         const PopupMenuItem<String>(
+              //             value: 'edit',
+              //             child: ListTile(
+              //               leading: Icon(Icons.edit, color: Colors.blue),
+              //               title: Text('Edit'),
+              //             ),
+              //           ),
+              //         const PopupMenuItem<String>(
+              //             value: 'delete',
+              //             child: ListTile(
+              //               leading: Icon(Icons.delete, color: Colors.red),
+              //               title: Text('Delete'),
+              //             ),
+              //           ),
+              //       ],
+              //       onSelected: (String value) {
+              //         if (value == 'checkin') onCheckIn();
+              //         if (value == 'checkout') onCheckOut();
+              //         if (value == 'edit') onEdit!();
+              //         if (value == 'delete') onDelete!();
+              //       },
+              //     ),
+              //   ),
+
             ],
           ),
         );
@@ -168,7 +214,7 @@ class VisitorListItem extends StatelessWidget {
     };
 
     return DropdownButtonFormField<String>(
-      value: visitor.status,
+      value: visitor.status.displayName,
       decoration: const InputDecoration(
         labelText: 'Status',
         border: OutlineInputBorder(),
@@ -184,6 +230,6 @@ class VisitorListItem extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('MMM dd, yyyy - hh:mm a').format(date);
+    return DateFormat('MMM dd, yyyy - hh:mm').format(date);
   }
 }

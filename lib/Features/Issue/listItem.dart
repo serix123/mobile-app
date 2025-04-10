@@ -50,14 +50,14 @@ class IssueListItem extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: issue.resolvedDate != null ? Colors.green : Colors.red,
+                        color: issue.status?.color,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            issue.resolvedDate != null ? "RESOLVED" : "UNRESOLVED",
+                            issue.status!.displayName.toUpperCase(),
                             style: const TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ],
@@ -105,13 +105,14 @@ class IssueListItem extends StatelessWidget {
                 ),
               )
               else
+                if (issue.status == IssueStatus.OPEN)
                 Positioned(
                   right: 0,
                   top: 0,
                   child: PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
                     itemBuilder: (BuildContext context) => [
-                      if (issue.resolvedDate == null)
+                      if (issue.status == IssueStatus.OPEN)
                         const PopupMenuItem<String>(
                           value: 'resolve',
                           child: ListTile(
@@ -173,7 +174,7 @@ class IssueListItem extends StatelessWidget {
     };
 
     return DropdownButtonFormField<String>(
-      value: issue.status,
+      value: issue.status?.displayName,
       decoration: const InputDecoration(
         labelText: 'Status',
         border: OutlineInputBorder(),

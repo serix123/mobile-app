@@ -1,5 +1,42 @@
 // visit_model.dart
+import 'package:flutter/material.dart';
 import 'package:online_reservation/Utils/utils.dart';
+
+enum Status { PENDING, CHECKED_IN, CHECKED_OUT,  }
+extension StatusExtension on Status {
+  String get displayName {
+    switch (this) {
+      case Status.PENDING:
+        return 'Pending';
+      case Status.CHECKED_IN:
+        return 'Checked In';
+      case Status.CHECKED_OUT:
+        return 'Checked Out';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case Status.PENDING:
+        return Colors.orange ;
+      case Status.CHECKED_IN:
+        return Colors.green;
+      case Status.CHECKED_OUT:
+        return Colors.red;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case Status.PENDING:
+        return Icons.timer_off;
+      case Status.CHECKED_IN:
+        return Icons.access_time_filled;
+      case Status.CHECKED_OUT:
+        return Icons.directions_walk;
+    }
+  }
+}
 
 class Visitor {
   final int id;
@@ -7,7 +44,7 @@ class Visitor {
   final String residentName;
   final DateTime visitDate;
   final String visitPurpose;
-  final String status;
+  final Status status;
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
   final int residence;
@@ -35,7 +72,7 @@ class Visitor {
       residentName: json['resident_name'],
       visitDate: DateTime.parse(json['visit_date']),
       visitPurpose: json['visit_purpose'],
-      status: json['status'],
+      status: _parseStatus(json['status']),
       checkInTime: json['check_in_time'] != null ? DateTime.parse(json['check_in_time']) : null,
       checkOutTime: json['check_out_time'] != null ? DateTime.parse(json['check_out_time']) : null,
       residence: json['residence'],
@@ -51,13 +88,26 @@ class Visitor {
       residentName: residentName,
       visitDate: visitor.visitDate,
       visitPurpose: visitor.visitPurpose,
-      status: status ?? "",
+      status: status,
       checkInTime: checkInTime,
       checkOutTime: checkOutTime,
       residence: residence,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
+  }
+
+  static Status _parseStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Status.PENDING;
+      case 'checked_in':
+        return Status.CHECKED_IN;
+      case 'checked_out':
+        return Status.CHECKED_OUT;
+      default:
+        return Status.PENDING;
+    }
   }
 }
 

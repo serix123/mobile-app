@@ -358,16 +358,13 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
 
     if (confirmed == true) {
       try {
-        Future.wait([
-          context
-              .read<IssueProvider>()
-              .resolveIssue(issueId)
-              .then((_) => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Issue resolved successfully')),
-                  )),
-          context.read<IssueProvider>().getIssues()
-        ]);
+        await context
+            .read<IssueProvider>()
+            .resolveIssue(issueId)
+            .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Issue resolved successfully')),
+                ));
+        await context.read<IssueProvider>().getIssues();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Resolve failed: $e')),

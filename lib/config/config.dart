@@ -1,1 +1,1 @@
-const String logoPath = 'assets/images/TALON.png';
+const String logoPath = 'assets/images/LOGO.png';

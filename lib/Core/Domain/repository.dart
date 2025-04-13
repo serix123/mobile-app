@@ -3,7 +3,7 @@ import 'package:online_reservation/Core/Data/API_Services/token.service.dart';
 
 abstract class RepositoryProvider<T> with ChangeNotifier {
   @protected
-  final TokenService _apiService;
+  final _apiService;
   @protected
   List<T> _data = [];
   @protected

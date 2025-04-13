@@ -7,6 +7,7 @@ import 'package:online_reservation/Features/CommunityResources/Presentation/reso
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/application.view.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Profile/Presentation/profile.view.dart';
 import 'package:online_reservation/Features/Resident/Presentation/residence.list.dart';
@@ -34,6 +35,8 @@ class RouteGenerator {
   static const userScreen = UserScreen.screenId;
   static const resourceListScreen = ResourceListScreen.screenId;
   static const resourceFormScreen = ResourceFormScreen.screenId;
+  // MedLogix
+  static const applicationFormScreen = ApplicationFormScreen.screenId;
 
   static Route<dynamic> generateRoute(RouteSettings settings, bool isLoggedIn, BuildContext context) {
     final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
@@ -149,6 +152,8 @@ class RouteGenerator {
       switch (settings.name) {
         case loginScreen:
           return MaterialPageRoute(builder: (_) => const LoginScreen());
+        case applicationFormScreen:
+          return MaterialPageRoute(builder: (_) => const ApplicationFormScreen());
         case registerScreen:
           return MaterialPageRoute(builder: (_) => const RegistrationScreen());
         default:

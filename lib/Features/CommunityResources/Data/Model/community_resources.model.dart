@@ -22,7 +22,7 @@ extension ResourceTypeExtension on ResourceType {
       case ResourceType.EDU:
         return 'EDU';
       case ResourceType.OTHER:
-        return 'OTHER ';
+        return 'OTHER';
     }
   }
 

@@ -24,9 +24,9 @@ class ProfileApiService extends TokenService {
       if (response.statusCode == 200) {
         return User.fromJson(jsonDecode(response.body));
       }
-      throw Exception('Failed to create issue: ${response.statusCode}');
+      throw Exception('Failed to retrieve profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to create issue: $e');
+      throw Exception('Failed to retrieve profile: $e');
     }
     return null;
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/Authentication/Data/Model/auth.model.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
@@ -16,79 +17,66 @@ class ApplicationFormScreen extends StatefulWidget {
 }
 
 class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
+  final screenTitle = "My Profile";
   final PageController _pageController = PageController();
-  late RegistrationCredentials _registrationCredentials;
   late PatientProfile _patientProfile;
   int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Register Application"),
-        ),
-        body: body(context),
-      ),
+      child: ResponsiveLayout(mobileBody: body(context), desktopBody: body(context), title: Text(screenTitle)),
     );
   }
 
   Widget body(BuildContext context) {
-    return Column(
-      children: [
-        // Progress indicator
-        LinearProgressIndicator(
-          value: (_currentPage + 1) / 2,
-        ),
-        Expanded(
-          child: PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              RegistrationForm(
-                onSubmit: (registrationCredentials) =>
-                    _registrationHandler(registrationCredentials: registrationCredentials),
-              ),
-              ApplicationForm(
-                onSubmit: (patientProfile) => _applicationHandler(patientProfile: patientProfile),
-              )
-            ],
-          ),
-        ),
-        // Navigation buttons
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              if (_currentPage > 0)
-                OutlinedButton(
-                  onPressed: _goToPreviousPage,
-                  child: const Text('Back'),
-                ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => _goToNextPage(),
-                child: Text(_currentPage == 0 ? 'Continue' : 'Submit'),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return ApplicationForm(
+      onSubmit: (patientProfile) =>
+          _applicationHandler(patientProfile: patientProfile),
     );
-  }
-
-  void _registrationHandler({required RegistrationCredentials registrationCredentials}) {
-    setState(() {
-      _registrationCredentials = registrationCredentials;
-    });
-    _goToNextPage();
+    // return Column(
+    //   children: [
+    //     // Progress indicator
+    //     LinearProgressIndicator(
+    //       value: (_currentPage + 1) / 2,
+    //     ),
+    //     Expanded(
+    //       child: PageView(
+    //         controller: _pageController,
+    //         physics: const NeverScrollableScrollPhysics(),
+    //         children: [
+    //           ApplicationForm(
+    //             onSubmit: (patientProfile) => _applicationHandler(patientProfile: patientProfile),
+    //           )
+    //         ],
+    //       ),
+    //     ),
+    //     // Navigation buttons
+    //     Padding(
+    //       padding: const EdgeInsets.all(16.0),
+    //       child: Row(
+    //         children: [
+    //           if (_currentPage > 0)
+    //             OutlinedButton(
+    //               onPressed: _goToPreviousPage,
+    //               child: const Text('Back'),
+    //             ),
+    //           const Spacer(),
+    //           ElevatedButton(
+    //             onPressed: () => _goToNextPage(),
+    //             child: Text(_currentPage == 0 ? 'Continue' : 'Submit'),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ],
+    // );
   }
 
   void _applicationHandler({required PatientProfile patientProfile}) {
     setState(() {
       _patientProfile = patientProfile;
     });
-    _goToNextPage();
   }
 
   void _goToNextPage() {
@@ -115,16 +103,13 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
 
   void _submitCombinedForm() async {
     if (mounted) {
-      bool success = await context.read<AuthProvider>().register(_registrationCredentials.first_name,
-          _registrationCredentials.last_name, _registrationCredentials.email, _registrationCredentials.password!);
+      await context
+          .read<ApplicationProvider>()
+          .updateApplication(_patientProfile);
 
-      if (success) {
-        await context.read<ApplicationProvider>().createApplication(_patientProfile);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${context.watch<AuthProvider>().error}')),
-        );
-      }
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Error: ${context.watch<AuthProvider>().error}')),
+      // );
     }
   }
 }

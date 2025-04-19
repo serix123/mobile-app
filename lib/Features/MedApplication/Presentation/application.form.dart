@@ -1,5 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/widget/gender.dropdown.widget.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:flutter/foundation.dart' show kIsWeb, Uint8List;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
@@ -19,42 +23,65 @@ class ApplicationForm extends StatefulWidget {
 class _ApplicationFormState extends State<ApplicationForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late TextEditingController _addressController;
-  late TextEditingController _villageController;
-  late TextEditingController _medicalHistoryController;
+  late Gender _selectedGender;
+  late TextEditingController _contactController;
   DateTime? _selectedDate;
-  File? _idProofImage;
-  String? _base64Image;
+  PlatformFile? _selectedFile;
 
   @override
   void initState() {
     super.initState();
     final initial = widget.initialData;
     _addressController = TextEditingController(text: initial?.address ?? '');
-    _villageController = TextEditingController(text: initial?.village ?? '');
-    _medicalHistoryController = TextEditingController(text: initial?.medicalHistory ?? '');
-    _selectedDate = initial?.dateOfBirth;
+    _selectedGender = Gender.OTHER;
+    _contactController =
+        TextEditingController(text: initial?.contactNumber ?? '');
+    _selectedDate = initial?.dob;
   }
 
   @override
   void dispose() {
     _addressController.dispose();
-    _villageController.dispose();
-    _medicalHistoryController.dispose();
+
+    _contactController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 85,
-    );
+    // if (kIsWeb) {
+    //   // Web implementation
+    //   final html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    //   uploadInput.accept = '.jpg,.jpeg,.png,.pdf'; // Set allowed types
+    //   uploadInput.click();
+    //
+    //   await uploadInput.onChange.first;
+    //   if (uploadInput.files!.isNotEmpty) {
+    //     final html.File file = uploadInput.files!.first;
+    //     final reader = html.FileReader();
+    //
+    //     reader.readAsArrayBuffer(file);
+    //     await reader.onLoadEnd.first;
+    //
+    //     // Convert to Uint8List
+    //     final bytes = reader.result as Uint8List?;
+    //     if (bytes != null) {
+    //       // Create a pseudo-file for web
+    //       _selectedFile = File.fromRawPath(bytes); // Note: This is simplified
+    //     }
+    //   }
+    // } else {
+    //   // Mobile/desktop implementation
+    //   final result = await FilePicker.platform.pickFiles();
+    //   if (result != null && result.files.single.path != null) {
+    //     _selectedFile = File(result.files.single.path!);
+    //   }
+    // }
 
-    if (pickedFile != null) {
+    final result = await FilePicker.platform.pickFiles(withData: kIsWeb);
+
+    if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _idProofImage = File(pickedFile.path);
-        _base64Image = base64Encode(_idProofImage!.readAsBytesSync());
+        _selectedFile = result.files.first;
       });
     }
   }
@@ -79,7 +106,7 @@ class _ApplicationFormState extends State<ApplicationForm> {
       return;
     }
     if (!_formKey.currentState!.validate()) return;
-    if (_base64Image == null) {
+    if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: ID Proof is required.')),
       );
@@ -87,14 +114,13 @@ class _ApplicationFormState extends State<ApplicationForm> {
     }
     try {
       final profile = PatientProfile(
-        dateOfBirth: _selectedDate!,
+        // firstName: widget.initialData?.firstName,
+        // lastName: widget.initialData?.lastName,
+        // email: widget.initialData?.email,
+        dob: _selectedDate!,
         address: _addressController.text,
-        village: _villageController.text,
-        idProof: IdProof(
-          filename: _idProofImage?.path.split('/').last ?? 'id_proof.jpg',
-          base64Data: _base64Image!,
-        ),
-        medicalHistory: _medicalHistoryController.text,
+        gender: _selectedGender,
+        contactNumber: _contactController.text,
       );
 
       if (widget.initialData == null) {
@@ -129,6 +155,7 @@ class _ApplicationFormState extends State<ApplicationForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Date of birth Field
                     InkWell(
                       onTap: () => _selectDate(context),
                       child: InputDecorator(
@@ -153,32 +180,34 @@ class _ApplicationFormState extends State<ApplicationForm> {
                         labelText: 'Address',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) => value!.isEmpty ? 'Please enter address' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter address' : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // Village Field
+                    // Contact Number Field
                     TextFormField(
-                      controller: _villageController,
+                      controller: _contactController,
                       decoration: const InputDecoration(
-                        labelText: 'Village',
+                        labelText: 'Contact Number',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) => value!.isEmpty ? 'Please enter village' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter Contact Number' : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // Medical History Field
-                    TextFormField(
-                      controller: _medicalHistoryController,
-                      decoration: const InputDecoration(
-                        labelText: 'Medical History',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
+                    // Gender DropDown
+                    GenderDropdown(
+                      value: _selectedGender,
+                      onChanged: (Gender? newValue) {
+                        setState(() {
+                          _selectedGender = newValue!;
+                        });
+                      },
+                      labelText: 'Gender',
+                      hintText: 'Select gender',
                     ),
-                    const SizedBox(height: 20),
-
                     // ID Proof Upload
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,53 +221,56 @@ class _ApplicationFormState extends State<ApplicationForm> {
                               child: const Text('Upload ID'),
                             ),
                             const SizedBox(width: 16),
-                            if (_idProofImage != null)
+                            if (_selectedFile != null)
                               Flexible(
                                 child: Text(
-                                  _idProofImage!.path.split('/').last,
+                                  _selectedFile?.name ?? "File Not Found",
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               )
-                            else if (widget.initialData?.idProof.filename != null)
-                              Text('Current: ${widget.initialData!.idProof.filename}')
+                            else if (widget.initialData?.idDocument != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    widget.initialData!.idDocument!,
+                                    width: 200,
+                                    height: 200,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              )
                             else
                               const Text('No ID proof uploaded'),
                           ],
                         ),
-                        if (_idProofImage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                _idProofImage!,
-                                height: 150,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                     const SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (!applicationProvider.isLoading) {
+                    if (applicationProvider.isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else
+                      ElevatedButton(
+                        onPressed: () {
                           _submitForm();
                           if (applicationProvider.error != null) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: ${applicationProvider.error}')),
+                                SnackBar(
+                                    content: Text(
+                                        'Error: ${applicationProvider.error}')),
                               );
                             }
                           }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: applicationProvider.isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text('Apply Profile'),
                       ),
-                      child:
-                          applicationProvider.isLoading ? const CircularProgressIndicator() : const Text('Apply Profile'),
-                    ),
                   ],
                 ),
               ),

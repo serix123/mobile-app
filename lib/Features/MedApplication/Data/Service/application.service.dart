@@ -9,36 +9,15 @@ import 'package:online_reservation/config/host.dart';
 
 class ApplicationApiService extends TokenService {
   ApplicationApiService({required super.storage, required super.client});
-  static const String baseUrl = '${appURL}applications/';
+  static const String baseUrl = '${appURL}patients/';
 
 
-  Future<PatientProfile> createApplication({required PatientProfile application}) async {
-    try{
-      String? token = await getAccessToken(storage);
 
-      final body = json.encode(application.toJson());
-      final response = await client.post(
-        Uri.parse(baseUrl),
-        body: body,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-      if (response.statusCode == 201) {
-        return PatientProfile.fromJson(jsonDecode(response.body));
-      }
-      throw Exception('Failed to create application: ${response.statusCode}');
-    }catch(e){
-    throw Exception('Failed to create application: $e');
-    }
-  }
-
-  Future<PaginatedResults<PatientProfile>> getApplications({int page = 1,  String query = "", String status = "",}) async {
+  Future<PaginatedResults<PatientProfile>> getProfiles({int page = 1,  String query = "", String status = "",String gender=""}) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page&q=$query&status=$status'),
+        Uri.parse('$baseUrl?page=$page&q=$query&verification_status=$status&gender=$gender'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -50,9 +29,9 @@ class ApplicationApiService extends TokenService {
               (json) => PatientProfile.fromJson(json),
         );
       }
-      throw Exception('Failed to get applications: ${response.statusCode}');
+      throw Exception('Failed to get profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get applications: $e');
+      throw Exception('Failed to get profile: $e');
     }
   }
 
@@ -72,37 +51,94 @@ class ApplicationApiService extends TokenService {
               (json) => PatientProfile.fromJson(json),
         );
       }
-      throw Exception('Failed to get applications: ${response.statusCode}');
+      throw Exception('Failed to get pending profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get applications: $e');
+      throw Exception('Failed to get pending profile: $e');
     }
   }
 
-  Future<PatientProfile> getApplication(int id) async {
-    try{
+  Future<PaginatedResults<PatientProfile>> getUnverifiedApplications() async {
+    try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl$id/'),
+        Uri.parse('${baseUrl}unverified/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
       if (response.statusCode == 200) {
-        return PatientProfile.fromJson(jsonDecode(response.body));
+        return PaginatedResults<PatientProfile>.fromJson(
+          jsonDecode(response.body),
+              (json) => PatientProfile.fromJson(json),
+        );
       }
-      throw Exception('Failed to get applications: ${response.statusCode}');
+      throw Exception('Failed to get profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get applications: $e');
+      throw Exception('Failed to get profile: $e');
     }
   }
 
-  Future<PatientProfile> updateApplication({required PatientProfile application}) async {
+  Future<void> verifyProfile({ required PatientProfile profile}) async {
     try {
       String? token = await getAccessToken(storage);
-      final body = json.encode(application.toJson());
+      final response = await client.post(
+        Uri.parse('$baseUrl${profile.id}/verify/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create visit: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create visit: $e');
+    }
+  }
+
+  Future<void> rejectProfile({ required PatientProfile profile}) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl${profile.id}/reject/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create visit: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create visit: $e');
+    }
+  }
+
+  Future<void> resetProfile({ required PatientProfile profile}) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl${profile.id}/reset_verification/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create visit: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create visit: $e');
+    }
+  }
+
+  Future<PatientProfile> updateApplication({required PatientProfile profile}) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final body = json.encode(profile.toJson());
       final response = await client.put(
-        Uri.parse('$baseUrl${application.id}/'),
+        Uri.parse('$baseUrl${profile.id}/'),
         body: body,
         headers: {
           'Authorization': 'Bearer $token',
@@ -112,9 +148,9 @@ class ApplicationApiService extends TokenService {
       if (response.statusCode == 200) {
         return PatientProfile.fromJson(jsonDecode(response.body));
       }
-      throw Exception('Failed to update application: ${response.statusCode}');
+      throw Exception('Failed to update profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to update application: $e');
+      throw Exception('Failed to update profile: $e');
     }
   }
 

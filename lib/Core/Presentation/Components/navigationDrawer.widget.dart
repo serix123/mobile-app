@@ -14,7 +14,7 @@ class CustomNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    Provider.of<ProfileProvider>(context, listen: false).getProfile();
+    // Provider.of<ProfileProvider>(context, listen: false).getProfile();
     // Provider.of<EmployeeViewModel>(context,listen: false).fetchProfile();
     return Drawer(
       child: Column(
@@ -46,8 +46,9 @@ class CustomNavigationDrawer extends StatelessWidget {
                     context: context,
                     icon: Icons.book_online,
                     text: 'Visitor\'s Log',
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(RouteGenerator.visitorListScreen),
+                    onTap: () {},
+                    // onTap: () => Navigator.of(context)
+                    //     .pushNamed(RouteGenerator.visitorListScreen),
                     selected: currentRoute == RouteGenerator.visitorListScreen,
                   ),
 
@@ -55,16 +56,18 @@ class CustomNavigationDrawer extends StatelessWidget {
                     context: context,
                     icon: Icons.menu_book,
                     text: 'Resource Index',
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(RouteGenerator.resourceListScreen),
+                    onTap: () {},
+                    // onTap: () => Navigator.of(context)
+                    //     .pushNamed(RouteGenerator.resourceListScreen),
                     selected: currentRoute == RouteGenerator.resourceListScreen,
                   ),
                   _createDrawerItem(
                     context: context,
                     icon: Icons.approval,
                     text: 'Report Issue',
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(RouteGenerator.issuesListScreen),
+                    onTap: () {},
+                    // onTap: () => Navigator.of(context)
+                    //     .pushNamed(RouteGenerator.issuesListScreen),
                     selected: currentRoute == RouteGenerator.issuesListScreen,
                   ),
                   // if(provider.user!.isSuperuser)
@@ -77,16 +80,16 @@ class CustomNavigationDrawer extends StatelessWidget {
                   //   selected:
                   //   currentRoute == RouteGenerator.userListScreen,
                   // ),
-                  if (provider.user!.isSuperuser)
-                    _createDrawerItem(
-                      context: context,
-                      icon: Icons.people,
-                      text: 'Residents',
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RouteGenerator.residentListScreen),
-                      selected:
-                          currentRoute == RouteGenerator.residentListScreen,
-                    ),
+                  // if (provider.user!.isSuperuser)
+                  //   _createDrawerItem(
+                  //     context: context,
+                  //     icon: Icons.people,
+                  //     text: 'Residents',
+                  //     onTap: () => Navigator.of(context)
+                  //         .pushNamed(RouteGenerator.residentListScreen),
+                  //     selected:
+                  //         currentRoute == RouteGenerator.residentListScreen,
+                  //   ),
                   // _createDrawerItem(
                   //   context: context,
                   //   icon: Icons.schedule,

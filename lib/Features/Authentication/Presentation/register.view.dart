@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
+import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -61,12 +62,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: <Widget>[
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Image.asset(
-                        'assets/images/LOGO.png',
-                        fit: BoxFit.cover,
-                      )
+                  SizedBox(
+                    height: 180,
+                    child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Image.asset(
+                          logoPath,
+                          fit: BoxFit.cover,
+                        )
+                    ),
                   ),
                   TextField(
                     controller: firstNameController,

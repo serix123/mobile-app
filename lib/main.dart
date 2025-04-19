@@ -52,6 +52,9 @@ class MyApp extends StatelessWidget {
         Provider(create: (_) => http.Client()),
         Provider(
             create: (context) =>
+                UserInfoApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
                 AuthService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         Provider(
             create: (context) =>
@@ -74,18 +77,15 @@ class MyApp extends StatelessWidget {
         Provider(
             create: (context) =>
                 ApplicationApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
-        Provider(
-            create: (context) =>
-                UserInfoApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        ChangeNotifierProvider(create: (context) => UserInfoProvider(context.read<UserInfoApiService>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
         ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
         ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
-        ChangeNotifierProvider(create: (context) => ProfileProvider(context.read<ProfileApiService>()..getProfile())),
+        ChangeNotifierProvider(create: (context) => ProfileProvider(context.read<ProfileApiService>())),
         ChangeNotifierProvider(create: (context) => UserProvider(context.read<UserApiService>()..getUsers())),
         ChangeNotifierProvider(create: (context) => ResidentProvider(context.read<ResidentApiService>())),
         ChangeNotifierProvider(create: (context) => ResourceProvider(context.read<ResourceApiService>())),
         ChangeNotifierProvider(create: (context) => ApplicationProvider(context.read<ApplicationApiService>())),
-        ChangeNotifierProvider(create: (context) => UserInfoProvider(context.read<UserInfoApiService>())),
       ],
       child: Consumer<AuthProvider>(builder: (context, authProvider, _) {
         return MaterialApp(
@@ -96,7 +96,7 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           // home: const LoginScreen(),
-          initialRoute: authProvider.isLoggedIn ? RouteGenerator.visitorListScreen : RouteGenerator.loginScreen,
+          initialRoute: authProvider.isLoggedIn ? RouteGenerator.applicationFormScreen : RouteGenerator.loginScreen,
           // initialRoute: RouteGenerator.approvalListScreen,
           onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings, authProvider.isLoggedIn, context),
         );

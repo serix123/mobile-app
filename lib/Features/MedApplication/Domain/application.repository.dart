@@ -21,12 +21,12 @@ class ApplicationProvider with ChangeNotifier{
   bool get hasNext => _paginatedApplications?.next != null;
   bool get hasPrevious => _paginatedApplications?.previous != null;
 
-  Future<void> getApplications({int page = 1,  String query = "", String status = "",}) async {
+  Future<void> getProfiles({int page = 1,  String query = "", String status = "",String gender=""}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedApplications = await _apiService.getApplications(page: page, query: query,status: status);
+      _paginatedApplications = await _apiService.getProfiles(page: page, query: query,status: status, gender: gender);
       _applications = _paginatedApplications?.results ?? [];
     } catch (e) {
       _error = e.toString();
@@ -36,29 +36,14 @@ class ApplicationProvider with ChangeNotifier{
     notifyListeners();
   }
 
-  Future<void> updateApplication(PatientProfile application) async {
+  Future<void> updateApplication(PatientProfile profile) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      await _apiService.updateApplication(application: application);
-      final index = _applications.indexWhere((v) => v.id == application.id);
-      _applications[index] = _applications[index].copyWith(application);
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    }
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> createApplication(PatientProfile application) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    try {
-      await _apiService.createApplication(application: application);
+      await _apiService.updateApplication(profile: profile);
+      final index = _applications.indexWhere((v) => v.id == profile.id);
+      _applications[index] = _applications[index].copyWith(profile);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -89,14 +74,14 @@ class ApplicationProvider with ChangeNotifier{
   Future<void> loadNextPage() async {
     if (hasNext) {
       final nextPage = _getPageFromUrl(_paginatedApplications!.next!);
-      await getApplications(page: nextPage);
+      await getProfiles(page: nextPage);
     }
   }
 
   Future<void> loadPreviousPage() async {
     if (hasPrevious) {
       final prevPage = _getPageFromUrl(_paginatedApplications!.previous!);
-      await getApplications(page: prevPage);
+      await getProfiles(page: prevPage);
     }
   }
 

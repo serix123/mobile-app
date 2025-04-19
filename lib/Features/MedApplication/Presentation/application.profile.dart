@@ -1,0 +1,338 @@
+import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Domain/user.info.repository.dart';
+import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
+import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
+import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
+import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
+import 'package:provider/provider.dart';
+
+class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
+  static const String screenId = "/MedProfile";
+  static const String screenTitle = "My Profile";
+  const PatientProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the provider instance
+    // final userInfoProvider = Provider.of<UserInfoProvider>(context, listen: false);
+
+    // Call the method immediately (runs every build - be careful!)
+    // userInfoProvider.getUserInfo();
+
+    // This ensures the call only happens once
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ApplicationProvider>(context, listen: false).getProfiles();
+    });
+    return ResponsiveLayout(
+      mobileBody: _mobileBody(),
+      desktopBody: _desktopBody(),
+      title: const Text(screenTitle),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () {
+            // Navigate to edit profile screen
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _mobileBody() {
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading || provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (provider.error != null || provider.error != null) {
+          return GenericErrorState(
+            errorMessage: provider.error!,
+            onRetry: () => provider.getProfiles(),
+          );
+        }
+        if (provider.applications.isEmpty) {
+          return const GenericEmptyState(
+            title: 'No information found',
+            description: 'No information are currently registered in the system',
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              _buildProfileHeader(),
+              const SizedBox(height: 24),
+              _buildPersonalInfoSection(),
+              const SizedBox(height: 24),
+              _buildContactInfoSection(),
+              const SizedBox(height: 24),
+              _buildVerificationStatus(),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _desktopBody() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left Column - Profile Card
+              Flexible(
+                flex: 3,
+                child: Column(
+                  children: [
+                    _buildProfileCard(),
+                    const SizedBox(height: 24),
+                    _buildVerificationStatus(showButton: true),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              // Right Column - Details
+              Flexible(
+                flex: 5,
+                child: Column(
+                  children: [
+                    _buildPersonalInfoSection(showTitle: false),
+                    const SizedBox(height: 24),
+                    _buildContactInfoSection(showTitle: false),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: _buildProfileHeader(showEmail: true),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader({bool showEmail = false}) {
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        final application = provider.applications[0];
+        return Column(
+          children: [
+            CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.blue.shade100,
+              child: Text(
+                application.firstName!.substring(0, 1) +
+                    application.lastName!.substring(0, 1),
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${application.firstName!} ${application.lastName!}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (showEmail) ...[
+              const SizedBox(height: 8),
+              Text(
+                application.email!,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
+        );
+      }
+    );
+  }
+
+  Widget _buildPersonalInfoSection({bool showTitle = true}) {
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        final application = provider.applications[0];
+        return Card(
+          elevation: showTitle ? 2 : 0,
+          shape: showTitle ? null : const RoundedRectangleBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showTitle) ...[
+                  const Text(
+                    'Personal Information',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Divider(height: 24),
+                ],
+                _buildInfoRow('First Name', application.firstName!),
+                _buildInfoRow('Last Name', application.lastName!),
+                if (application.dob != null)
+                  _buildInfoRow('Date of Birth', application.dob!.toString()),
+                _buildInfoRow('Gender', application.gender!.displayName),
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildContactInfoSection({bool showTitle = true}) {
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        final application = provider.applications[0];
+        return  Card(
+          elevation: showTitle ? 2 : 0,
+          shape: showTitle ? null : const RoundedRectangleBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showTitle) ...[
+                  const Text(
+                    'Contact Information',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Divider(height: 24),
+                ],
+                _buildInfoRow('Email', application.email ?? ""),
+                _buildInfoRow('Contact Number', application.contactNumber ?? ""),
+                _buildInfoRow('Address', application.address ?? ""),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVerificationStatus({bool showButton = false}) {
+
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        final application = provider.applications[0];
+        final status = application.verificationStatus!;
+        return Card(
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      status.icon,
+                      color: status.color,
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Account Verification',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          status.displayName.toUpperCase(),
+                          style: TextStyle(
+                            color: status.color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (showButton && status != ApplicationStatus.VERIFIED ) ...[
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed: () => _startVerificationProcess(),
+                        child: const Text('VERIFY ACCOUNT'),
+                      ),
+                    ],
+                  ],
+                ),
+                if (status != ApplicationStatus.VERIFIED) ...[
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: status != ApplicationStatus.PENDING ? 0.5 : 0,
+                    backgroundColor: Colors.grey.shade200,
+                    color: status.color,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToEditProfile(BuildContext context) {
+    // Implement navigation to edit profile
+  }
+
+  void _startVerificationProcess() {
+    // Implement verification process
+  }
+}

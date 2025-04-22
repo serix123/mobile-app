@@ -153,13 +153,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           passwordController.clear();
                           await userInfoProvider.getUserInfo();
                           if (mounted) {
-                            final snackBar =
-                                SnackBar(content: Text('moving...'));
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(snackBar);
                             Navigator.of(context).pushReplacementNamed(
-                                 RouteGenerator.applicationList,
-                              // RouteGenerator.patientProfileScreen,
+                              userInfoProvider.user.isStaff
+                                  ? RouteGenerator.applicationList
+                                  : RouteGenerator.patientProfileScreen,
                             );
                           }
                         }

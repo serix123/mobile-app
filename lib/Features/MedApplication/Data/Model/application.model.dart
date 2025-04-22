@@ -41,6 +41,19 @@ extension ApplicationStatusExtension on ApplicationStatus {
         return Colors.grey;
     }
   }
+
+  double get value{
+    switch (this) {
+      case ApplicationStatus.PENDING:
+        return 0.5;
+      case ApplicationStatus.VERIFIED:
+        return 1;
+      case ApplicationStatus.REJECTED:
+        return 0.25;
+      case ApplicationStatus.UNVERIFIED:
+        return 0.25;
+    }
+  }
 }
 
 enum Gender {MALE, FEMALE, OTHER}

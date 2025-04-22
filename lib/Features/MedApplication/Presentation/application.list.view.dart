@@ -9,6 +9,7 @@ import 'package:online_reservation/Core/Presentation/Components/responsiveLayout
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/widget/list.item.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +53,14 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
             if (provider.error != null) return _buildErrorState(provider);
             if (provider.applications.isEmpty)
               return _buildEmptyState(provider);
-            return Placeholder();
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: provider.applications.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final profile = provider.applications[index];
+                return PatientListItem(profile: profile, onEdit: (){}, onDelete: (){});
+              },);
           },
         );
       },

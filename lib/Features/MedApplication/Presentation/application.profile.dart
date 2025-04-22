@@ -40,79 +40,93 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
   }
 
   Widget _mobileBody() {
-    return Consumer<ApplicationProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading || provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (provider.error != null || provider.error != null) {
-          return GenericErrorState(
-            errorMessage: provider.error!,
-            onRetry: () => provider.getProfiles(),
-          );
-        }
-        if (provider.applications.isEmpty) {
-          return const GenericEmptyState(
-            title: 'No information found',
-            description: 'No information are currently registered in the system',
-          );
-        }
+    return Consumer<ApplicationProvider>(builder: (context, provider, child) {
+      if (provider.isLoading || provider.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (provider.error != null || provider.error != null) {
+        return GenericErrorState(
+          errorMessage: provider.error!,
+          onRetry: () => provider.getProfiles(),
+        );
+      }
+      if (provider.applications.isEmpty) {
+        return const GenericEmptyState(
+          title: 'No information found',
+          description: 'No information are currently registered in the system',
+        );
+      }
 
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
           child: Column(
             children: [
               _buildProfileHeader(),
               const SizedBox(height: 24),
+              _buildVerificationStatus(),
+              const SizedBox(height: 24),
               _buildPersonalInfoSection(),
               const SizedBox(height: 24),
               _buildContactInfoSection(),
-              const SizedBox(height: 24),
-              _buildVerificationStatus(),
-            ],
-          ),
-        );
-      }
-    );
-  }
-
-  Widget _desktopBody() {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1200),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Column - Profile Card
-              Flexible(
-                flex: 3,
-                child: Column(
-                  children: [
-                    _buildProfileCard(),
-                    const SizedBox(height: 24),
-                    _buildVerificationStatus(showButton: true),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              // Right Column - Details
-              Flexible(
-                flex: 5,
-                child: Column(
-                  children: [
-                    _buildPersonalInfoSection(showTitle: false),
-                    const SizedBox(height: 24),
-                    _buildContactInfoSection(showTitle: false),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
-      ),
-    );
+      );
+    });
+  }
+
+  Widget _desktopBody() {
+    return Consumer<ApplicationProvider>(builder: (context, provider, child) {
+      if (provider.isLoading || provider.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (provider.error != null || provider.error != null) {
+        return GenericErrorState(
+          errorMessage: provider.error!,
+          onRetry: () => provider.getProfiles(),
+        );
+      }
+      if (provider.applications.isEmpty) {
+        return const GenericEmptyState(
+          title: 'No information found',
+          description: 'No information are currently registered in the system',
+        );
+      }
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                // mainAxisSize: MainAxisSize.min,
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildProfileCard(),
+                  SizedBox(
+                    height: 12,
+                  ),
+                  _buildVerificationStatus()
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Column(
+                children: [
+                  _buildPersonalInfoSection(showTitle: false),
+                  _buildContactInfoSection(showTitle: false),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildProfileCard() {
@@ -120,39 +134,32 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: _buildProfileHeader(showEmail: true),
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader({bool showEmail = false}) {
-    return Consumer<ApplicationProvider>(
-      builder: (context, provider, child) {
-        final application = provider.applications[0];
-        return Column(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.blue.shade100,
-              child: Text(
-                application.firstName!.substring(0, 1) +
-                    application.lastName!.substring(0, 1),
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+        child:
+            Consumer<ApplicationProvider>(builder: (context, provider, child) {
+          final application = provider.applications[0];
+          return Column(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.blue.shade100,
+                child: Text(
+                  application.firstName!.substring(0, 1) +
+                      application.lastName!.substring(0, 1),
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${application.firstName!} ${application.lastName!}',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 16),
+              Text(
+                '${application.firstName!} ${application.lastName!}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            if (showEmail) ...[
               const SizedBox(height: 8),
               Text(
                 application.email!,
@@ -162,52 +169,89 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
                 ),
               ),
             ],
-          ],
-        );
-      }
+          );
+        }),
+      ),
     );
   }
 
-  Widget _buildPersonalInfoSection({bool showTitle = true}) {
-    return Consumer<ApplicationProvider>(
-      builder: (context, provider, child) {
-        final application = provider.applications[0];
-        return Card(
-          elevation: showTitle ? 2 : 0,
-          shape: showTitle ? null : const RoundedRectangleBorder(),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (showTitle) ...[
-                  const Text(
-                    'Personal Information',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Divider(height: 24),
-                ],
-                _buildInfoRow('First Name', application.firstName!),
-                _buildInfoRow('Last Name', application.lastName!),
-                if (application.dob != null)
-                  _buildInfoRow('Date of Birth', application.dob!.toString()),
-                _buildInfoRow('Gender', application.gender!.displayName),
-              ],
+  Widget _buildProfileHeader({bool showEmail = false}) {
+    return Consumer<ApplicationProvider>(builder: (context, provider, child) {
+      final application = provider.applications[0];
+      return Column(
+        children: [
+          CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.blue.shade100,
+            child: Text(
+              application.firstName!.substring(0, 1) +
+                  application.lastName!.substring(0, 1),
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
           ),
-        );
-      }
-    );
+          const SizedBox(height: 16),
+          Text(
+            '${application.firstName!} ${application.lastName!}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            application.email!,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildPersonalInfoSection({bool showTitle = true}) {
+    return Consumer<ApplicationProvider>(builder: (context, provider, child) {
+      final application = provider.applications[0];
+      return Card(
+        elevation: showTitle ? 2 : 0,
+        shape: showTitle ? null : const RoundedRectangleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showTitle) ...[
+                const Text(
+                  'Personal Information',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Divider(height: 24),
+              ],
+              _buildInfoRow('First Name', application.firstName!),
+              _buildInfoRow('Last Name', application.lastName!),
+              if (application.dob != null)
+                _buildInfoRow('Date of Birth', application.dob!.toString()),
+              _buildInfoRow('Gender', application.gender!.displayName),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildContactInfoSection({bool showTitle = true}) {
     return Consumer<ApplicationProvider>(
       builder: (context, provider, child) {
         final application = provider.applications[0];
-        return  Card(
+        return Card(
           elevation: showTitle ? 2 : 0,
           shape: showTitle ? null : const RoundedRectangleBorder(),
           child: Padding(
@@ -226,7 +270,8 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
                   const Divider(height: 24),
                 ],
                 _buildInfoRow('Email', application.email ?? ""),
-                _buildInfoRow('Contact Number', application.contactNumber ?? ""),
+                _buildInfoRow(
+                    'Contact Number', application.contactNumber ?? ""),
                 _buildInfoRow('Address', application.address ?? ""),
               ],
             ),
@@ -236,66 +281,54 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildVerificationStatus({bool showButton = false}) {
-
-    return Consumer<ApplicationProvider>(
-      builder: (context, provider, child) {
-        final application = provider.applications[0];
-        final status = application.verificationStatus!;
-        return Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+  Widget _buildVerificationStatus() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Consumer<ApplicationProvider>(
+          builder: (context, provider, child) {
+            final application = provider.applications[0];
+            final status = application.verificationStatus!;
+            return Column(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      status.icon,
-                      color: status.color,
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Account Verification',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          status.displayName.toUpperCase(),
-                          style: TextStyle(
-                            color: status.color,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (showButton && status != ApplicationStatus.VERIFIED ) ...[
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: () => _startVerificationProcess(),
-                        child: const Text('VERIFY ACCOUNT'),
-                      ),
-                    ],
-                  ],
+                Icon(
+                  status.icon,
+                  color: status.color,
                 ),
-                if (status != ApplicationStatus.VERIFIED) ...[
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: status != ApplicationStatus.PENDING ? 0.5 : 0,
-                    backgroundColor: Colors.grey.shade200,
-                    color: status.color,
+                const SizedBox(width: 16),
+                const Text(
+                  'Account Verification',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
+                ),
+                Text(
+                  status.displayName.toUpperCase(),
+                  style: TextStyle(
+                    color: status.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (status != ApplicationStatus.VERIFIED)
+                  ElevatedButton(
+                    onPressed: () => _startVerificationProcess(),
+                    child: const Text('VERIFY ACCOUNT'),
+                  ),
+                // if (status != ApplicationStatus.VERIFIED) ...[
+                const SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value: status.value,
+                  backgroundColor: Colors.grey.shade200,
+                  color: status.color,
+                ),
+                // ],
               ],
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
-import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
 import 'package:online_reservation/Features/Users/Data/Model/user.model.dart';
 import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
-import 'package:online_reservation/Utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class UserScreenConfig {

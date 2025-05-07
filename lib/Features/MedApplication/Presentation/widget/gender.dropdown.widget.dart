@@ -37,7 +37,7 @@ class GenderDropdown extends StatelessWidget {
             errorText: field.errorText,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
-              vertical: 16,
+              vertical: 12,
             ),
           ),
           child: DropdownButtonHideUnderline(

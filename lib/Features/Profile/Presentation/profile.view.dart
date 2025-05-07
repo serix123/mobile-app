@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/Profile/Data/Model/profile.model.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
-import 'package:online_reservation/Utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {

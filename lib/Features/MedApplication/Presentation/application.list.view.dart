@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Domain/user.info.repository.dart';
-import 'package:online_reservation/Core/Presentation/Components/adminWrapper.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/adminWrapper.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/paginationControls.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
-import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/widget/list.item.dart';
-import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/widget/search.widget.dart';
+import 'package:online_reservation/config/app.color.dart';
 import 'package:provider/provider.dart';
 
 const _tableHeaderStyle = TextStyle(
@@ -36,32 +36,65 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
     return ResponsiveLayout(
         mobileBody: _mobileBody(),
         desktopBody: _desktopBody(),
-        title: _appBar());
+        title: const Text(title));
   }
 
-  Widget _appBar() {
-    return Text(title);
+  Widget _searchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Consumer<ApplicationProvider>(
+        builder: (context, provider, child) {
+          // return SearchField(
+          //   onSearchChanged: (query) =>
+          //       provider.getProfiles(query: query),
+          // );
+
+          return SearchFields(
+            onSearch: (text, status, gender) {
+              provider.getProfiles(gender: gender, query: text, status: status);
+            },
+          );
+        },
+      ),
+    );
   }
 
   Widget _mobileBody() {
     return AdminWrapper(
       (context, userInfoProvider) {
-        return Consumer<ApplicationProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoading)
-              return const Center(child: CircularProgressIndicator());
-            if (provider.error != null) return _buildErrorState(provider);
-            if (provider.applications.isEmpty)
-              return _buildEmptyState(provider);
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: provider.applications.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final profile = provider.applications[index];
-                return PatientListItem(profile: profile, onEdit: (){}, onDelete: (){});
-              },);
-          },
+        if (userInfoProvider.user == null)
+          return GenericErrorState(
+              errorMessage: "User Information not found.",
+              onRetry: () => userInfoProvider.getUserInfo());
+        return Column(
+          children: [
+            _searchBar(),
+            _paginationControls(),
+            Expanded(
+              child: Consumer<ApplicationProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (provider.error != null) return _buildErrorState(provider);
+                  if (provider.applications.isEmpty) {
+                    return _buildEmptyState(provider);
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: provider.applications.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final profile = provider.applications[index];
+                      return PatientListItem(
+                          profile: profile, onEdit: () {}, onDelete: () {});
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -70,66 +103,70 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
   Widget _desktopBody() {
     return AdminWrapper(
       (context, userInfoProvider) {
+        if (userInfoProvider.user == null)
+          return GenericErrorState(
+              errorMessage: "User Information not found.",
+              onRetry: () => userInfoProvider.getUserInfo());
         return Expanded(
           child: Center(
             child: Column(
               children: [
-                Expanded(
-                  child: Consumer<ApplicationProvider>(
-                      builder: (context, provider, child) {
-                    if (provider.isLoading)
-                      return const Center(child: CircularProgressIndicator());
-                    if (provider.error != null)
-                      return _buildErrorState(provider);
-                    if (provider.applications.isEmpty)
-                      return _buildEmptyState(provider);
-                    return Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CustomCardWhite(
-                          child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                            headingTextStyle: _tableHeaderStyle,
-                            dataTextStyle: _tableCellStyle,
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                top: BorderSide(color: Colors.grey),
-                                bottom: BorderSide(color: Colors.grey),
-                              ),
+                _searchBar(),
+                _paginationControls(),
+                Consumer<ApplicationProvider>(
+                    builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (provider.error != null) return _buildErrorState(provider);
+                  if (provider.applications.isEmpty) {
+                    return _buildEmptyState(provider);
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CustomCardWhite(
+                        child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                          headingTextStyle: _tableHeaderStyle,
+                          dataTextStyle: _tableCellStyle,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.grey),
+                              bottom: BorderSide(color: Colors.grey),
                             ),
-                            headingRowColor:
-                                WidgetStateProperty.all(Colors.grey.shade100),
-                            dataRowColor:
-                                WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.08);
-                                }
-                                return null; // Use default row color
-                              },
-                            ),
-                            columns: [
-                              const DataColumn(label: Text('Full Name')),
-                              const DataColumn(label: Text('Gender')),
-                              const DataColumn(label: Text('Contact')),
-                              const DataColumn(label: Text('Address')),
-                              const DataColumn(label: Text('Status')),
-                              const DataColumn(label: Text('Actions')),
-                              if (userInfoProvider.user.isSuperuser)
-                                const DataColumn(label: Text('Admin Actions')),
-                              // DataColumn(label: Text('Status')),
-                            ],
-                            rows: provider.applications
-                                .map((application) => _buildDataRow(
-                                    context: context, patient: application))
-                                .toList()),
-                      )),
-                    );
-                  }),
-                ),
+                          ),
+                          headingRowColor:
+                              WidgetStateProperty.all(Colors.grey.shade100),
+                          dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                            (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.selected)) {
+                                return Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.08);
+                              }
+                              return null; // Use default row color
+                            },
+                          ),
+                          columns: [
+                            const DataColumn(label: Text('Full Name')),
+                            const DataColumn(label: Text('Gender')),
+                            const DataColumn(label: Text('Contact')),
+                            const DataColumn(label: Text('Address')),
+                            const DataColumn(label: Text('Status')),
+                            const DataColumn(label: Text('Actions')),
+                            if (userInfoProvider.user!.isSuperuser)
+                              const DataColumn(label: Text('Admin Actions')),
+                            // DataColumn(label: Text('Status')),
+                          ],
+                          rows: provider.applications
+                              .map((application) => _buildDataRow(
+                                  context: context, patient: application))
+                              .toList()),
+                    )),
+                  );
+                }),
               ],
             ),
           ),
@@ -138,10 +175,23 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
+  Widget _paginationControls() {
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, _) {
+        return PaginationControls(
+            hasNext: provider.hasNext,
+            hasPrevious: provider.hasPrevious,
+            onNext: provider.loadNextPage,
+            onPrevious: provider.loadPreviousPage);
+      },
+    );
+  }
+
   DataRow _buildDataRow(
       {required BuildContext context, required PatientProfile patient}) {
     final isSuperuser =
-        Provider.of<UserInfoProvider>(context, listen: false).user.isSuperuser;
+        Provider.of<UserInfoProvider>(context, listen: false).user!.isSuperuser;
+    final provider = context.read<ApplicationProvider>();
     return DataRow(
       cells: [
         DataCell(Text(patient.fullName)),
@@ -150,35 +200,46 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
         DataCell(Text(patient.address ?? "")),
         DataCell(Text(patient.verificationStatus?.displayName ??
             ApplicationStatus.PENDING.displayName)),
-
         DataCell(
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildActionButton(
-                icon: Icons.check_box,
-                color: Colors.grey,
-                onPressed: () {},
-              ),
+                  icon: Icons.remove_red_eye,
+                  color: kGreenNormal,
+                  onPressed: () => Navigator.of(context).pushNamed(
+                      RouteGenerator.patientApplicationScreen,
+                      arguments: patient),
+                  tooltip: "Open"),
+              if (isSuperuser)
+              _buildActionButton(
+                  icon: Icons.playlist_add_outlined,
+                  color: kGreenNormal,
+                  onPressed: () => Navigator.of(context).pushNamed(
+                      RouteGenerator.medicalRecordFormScreen,
+                      arguments: patient.id),
+                  tooltip: "Write Record"),
             ],
           ),
         ),
-
         if (isSuperuser)
           DataCell(
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildAdminActionButton(
-                  icon: Icons.edit,
-                  color: Colors.blue,
-                  onPressed: () {},
-                ),
-                _buildAdminActionButton(
-                  icon: Icons.delete,
-                  color: Colors.red,
-                  onPressed: () {},
-                ),
+                if (patient.verificationStatus ==
+                    ApplicationStatus.PENDING) ...[
+                  _buildAdminActionButton(
+                    icon: Icons.check_circle,
+                    color: Colors.blue,
+                    onPressed: () => provider.verifyApplication(patient.id!),
+                  ),
+                  _buildAdminActionButton(
+                    icon: Icons.close,
+                    color: Colors.red,
+                    onPressed: () => provider.rejectApplication(patient.id!),
+                  ),
+                ]
               ],
             ),
           ),
@@ -186,23 +247,18 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
+  Widget _buildActionButton(
+      {required IconData icon,
+      required Color color,
+      required VoidCallback onPressed,
+      required String tooltip}) {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 40),
       child: IconButton(
-        icon: Icon(icon, size: 20),
-        color: color,
-        onPressed: onPressed,
-        tooltip: icon == Icons.check_box
-            ? 'Check In'
-            : icon == Icons.exit_to_app
-                ? 'Check Out'
-                : 'Checked Out',
-      ),
+          icon: Icon(icon, size: 20),
+          color: color,
+          onPressed: onPressed,
+          tooltip: tooltip),
     );
   }
 
@@ -217,7 +273,7 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
         icon: Icon(icon, size: 20),
         color: color,
         onPressed: onPressed,
-        tooltip: icon == Icons.edit ? 'Edit visit' : 'Delete visit',
+        tooltip: icon == Icons.check_circle ? 'Approve' : 'Reject',
       ),
     );
   }

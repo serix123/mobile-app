@@ -1,20 +1,34 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:online_reservation/Features/MedApplication/Presentation/widget/gender.dropdown.widget.dart';
-import 'package:universal_html/html.dart' as html;
 import 'package:flutter/foundation.dart' show kIsWeb, Uint8List;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' show extension;
+import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
-import 'package:provider/provider.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/widget/gender.dropdown.widget.dart';
+
+enum ApplicationFormMode { VERIFY, EDIT }
+
+class ApplicationFormConfig {
+  final ApplicationFormMode applicationFormMode;
+  final PatientProfile initialData;
+  const ApplicationFormConfig(
+      {required this.initialData,
+      this.applicationFormMode = ApplicationFormMode.VERIFY});
+}
 
 class ApplicationForm extends StatefulWidget {
-  final PatientProfile? initialData;
-  final Function(PatientProfile) onSubmit;
-  const ApplicationForm({super.key, this.initialData, required this.onSubmit});
+  static const String screenId = "/applicationForm";
+  static const String screenTitle = "Verify Profile";
+  final ApplicationFormMode applicationFormMode;
+  final PatientProfile initialData;
+  const ApplicationForm(
+      {super.key,
+      required this.initialData,
+      this.applicationFormMode = ApplicationFormMode.VERIFY});
 
   @override
   State<ApplicationForm> createState() => _ApplicationFormState();
@@ -22,28 +36,36 @@ class ApplicationForm extends StatefulWidget {
 
 class _ApplicationFormState extends State<ApplicationForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _addressController;
   late Gender _selectedGender;
   late TextEditingController _contactController;
   DateTime? _selectedDate;
   PlatformFile? _selectedFile;
+  Uint8List? _selectedFileWeb;
+  late var _fileExt;
 
   @override
   void initState() {
     super.initState();
     final initial = widget.initialData;
-    _addressController = TextEditingController(text: initial?.address ?? '');
+    _firstNameController = TextEditingController(text: initial.firstName ?? '');
+    _lastNameController = TextEditingController(text: initial.lastName ?? '');
+    _addressController = TextEditingController(text: initial.address ?? '');
     _selectedGender = Gender.OTHER;
     _contactController =
-        TextEditingController(text: initial?.contactNumber ?? '');
-    _selectedDate = initial?.dob;
+        TextEditingController(text: initial.contactNumber ?? '');
+    _selectedDate = initial.dob;
   }
 
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _addressController.dispose();
-
     _contactController.dispose();
+    _selectedFile = null;
     super.dispose();
   }
 
@@ -77,12 +99,25 @@ class _ApplicationFormState extends State<ApplicationForm> {
     //   }
     // }
 
-    final result = await FilePicker.platform.pickFiles(withData: kIsWeb);
+    try {
+      final result = await FilePicker.platform.pickFiles(withData: kIsWeb);
 
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        _selectedFile = result.files.first;
-      });
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        setState(() {
+          _selectedFile = file;
+          _selectedFileWeb = file.bytes;
+          if (kIsWeb) {
+            final parts = file.name.split('.');
+            _fileExt = parts.length > 1 ? parts.last : '';
+          } else {
+            final filePath = file.path;
+            _fileExt = extension(filePath!).replaceFirst('.', '');
+          }
+        });
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -99,50 +134,83 @@ class _ApplicationFormState extends State<ApplicationForm> {
   }
 
   Future<void> _submitForm() async {
-    if (_selectedDate == null) {
+    final provider = context.read<ApplicationProvider>();
+    final initial = widget.initialData;
+
+    if (_selectedDate == null && initial.dob == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: Birthdate is required.')),
-      );
+          const SnackBar(content: Text('Error: Birthdate is required.')));
       return;
     }
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedFile == null) {
+    _formKey.currentState!.save();
+    if (_selectedFile == null && initial.idDocument == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: ID Proof is required.')),
-      );
+          const SnackBar(content: Text('Error: ID Proof is required.')));
       return;
     }
+
+    final shouldSubmit = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false, // user must tap a button
+        builder: (ctx) => AlertDialog(
+                title: const Text('Confirm Submission'),
+                content:
+                    const Text('Are you sure you want to submit this form?'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel')),
+                  TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Yes, submit')),
+                ]));
+
+    if (shouldSubmit != true) return;
+
     try {
       final profile = PatientProfile(
-        // firstName: widget.initialData?.firstName,
-        // lastName: widget.initialData?.lastName,
-        // email: widget.initialData?.email,
+        id: initial.id,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
         dob: _selectedDate!,
         address: _addressController.text,
         gender: _selectedGender,
         contactNumber: _contactController.text,
       );
+      final List<Future<void>> tasks = [provider.updateApplication(profile)];
 
-      if (widget.initialData == null) {
-        // await context.read<ApplicationProvider>().createApplication(profile);
-        widget.onSubmit(profile);
-      } else {
-        // await context.read<ApplicationProvider>().updateApplication(profile);
-        widget.onSubmit(profile);
+      if (_selectedFile != null) {
+        tasks.add(provider.uploadFile(initial.id!, _selectedFile!, kIsWeb));
+      }
+
+      await Future.wait(tasks);
+      await provider.getProfiles();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Submitted successfully!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     } finally {
-      if (mounted) {}
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    return ResponsiveLayout(
+      mobileBody: _body(),
+      desktopBody: _body(),
+      title: const Text(ApplicationForm.screenTitle),
+    );
+  }
+
+  Widget _body() {
     return Consumer<ApplicationProvider>(
       builder: (context, applicationProvider, child) {
         return Padding(
@@ -172,6 +240,33 @@ class _ApplicationFormState extends State<ApplicationForm> {
                       ),
                     ),
                     const SizedBox(height: 20),
+
+                    if (widget.applicationFormMode ==
+                        ApplicationFormMode.EDIT) ...[
+                      // First Name Field
+                      TextFormField(
+                        controller: _firstNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'First Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) =>
+                            value!.isEmpty ? 'Please enter address' : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Last Name Field
+                      TextFormField(
+                        controller: _lastNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Last Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) =>
+                            value!.isEmpty ? 'Please enter address' : null,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
 
                     // Address Field
                     TextFormField(
@@ -208,6 +303,7 @@ class _ApplicationFormState extends State<ApplicationForm> {
                       labelText: 'Gender',
                       hintText: 'Select gender',
                     ),
+
                     // ID Proof Upload
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,31 +312,29 @@ class _ApplicationFormState extends State<ApplicationForm> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
+
                             ElevatedButton(
                               onPressed: _pickImage,
                               child: const Text('Upload ID'),
                             ),
                             const SizedBox(width: 16),
-                            if (_selectedFile != null)
+                            if (_selectedFile != null) ...[
                               Flexible(
                                 child: Text(
                                   _selectedFile?.name ?? "File Not Found",
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              )
-                            else if (widget.initialData?.idDocument != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    widget.initialData!.idDocument!,
-                                    width: 200,
-                                    height: 200,
-                                    fit: BoxFit.contain,
+                              ),
+                              if (widget.initialData.idDocument != null&&(_fileExt == "jpg" || _fileExt == "png"))
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: _buildImageDisplay(),
                                   ),
-                                ),
-                              )
+                                )
+                            ] else if (widget.initialData.idDocument != null)
+                              Text(widget.initialData.idDocument!.split('/').last)
                             else
                               const Text('No ID proof uploaded'),
                           ],
@@ -248,29 +342,29 @@ class _ApplicationFormState extends State<ApplicationForm> {
                       ],
                     ),
                     const SizedBox(height: 30),
-                    if (applicationProvider.isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      ElevatedButton(
-                        onPressed: () {
-                          _submitForm();
-                          if (applicationProvider.error != null) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(
-                                        'Error: ${applicationProvider.error}')),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                    if (applicationProvider.error != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          applicationProvider.error!,
+                          style: const TextStyle(color: Colors.red),
                         ),
-                        child: applicationProvider.isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Apply Profile'),
                       ),
+                    ElevatedButton(
+                      onPressed: applicationProvider.isLoading
+                          ? null
+                          : () => _submitForm(),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: applicationProvider.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(),
+                            )
+                          : const Text('Apply Profile'),
+                    ),
                   ],
                 ),
               ),
@@ -279,5 +373,25 @@ class _ApplicationFormState extends State<ApplicationForm> {
         );
       },
     );
+  }
+
+  Widget _buildImageDisplay() {
+    if (kIsWeb && _selectedFileWeb != null) {
+      return Image.memory(
+        _selectedFileWeb!,
+        width: 200,
+        height: 200,
+        fit: BoxFit.contain,
+      );
+    } else if (_selectedFile != null) {
+      return Image.file(
+        File(_selectedFile!.path!),
+        width: 200,
+        height: 200,
+        fit: BoxFit.contain,
+      );
+    } else {
+      return const Text('No image selected.');
+    }
   }
 }

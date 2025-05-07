@@ -1,15 +1,18 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
-import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
+import 'package:online_reservation/Utils/utils.dart';
 
-class PatientListItem extends StatelessWidget {
-  final PatientProfile profile;
+class RecordListItem extends StatelessWidget {
+  final MedicalRecord record;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const PatientListItem({
+  const RecordListItem({
     super.key,
-    required this.profile,
+    required this.record,
     required this.onEdit,
     required this.onDelete,
   });
@@ -26,34 +29,35 @@ class PatientListItem extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pushNamed(
-        RouteGenerator.patientApplicationScreen,
-        arguments: profile),
+                RouteGenerator.medicalRecordScreen,
+                arguments: record),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow('Full Name', profile.fullName),
-                  _buildInfoRow('Email', profile.email ?? ""),
-                  _buildInfoRow('Address', profile.address ?? ""),
-                  _buildInfoRow('Contact', profile.contactNumber ?? ""),
-                  if (profile.dob != null)
-                  _buildInfoRow('Date of Birth', profile.dob.toString()),
-                  // _buildInfoRow('Reg. Date', _formatDate(profile.registrationDate)),
+                  _buildInfoRow('Full Name', record.patientDetails.fullName),
+                  _buildInfoRow('Diagnosis', record.diagnosisDetails ?? ""),
+                  _buildInfoRow('Treatment', record.treatment ?? ""),
+                  _buildInfoRow('Doctor', record.doctorName ?? ""),
+                  _buildInfoRow('Visit Date', Utils.formatDateISO(record.visitDate)),
+                  if (record.followUpDate != null)
+                    _buildInfoRow('Follow-up Date', Utils.formatDateISO(record.followUpDate)),
+                  // _buildInfoRow('Reg. Date', _formatDate(record.registrationDate)),
                   const SizedBox(height: 8),
-                  if (profile.verificationStatus != null)
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: profile.verificationStatus?.color ?? Colors.grey,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        profile.verificationStatus!.displayName,
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: record.diagnosisCategory.color,
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Text(
+                      record.diagnosisCategory.displayName,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -100,6 +104,7 @@ class PatientListItem extends StatelessWidget {
             width: 100,
             child: Text('$label:',
                 style: const TextStyle(
+                  overflow: TextOverflow.ellipsis ,
                   fontWeight: FontWeight.bold,
                 )),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Utils/utils.dart';
 
 enum ApplicationStatus { PENDING, VERIFIED, UNVERIFIED, REJECTED }
 
@@ -6,13 +7,13 @@ extension ApplicationStatusExtension on ApplicationStatus {
   String get displayName {
     switch (this) {
       case ApplicationStatus.PENDING:
-        return 'pending';
+        return 'Pending';
       case ApplicationStatus.VERIFIED:
-        return 'verified';
+        return 'Verified';
       case ApplicationStatus.UNVERIFIED:
-        return 'unverified';
+        return 'Unverified';
       case ApplicationStatus.REJECTED:
-        return 'rejected';
+        return 'Rejected';
     }
   }
 
@@ -42,7 +43,7 @@ extension ApplicationStatusExtension on ApplicationStatus {
     }
   }
 
-  double get value{
+  double get value {
     switch (this) {
       case ApplicationStatus.PENDING:
         return 0.5;
@@ -56,17 +57,17 @@ extension ApplicationStatusExtension on ApplicationStatus {
   }
 }
 
-enum Gender {MALE, FEMALE, OTHER}
+enum Gender { MALE, FEMALE, OTHER }
 
-extension GenderExtension on Gender{
+extension GenderExtension on Gender {
   String get displayName {
     switch (this) {
       case Gender.MALE:
-        return 'male';
+        return 'Male';
       case Gender.FEMALE:
-        return 'female';
+        return 'Female';
       case Gender.OTHER:
-        return 'other';
+        return 'Other';
     }
   }
 
@@ -89,6 +90,17 @@ extension GenderExtension on Gender{
         return Colors.pinkAccent;
       case Gender.OTHER:
         return Colors.grey;
+    }
+  }
+
+  String get jsonName{
+    switch (this) {
+      case Gender.MALE:
+        return 'male';
+      case Gender.FEMALE:
+        return 'female';
+      case Gender.OTHER:
+        return 'other';
     }
   }
 }
@@ -123,37 +135,49 @@ class PatientProfile {
   });
 
   factory PatientProfile.fromJson(Map<String, dynamic> json) => PatientProfile(
-      id: json["id"],
-      firstName: json["first_name"],
-      lastName: json["last_name"],
-      email: json["email"],
-      dob: json["dob"] == null ? null : DateTime.parse(json["dob"]),
-      gender: _parseGender(json["gender"]),
-      contactNumber: json["contact_number"],
-      address: json["address"],
-      verificationStatus: _parseVerificationStatus(json["verification_status"]),
-      idDocument: json["id_document"],
-      createdAt: DateTime.parse(json["created_at"]),
-      updatedAt: DateTime.parse(json["updated_at"]),
-    );
+        id: json["id"],
+        firstName: json["first_name"],
+        lastName: json["last_name"],
+        email: json["email"],
+        dob: json["dob"] == null ? null : DateTime.parse(json["dob"]),
+        gender: _parseGender(json["gender"]),
+        contactNumber: json["contact_number"],
+        address: json["address"],
+        verificationStatus:
+            _parseVerificationStatus(json["verification_status"]),
+        idDocument: json["id_document"],
+        createdAt: DateTime.parse(json["created_at"]),
+        updatedAt: DateTime.parse(json["updated_at"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    // "id": id,
-    "first_name": firstName,
-    "last_name": lastName,
-    "email": email,
-    "dob": dob?.toIso8601String(),
-    "gender": gender,
-    "contact_number": contactNumber,
-    "address": address,
-    // "verification_status": verificationStatus,
-    // "id_document": idDocument,
-    // "created_at": createdAt.toIso8601String(),
-    // "updated_at": updatedAt.toIso8601String(),
-  };
+        // "id": id,
+        "first_name": firstName,
+        "last_name": lastName,
+        // "email": email,
+        "dob": Utils.formatDateISO(dob),
+        "gender": gender!.jsonName,
+        "contact_number": contactNumber,
+        "address": address,
+        // "verification_status": verificationStatus,
+        // "id_document": idDocument,
+        // "created_at": createdAt.toIso8601String(),
+        // "updated_at": updatedAt.toIso8601String(),
+      };
 
   PatientProfile copyWith(PatientProfile application) {
-    return application;
+    return PatientProfile(
+      id:application.id ,
+      firstName:application.firstName ,
+      lastName:application.lastName ,
+      email:application.email ,
+      gender: application.gender,
+      contactNumber:application.contactNumber ,
+      idDocument:application.idDocument ,
+      address:application.address ,
+      dob:application.dob ,
+      verificationStatus:application.verificationStatus ,
+    );
   }
 
   static ApplicationStatus _parseVerificationStatus(String status) {
@@ -186,5 +210,3 @@ class PatientProfile {
 
   String get fullName => "${this.firstName} ${this.lastName}";
 }
-
-

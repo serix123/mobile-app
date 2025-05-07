@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Features/CommunityResources/Data/Model/community_resources.model.dart';
-import 'package:online_reservation/config/app.color.dart';
 
 class ResourceListItem extends StatelessWidget {
   final Resource resource;

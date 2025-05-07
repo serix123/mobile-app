@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
-import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/application.form.dart';
+import 'package:online_reservation/Utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
@@ -24,27 +25,46 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ApplicationProvider>(context, listen: false).getProfiles();
     });
-    return ResponsiveLayout(
-      mobileBody: _mobileBody(),
-      desktopBody: _desktopBody(),
-      title: const Text(screenTitle),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () {
-            // Navigate to edit profile screen
-          },
-        ),
-      ],
+
+    return Consumer<ApplicationProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (provider.error != null ) {
+          return GenericErrorState(
+            errorMessage: provider.error!,
+            onRetry: () => provider.getProfiles(),
+          );
+        }
+        if (provider.applications.isEmpty) {
+          return const GenericEmptyState(
+            title: 'No information found',
+            description: 'No information are currently registered in the system',
+          );
+        }
+        final application = provider.applications[0];
+        return ResponsiveLayout(
+          mobileBody: _mobileBody(),
+          desktopBody: _desktopBody(),
+          title: const Text(screenTitle),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => _navigateToEditProfile(context,application,ApplicationFormMode.EDIT),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _mobileBody() {
     return Consumer<ApplicationProvider>(builder: (context, provider, child) {
-      if (provider.isLoading || provider.isLoading) {
+      if (provider.isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
-      if (provider.error != null || provider.error != null) {
+      if (provider.error != null) {
         return GenericErrorState(
           errorMessage: provider.error!,
           onRetry: () => provider.getProfiles(),
@@ -238,7 +258,7 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
               _buildInfoRow('First Name', application.firstName!),
               _buildInfoRow('Last Name', application.lastName!),
               if (application.dob != null)
-                _buildInfoRow('Date of Birth', application.dob!.toString()),
+                _buildInfoRow('Date of Birth', Utils.formatDateISO(application.dob)),
               _buildInfoRow('Gender', application.gender!.displayName),
             ],
           ),
@@ -313,7 +333,7 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
                 ),
                 if (status != ApplicationStatus.VERIFIED)
                   ElevatedButton(
-                    onPressed: () => _startVerificationProcess(),
+                    onPressed: () => _navigateToEditProfile(context,application, null),
                     child: const Text('VERIFY ACCOUNT'),
                   ),
                 // if (status != ApplicationStatus.VERIFIED) ...[
@@ -361,8 +381,11 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context) {
+  void _navigateToEditProfile(BuildContext context, PatientProfile profile, ApplicationFormMode? applicationFormMode) {
+
+    final applicationFormConfig = ApplicationFormConfig(initialData: profile, applicationFormMode:applicationFormMode ?? ApplicationFormMode.VERIFY);
     // Implement navigation to edit profile
+    Navigator.of(context).pushNamed(RouteGenerator.applicationForm, arguments: applicationFormConfig);
   }
 
   void _startVerificationProcess() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
@@ -21,8 +22,8 @@ class CustomNavigationDrawer extends StatelessWidget {
         children: [
           Expanded(
             flex: 9,
-            child: Consumer<ProfileProvider>(builder: (BuildContext context,
-                ProfileProvider provider, Widget? child) {
+            child:
+                Consumer<UserInfoProvider>(builder: (context, provider, child) {
               return ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
@@ -42,34 +43,33 @@ class CustomNavigationDrawer extends StatelessWidget {
                     //   ),
                     // ),
                   ),
-                  _createDrawerItem(
-                    context: context,
-                    icon: Icons.book_online,
-                    text: 'Visitor\'s Log',
-                    onTap: () {},
-                    // onTap: () => Navigator.of(context)
-                    //     .pushNamed(RouteGenerator.visitorListScreen),
-                    selected: currentRoute == RouteGenerator.visitorListScreen,
-                  ),
 
                   _createDrawerItem(
                     context: context,
+                    icon: Icons.book_online,
+                    text: 'Home',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.homeScreen),
+                    selected: currentRoute == RouteGenerator.homeScreen,
+                  ),
+                if(provider.user!.isSuperuser)
+                 ...[ _createDrawerItem(
+                    context: context,
                     icon: Icons.menu_book,
-                    text: 'Resource Index',
-                    onTap: () {},
-                    // onTap: () => Navigator.of(context)
-                    //     .pushNamed(RouteGenerator.resourceListScreen),
-                    selected: currentRoute == RouteGenerator.resourceListScreen,
+                    text: 'Medical Records',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.medicalRecordsList),
+                    selected: currentRoute == RouteGenerator.medicalRecordsList,
                   ),
                   _createDrawerItem(
                     context: context,
-                    icon: Icons.approval,
-                    text: 'Report Issue',
+                    icon: Icons.screen_search_desktop,
+                    text: 'Inventory',
                     onTap: () {},
                     // onTap: () => Navigator.of(context)
                     //     .pushNamed(RouteGenerator.issuesListScreen),
                     selected: currentRoute == RouteGenerator.issuesListScreen,
-                  ),
+                  ),]
                   // if(provider.user!.isSuperuser)
                   // _createDrawerItem(
                   //   context: context,

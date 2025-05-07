@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Domain/user.info.repository.dart';
+import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
+import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
+import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/application.form.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/application.list.view.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/application.profile.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/application.view.dart';
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.form.view.dart';
+import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.list.view.dart';
+import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.view.dart';
 import 'package:online_reservation/Features/Profile/Presentation/profile.view.dart';
 import 'package:online_reservation/Features/Resident/Presentation/residence.list.dart';
 import 'package:online_reservation/Features/Resident/Presentation/residence.view.dart';
@@ -19,7 +27,7 @@ import 'package:online_reservation/Features/Visitor/Presentation/visitor.view.da
 import 'package:provider/provider.dart';
 
 class RouteGenerator {
-  // static const homeScreen = MyHomePage.screenId;
+  static const homeScreen = "/Home";
   static const loginScreen = LoginScreen.screenId;
   static const registerScreen = RegistrationScreen.screenId;
   static const visitorFormScreen = VisitorFormScreen.screenId;
@@ -34,127 +42,94 @@ class RouteGenerator {
   static const resourceListScreen = ResourceListScreen.screenId;
   static const resourceFormScreen = ResourceFormScreen.screenId;
   // MedLogix
-  static const applicationFormScreen = ApplicationFormScreen.screenId;
   static const applicationList = ApplicationList.screenId;
   static const patientProfileScreen = PatientProfileScreen.screenId;
+  static const applicationForm = ApplicationForm.screenId;
+  static const patientApplicationScreen = PatientApplicationScreen.screenId;
+  static const medicalRecordsList = MedicalRecordsList.screenId;
+  static const medicalRecordScreen = MedicalRecordScreen.screenId;
+  static const medicalRecordFormScreen = MedicalRecordFormScreen.screenId;
 
-  static Route<dynamic> generateRoute(RouteSettings settings, bool isLoggedIn, BuildContext context) {
-    final userInfoProvider = Provider.of<UserInfoProvider>(context, listen: false);
+
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+
     final args = settings.arguments;
 
-    if (isLoggedIn) {
-      switch (settings.name) {
-        case applicationFormScreen:
-          return MaterialPageRoute(builder: (_) => const ApplicationFormScreen());
-        case applicationList:
-          return MaterialPageRoute(builder: (_) => const ApplicationList());
-        case patientProfileScreen:
-          return MaterialPageRoute(builder: (_) => const PatientProfileScreen());
-        // case visitorFormScreen:
-        //   if (args is VisitorScreenConfig) {
-        //     return MaterialPageRoute(
-        //       builder: (_) => VisitorFormScreen(
-        //         mode: args.mode,
-        //         onSubmit: args.onSubmit,
-        //         initialData: args.initialData,
-        //         onDelete: args.onDelete,
-        //       ),
-        //     );
-        //   } else {
-        //     return MaterialPageRoute(
-        //       builder: (_) => VisitorFormScreen(
-        //         mode: FormMode.create,
-        //         onSubmit: (item) {},
-        //         onDelete: () {},
-        //       ),
-        //     );
-        //   }
-        //
-        // case resourceFormScreen:
-        //   if (args is ResourceScreenConfig) {
-        //     return MaterialPageRoute(
-        //       builder: (_) => ResourceFormScreen(
-        //         mode: args.mode,
-        //         onSubmit: args.onSubmit,
-        //         initialData: args.initialData,
-        //         onDelete: args.onDelete,
-        //       ),
-        //     );
-        //   } else {
-        //     return MaterialPageRoute(
-        //       builder: (_) => ResourceFormScreen(
-        //         mode: FormMode.create,
-        //         onSubmit: (item) {},
-        //         onDelete: () {},
-        //       ),
-        //     );
-        //   }
-        // case issueFormScreen:
-        //   if (args is IssueScreenConfig) {
-        //     return MaterialPageRoute(
-        //       builder: (_) => IssueFormScreen(
-        //         mode: args.mode,
-        //         onSubmit: args.onSubmit,
-        //         initialData: args.initialData,
-        //         onDelete: args.onDelete,
-        //       ),
-        //     );
-        //   } else {
-        //     return MaterialPageRoute(
-        //       builder: (_) => IssueFormScreen(
-        //         mode: FormMode.create,
-        //         onSubmit: (item) {},
-        //         onDelete: () {},
-        //       ),
-        //     );
-        //   }
-        // case userScreen:
-        //   if (args is UserScreenConfig) {
-        //     return MaterialPageRoute(
-        //       builder: (_) => UserScreen(
-        //         user: args.user,
-        //       ),
-        //     );
-        //   } else {
-        //     return MaterialPageRoute(
-        //       builder: (_) => const UserScreen(
-        //         user: null,
-        //       ),
-        //     );
-        //   }
-        // case resourceListScreen:
-        //   return MaterialPageRoute(builder: (_) => const ResourceListScreen());
-        // case residentListScreen:
-        //   return MaterialPageRoute(builder: (_) => const ResidentListScreen());
-        // case issuesListScreen:
-        //   return MaterialPageRoute(builder: (_) => const IssuesListScreen());
-        // case visitorListScreen:
-        //   return MaterialPageRoute(builder: (_) => const VisitsListScreen());
-        // case profileScreen:
-        //   return MaterialPageRoute(builder: (_) => const ProfileScreen());
-        case loginScreen:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-        default:
-          return _errorRoute();
-      }
-    } else {
-      switch (settings.name) {
-        case loginScreen:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-        case registerScreen:
-          return MaterialPageRoute(builder: (_) => const RegistrationScreen());
-        default:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-      }
+    switch (settings.name) {
+      case homeScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final authProvider = Provider.of<AuthProvider>(ctx, listen: false);
+          final userInfoProvider = Provider.of<UserInfoProvider>(ctx, listen: false);
+          final isLoggedIn = authProvider.isLoggedIn;
+          final isSuperUser = userInfoProvider.user?.isSuperuser;
+          if (!isLoggedIn) return const LoginScreen();
+          if(userInfoProvider.user == null) return const LoginScreen();
+          return isSuperUser! ? const ApplicationList() : const PatientProfileScreen();
+        });
+
+      case applicationList:
+        return MaterialPageRoute(builder: (_) => const ApplicationList());
+
+      case patientProfileScreen:
+        return MaterialPageRoute(builder: (_) => const PatientProfileScreen());
+
+      case applicationForm:
+        if (args is ApplicationFormConfig) {
+          return MaterialPageRoute(
+            builder: (_) => ApplicationForm(initialData: args.initialData,applicationFormMode: args.applicationFormMode, ),
+          );
+        }
+        return _errorRoute();
+
+      case medicalRecordsList:
+        return MaterialPageRoute(builder: (_) => const MedicalRecordsList());
+
+      case medicalRecordScreen:
+        if (args is MedicalRecord) {
+          return MaterialPageRoute(
+            builder: (_) => MedicalRecordScreen(record: args, ),
+          );
+        }
+        return _errorRoute();
+
+      case medicalRecordFormScreen:
+        if (args is MedicalRecordFormConfig) {
+          return MaterialPageRoute(
+            builder: (_) => MedicalRecordFormScreen(initialData: args.initialData,patientId: args.patientId, ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => MedicalRecordFormScreen(patientId: args as int,),
+        );
+
+      case patientApplicationScreen:
+        if (args is PatientProfile) {
+          return MaterialPageRoute(
+            builder: (_) => PatientApplicationScreen(profile: args),
+          );
+        }
+        return _errorRoute();
+
+      case loginScreen:
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
+
+      case registerScreen:
+        return MaterialPageRoute(builder: (_) => const RegistrationScreen());
+
+      default:
+        return _errorRoute();
     }
   }
 
+
   static Route<dynamic> _errorRoute() {
-    return MaterialPageRoute(builder: (_) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Error")),
-        body: const Center(child: Text("Page not found!")),
-      );
-    });
+    return MaterialPageRoute(
+        builder: (context) => Scaffold(
+              appBar: AppBar(title: const Text("Error")),
+              body: GenericErrorState(
+                errorMessage: "Page not found, Go Back.",
+                onRetry: () => Navigator.of(context).pop(),
+              ),
+            ));
   }
 }

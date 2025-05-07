@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
-import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
 
@@ -20,7 +19,30 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController emailController;
   late TextEditingController passwordController;
-  late AuthProvider authProvider;
+
+  void _login() async {
+    final authProvider = context.read<AuthProvider>();
+    final userInfoProvider = context.read<UserInfoProvider>();
+    await authProvider
+        .login(emailController.text, passwordController.text)
+        .then((_) async {
+      if (authProvider.isLoggedIn) {
+        setState(() {
+          emailController.clear();
+          passwordController.clear();
+        });
+        await userInfoProvider.getUserInfo();
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed(
+            RouteGenerator.homeScreen,
+          );
+        }
+      }
+    });
+  }
+
+
+
   @override
   void initState() {
     super.initState();
@@ -37,146 +59,126 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final emailController = TextEditingController();
-    // final passwordController = TextEditingController();
-    // final authProvider = context.watch<AuthProvider>();
-    // final userInfoProvider = context.watch<UserInfoProvider>();
-    // final profileProvider = context.watch<ProfileProvider>();
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text("Login"),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text("Login"),
+        ),
+        body: body(),
       ),
-      body: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(30, 30, 30, 30),
-        child: CustomCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Consumer2<AuthProvider, UserInfoProvider>(
-                builder: (context, authProvider, userInfoProvider, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    height: 180,
-                    child: Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Image.asset(
-                          logoPath,
-                          fit: BoxFit.cover,
-                        )),
-                  ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.green.shade50,
-                      labelText: 'Email',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade50,
-                          width: 2,
-                        ),
+    );
+  }
+
+  Widget body() {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(30, 30, 30, 30),
+      child: CustomCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Consumer2<AuthProvider, UserInfoProvider>(
+              builder: (context, authProvider, userInfoProvider, child) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  height: 180,
+                  child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Image.asset(
+                        logoPath,
+                        fit: BoxFit.cover,
+                      )),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.green.shade50,
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.green.shade50,
+                        width: 2,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade50,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: kGreenDark, width: 2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      prefixIcon: const Icon(Icons.email),
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      filled: true,
-                      fillColor: Colors.green.shade50,
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade50,
-                          width: 2,
-                        ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.green.shade50,
+                        width: 2,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade50,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: kGreenDark, width: 2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      prefixIcon: const Icon(Icons.lock),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 40),
-                  if (authProvider.isLoading)
-                    const CircularProgressIndicator()
-                  else
-                    ElevatedButton(
-                      onPressed: () async {
-                        await authProvider
-                            .login(
-                                emailController.text, passwordController.text)
-                            // .then(
-                            //     (_) async => await userInfoProvider.getUserInfo())
-                            //     .then((_) {
-                            //   emailController.clear();
-                            //   passwordController.clear();
-                            // })
-                            .then((_) {
-                          if (authProvider.error != null) {
-                            final snackBar = SnackBar(
-                                content: Text(
-                                    'Login Failed. Please try again. ${authProvider.error!}'));
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(snackBar);
-                          }
-                        });
-                        if (authProvider.isLoggedIn) {
-                          emailController.clear();
-                          passwordController.clear();
-                          await userInfoProvider.getUserInfo();
-                          if (mounted) {
-                            Navigator.of(context).pushReplacementNamed(
-                              userInfoProvider.user.isStaff
-                                  ? RouteGenerator.applicationList
-                                  : RouteGenerator.patientProfileScreen,
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
-                      child: const Text('Login'),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: kGreenDark, width: 2),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                  TextButton(
+                    prefixIcon: const Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    filled: true,
+                    fillColor: Colors.green.shade50,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.green.shade50,
+                        width: 2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.green.shade50,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: kGreenDark, width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    prefixIcon: const Icon(Icons.lock),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 40),
+                if (authProvider.isLoading || userInfoProvider.isLoading)
+                  const CircularProgressIndicator()
+                else
+                  ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context)
-                          .pushReplacementNamed(RouteGenerator.registerScreen);
+                      _login();
+                      if (authProvider.isLoggedIn) {
+                        // if (mounted) {
+                        //   Navigator.of(context).pushReplacementNamed(
+                        //     RouteGenerator.homeScreen,
+                        //   );
+                        // }
+                      }
                     },
-                    child: const Text('Don\'t have an account? Register'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text('Login'),
                   ),
-                ],
-              );
-            }),
-          ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(RouteGenerator.registerScreen);
+                  },
+                  child: const Text('Don\'t have an account? Register'),
+                ),
+              ],
+            );
+          }),
         ),
       ),
     );

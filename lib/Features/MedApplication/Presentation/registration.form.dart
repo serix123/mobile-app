@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
 import 'package:online_reservation/Features/Authentication/Data/Model/auth.model.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
-import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationForm extends StatefulWidget {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
-import 'package:online_reservation/Features/Visitor/Data/Model/visitor.model.dart';
 import 'package:provider/provider.dart';
 
 class IssueListItem extends StatelessWidget {

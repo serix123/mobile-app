@@ -26,7 +26,7 @@ class UserInfoApiService extends TokenService {
         },
       );
       if (response.statusCode == 200) {
-        print(jsonDecode(response.body) as Map<String, dynamic>);
+        // print(jsonDecode(response.body) as Map<String, dynamic>);
         return User.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
       }
       throw Exception('Failed to retrieve user information: ${response.statusCode}');

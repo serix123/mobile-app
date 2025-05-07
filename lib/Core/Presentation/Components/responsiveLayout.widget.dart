@@ -62,14 +62,15 @@ class ResponsiveLayout extends StatelessWidget {
               Expanded(
                 child: Scaffold(
                   appBar: AppBar(
+                    automaticallyImplyLeading: false,
                     title: title,
                     actions: [
                       ...?actions,
-                      IconButton(
-                        icon: const Icon(Icons.person),
-                        onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.profileScreen),
-                        isSelected: true,
-                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.person),
+                      //   onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.profileScreen),
+                      //   isSelected: true,
+                      // ),
                     ],
                   ),
                   body: desktopBody,

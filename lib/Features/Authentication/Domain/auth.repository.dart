@@ -15,6 +15,8 @@ class AuthProvider with ChangeNotifier {
     _startRefreshTimer();
   }
 
+  String? get error => _error;
+
   static const Duration _refreshInterval = Duration(minutes: 5);
   Timer? _timer;
   void _startRefreshTimer() {
@@ -41,7 +43,6 @@ class AuthProvider with ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
-  String? get error => _error;
 
   Future<void> login(String email, String password) async {
     _isLoading = true;
@@ -57,6 +58,9 @@ class AuthProvider with ChangeNotifier {
         _isLoggedIn = false;
       }
     } catch (e) {
+      if (kDebugMode) {
+        print("login error: $e");
+      }
       _error = e.toString();
     }
     _isLoading = false;
@@ -77,13 +81,15 @@ class AuthProvider with ChangeNotifier {
         // _isLoggedIn = true;
         notifyListeners();
       } else {
-        // _isLoggedIn = false;
+        return false;
       }
       return registered;
     } catch (e) {
       if (kDebugMode) {
         print("Registration error: $e");
       }
+      _error = e.toString();
+
       return false;
     }
   }

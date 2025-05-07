@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/config/config.dart';
 import 'package:provider/provider.dart';
@@ -44,11 +45,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Register"),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Register"),
+          automaticallyImplyLeading: false,
+        ),
+        body: body(context),
       ),
-      body: body(context),
     );
   }
 
@@ -124,7 +129,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacementNamed('/login');
+                      Navigator.of(context).pushReplacementNamed(RouteGenerator.loginScreen);
                     },
                     child: const Text('Already have an account? Login'),
                   ),

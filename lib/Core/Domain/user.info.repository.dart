@@ -12,7 +12,7 @@ class UserInfoProvider with ChangeNotifier {
 
   UserInfoProvider(this._userInfoApiService);
 
-  User get user => _user;
+  User? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
 

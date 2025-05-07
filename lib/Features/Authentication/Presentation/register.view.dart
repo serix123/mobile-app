@@ -43,11 +43,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Register"),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Register"),
+        ),
+        body: body(context),
       ),
-      body: body(context),
     );
   }
 
@@ -61,12 +64,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: <Widget>[
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Image.asset(
-                        'assets/images/LOGO.png',
-                        fit: BoxFit.cover,
-                      )
+                  SizedBox(
+                    height: 180,
+                    child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Image.asset(
+                          'assets/images/LOGO.png',
+                          fit: BoxFit.cover,
+                        )
+                    ),
                   ),
                   TextField(
                     controller: firstNameController,

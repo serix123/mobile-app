@@ -27,11 +27,28 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
   static const String title = "Applications";
   const ApplicationList({super.key});
 
+  void _initData(BuildContext context) async {
+    final task = [
+      Provider.of<UserInfoProvider>(context, listen: false).getUserInfo(),
+      Provider.of<ApplicationProvider>(context, listen: false).getProfiles(),
+    ];
+    await Future.wait(task);
+  }
+
+  void _applicationHandler(BuildContext context, int id, bool isVerify) async {
+    final provider = context.read<ApplicationProvider>();
+    if (isVerify) {
+      await provider.verifyApplication(id);
+    } else {
+      await provider.rejectApplication(id);
+    }
+    await provider.getProfile(id);
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<UserInfoProvider>(context, listen: false).getUserInfo();
-      Provider.of<ApplicationProvider>(context, listen: false).getProfiles();
+      _initData(context);
     });
     return ResponsiveLayout(
         mobileBody: _mobileBody(),
@@ -44,11 +61,6 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Consumer<ApplicationProvider>(
         builder: (context, provider, child) {
-          // return SearchField(
-          //   onSearchChanged: (query) =>
-          //       provider.getProfiles(query: query),
-          // );
-
           return SearchFields(
             onSearch: (text, status, gender) {
               provider.getProfiles(gender: gender, query: text, status: status);
@@ -62,10 +74,11 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
   Widget _mobileBody() {
     return AdminWrapper(
       (context, userInfoProvider) {
-        if (userInfoProvider.user == null)
+        if (userInfoProvider.user == null) {
           return GenericErrorState(
               errorMessage: "User Information not found.",
               onRetry: () => userInfoProvider.getUserInfo());
+        }
         return Column(
           children: [
             _searchBar(),
@@ -88,7 +101,12 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
                     itemBuilder: (context, index) {
                       final profile = provider.applications[index];
                       return PatientListItem(
-                          profile: profile, onEdit: () {}, onDelete: () {});
+                        profile: profile,
+                        onApprove: () =>
+                            _applicationHandler(context, profile.id!, true),
+                        onReject: () =>
+                            _applicationHandler(context, profile.id!, false),
+                      );
                     },
                   );
                 },
@@ -103,10 +121,11 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
   Widget _desktopBody() {
     return AdminWrapper(
       (context, userInfoProvider) {
-        if (userInfoProvider.user == null)
+        if (userInfoProvider.user == null) {
           return GenericErrorState(
               errorMessage: "User Information not found.",
               onRetry: () => userInfoProvider.getUserInfo());
+        }
         return Expanded(
           child: Center(
             child: Column(
@@ -156,7 +175,7 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
                             const DataColumn(label: Text('Address')),
                             const DataColumn(label: Text('Status')),
                             const DataColumn(label: Text('Actions')),
-                            if (userInfoProvider.user!.isSuperuser)
+                            if (userInfoProvider.user!.isStaff)
                               const DataColumn(label: Text('Admin Actions')),
                             // DataColumn(label: Text('Status')),
                           ],
@@ -189,8 +208,8 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
 
   DataRow _buildDataRow(
       {required BuildContext context, required PatientProfile patient}) {
-    final isSuperuser =
-        Provider.of<UserInfoProvider>(context, listen: false).user!.isSuperuser;
+    final isStaff =
+        Provider.of<UserInfoProvider>(context, listen: false).user!.isStaff;
     final provider = context.read<ApplicationProvider>();
     return DataRow(
       cells: [
@@ -211,18 +230,19 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
                       RouteGenerator.patientApplicationScreen,
                       arguments: patient),
                   tooltip: "Open"),
-              if (isSuperuser)
-              _buildActionButton(
-                  icon: Icons.playlist_add_outlined,
-                  color: kGreenNormal,
-                  onPressed: () => Navigator.of(context).pushNamed(
-                      RouteGenerator.medicalRecordFormScreen,
-                      arguments: patient.id),
-                  tooltip: "Write Record"),
+              if (isStaff &&
+                  patient.verificationStatus == ApplicationStatus.VERIFIED)
+                _buildActionButton(
+                    icon: Icons.playlist_add_outlined,
+                    color: kGreenNormal,
+                    onPressed: () => Navigator.of(context).pushNamed(
+                        RouteGenerator.medicalRecordFormScreen,
+                        arguments: patient.id),
+                    tooltip: "Write Record"),
             ],
           ),
         ),
-        if (isSuperuser)
+        if (isStaff)
           DataCell(
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -232,12 +252,14 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
                   _buildAdminActionButton(
                     icon: Icons.check_circle,
                     color: Colors.blue,
-                    onPressed: () => provider.verifyApplication(patient.id!),
+                    onPressed: () =>
+                        _applicationHandler(context, patient.id!, true),
                   ),
                   _buildAdminActionButton(
                     icon: Icons.close,
                     color: Colors.red,
-                    onPressed: () => provider.rejectApplication(patient.id!),
+                    onPressed: () =>
+                        _applicationHandler(context, patient.id!, false),
                   ),
                 ]
               ],

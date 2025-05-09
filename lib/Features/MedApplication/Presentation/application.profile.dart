@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
@@ -27,33 +28,37 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
     });
 
     return Consumer<ApplicationProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading) {
+      builder: (context, applProvider, child) {
+        if (applProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (provider.error != null ) {
+        if (applProvider.error != null) {
           return GenericErrorState(
-            errorMessage: provider.error!,
-            onRetry: () => provider.getProfiles(),
+            errorMessage: applProvider.error!,
+            onRetry: () => applProvider.getProfiles(),
           );
         }
-        if (provider.applications.isEmpty) {
+        if (applProvider.applications.isEmpty) {
           return const GenericEmptyState(
             title: 'No information found',
-            description: 'No information are currently registered in the system',
+            description:
+                'No information are currently registered in the system',
           );
         }
-        final application = provider.applications[0];
+        final application = applProvider.applications[0];
         return ResponsiveLayout(
           mobileBody: _mobileBody(),
           desktopBody: _desktopBody(),
           title: const Text(screenTitle),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _navigateToEditProfile(context,application,ApplicationFormMode.EDIT),
-            ),
-          ],
+          actions: application.verificationStatus == ApplicationStatus.VERIFIED
+              ? [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _navigateToEditProfile(
+                        context, application, ApplicationFormMode.EDIT),
+                  ),
+                ]
+              : [],
         );
       },
     );
@@ -127,7 +132,7 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
                 // mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   _buildProfileCard(),
-                  SizedBox(
+                  const SizedBox(
                     height: 12,
                   ),
                   _buildVerificationStatus()
@@ -258,7 +263,8 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
               _buildInfoRow('First Name', application.firstName!),
               _buildInfoRow('Last Name', application.lastName!),
               if (application.dob != null)
-                _buildInfoRow('Date of Birth', Utils.formatDateISO(application.dob)),
+                _buildInfoRow(
+                    'Date of Birth', Utils.formatDateISO(application.dob)),
               _buildInfoRow('Gender', application.gender!.displayName),
             ],
           ),
@@ -333,7 +339,8 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
                 ),
                 if (status != ApplicationStatus.VERIFIED)
                   ElevatedButton(
-                    onPressed: () => _navigateToEditProfile(context,application, null),
+                    onPressed: () =>
+                        _navigateToEditProfile(context, application, null),
                     child: const Text('VERIFY ACCOUNT'),
                   ),
                 // if (status != ApplicationStatus.VERIFIED) ...[
@@ -381,11 +388,14 @@ class PatientProfileScreen extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context, PatientProfile profile, ApplicationFormMode? applicationFormMode) {
-
-    final applicationFormConfig = ApplicationFormConfig(initialData: profile, applicationFormMode:applicationFormMode ?? ApplicationFormMode.VERIFY);
+  void _navigateToEditProfile(BuildContext context, PatientProfile profile,
+      ApplicationFormMode? applicationFormMode) {
+    final applicationFormConfig = ApplicationFormConfig(
+        initialData: profile,
+        applicationFormMode: applicationFormMode ?? ApplicationFormMode.VERIFY);
     // Implement navigation to edit profile
-    Navigator.of(context).pushNamed(RouteGenerator.applicationForm, arguments: applicationFormConfig);
+    Navigator.of(context).pushNamed(RouteGenerator.applicationForm,
+        arguments: applicationFormConfig);
   }
 
   void _startVerificationProcess() {

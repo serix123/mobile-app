@@ -75,13 +75,17 @@ class ApplicationProvider with ChangeNotifier {
 
   Future<void> uploadFile(int profileId, PlatformFile file, bool isWeb) async {
     _isLoading = true;
-    _error = null;
+    // _error = null;
     notifyListeners();
     try {
       await _apiService.uploadFileAdaptive(profileId, file, isWeb);
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      if(_error != null) {
+        _error = "$_error ${e.toString()}";
+      }else{
+        _error = e.toString();
+      }
       notifyListeners();
     }
     _isLoading = false;

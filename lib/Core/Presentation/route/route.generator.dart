@@ -61,10 +61,10 @@ class RouteGenerator {
           final authProvider = Provider.of<AuthProvider>(ctx, listen: false);
           final userInfoProvider = Provider.of<UserInfoProvider>(ctx, listen: false);
           final isLoggedIn = authProvider.isLoggedIn;
-          final isSuperUser = userInfoProvider.user?.isSuperuser;
+          final isStaff = userInfoProvider.user?.isStaff;
           if (!isLoggedIn) return const LoginScreen();
           if(userInfoProvider.user == null) return const LoginScreen();
-          return isSuperUser! ? const ApplicationList() : const PatientProfileScreen();
+          return isStaff! ? const ApplicationList() : const PatientProfileScreen();
         });
 
       case applicationList:

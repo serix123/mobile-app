@@ -150,6 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 40),
+                if(authProvider.error != null)
+                  Text("${authProvider.error}",style: const TextStyle(color: error),),
                 if (authProvider.isLoading || userInfoProvider.isLoading)
                   const CircularProgressIndicator()
                 else

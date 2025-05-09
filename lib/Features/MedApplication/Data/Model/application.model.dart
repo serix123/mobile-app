@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:online_reservation/Utils/utils.dart';
 
 enum ApplicationStatus { PENDING, VERIFIED, UNVERIFIED, REJECTED }
@@ -155,7 +156,7 @@ class PatientProfile {
         "first_name": firstName,
         "last_name": lastName,
         // "email": email,
-        "dob": Utils.formatDateISO(dob),
+        "dob": DateFormat("yyyy-MM-dd").format(dob!),
         "gender": gender!.jsonName,
         "contact_number": contactNumber,
         "address": address,

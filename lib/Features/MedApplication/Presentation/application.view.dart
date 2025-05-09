@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
+import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedApplication/Domain/application.repository.dart';
+import 'package:online_reservation/Features/MedApplication/Presentation/application.form.dart';
 import 'package:online_reservation/config/app.color.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,7 +22,6 @@ class PatientApplicationScreen extends StatefulWidget {
 }
 
 class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
-
   late PatientProfile _profile;
 
   @override
@@ -43,18 +44,21 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
     final provider = context.read<ApplicationProvider>();
     await provider.verifyApplication(_profile.id!);
     await provider.getProfile(_profile.id!);
-    final application = provider.applications.firstWhere((e) => e.id == _profile.id,);
+    final application = provider.applications.firstWhere(
+      (e) => e.id == _profile.id,
+    );
     setState(() {
       _profile = _profile.copyWith(application);
     });
-
   }
 
   void _rejectApplication() async {
     final provider = context.read<ApplicationProvider>();
     await provider.rejectApplication(_profile.id!);
     await provider.getProfile(_profile.id!);
-    final application = provider.applications.firstWhere((e) => e.id == _profile.id,);
+    final application = provider.applications.firstWhere(
+      (e) => e.id == _profile.id,
+    );
     setState(() {
       _profile = _profile.copyWith(application);
     });
@@ -64,7 +68,9 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
     final provider = context.read<ApplicationProvider>();
     await provider.resetApplication(_profile.id!);
     await provider.getProfile(_profile.id!);
-    final application = provider.applications.firstWhere((e) => e.id == _profile.id,);
+    final application = provider.applications.firstWhere(
+      (e) => e.id == _profile.id,
+    );
     setState(() {
       _profile = _profile.copyWith(application);
     });
@@ -72,10 +78,29 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-        mobileBody: _mobileBody(),
-        desktopBody: _desktopBody(),
-        title: const Text(PatientApplicationScreen.screenTitle));
+    return Consumer<ApplicationProvider>(
+      builder: (context, applProvider, child) {
+        final application = applProvider.applications[0];
+        return ResponsiveLayout(
+          mobileBody: _mobileBody(),
+          desktopBody: _desktopBody(),
+          title: const Text(PatientApplicationScreen.screenTitle),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.playlist_add_outlined),
+              onPressed: () => Navigator.of(context).pushNamed(
+                  RouteGenerator.medicalRecordFormScreen,
+                  arguments: application.id),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => _navigateToEditProfile(
+                  context, application, ApplicationFormMode.EDIT),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _mobileBody() {
@@ -157,7 +182,7 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child:Column(
+        child: Column(
           children: [
             CircleAvatar(
               radius: 60,
@@ -283,8 +308,7 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
               const Divider(height: 24),
             ],
             _buildInfoRow('Email', application.email ?? ""),
-            _buildInfoRow(
-                'Contact Number', application.contactNumber ?? ""),
+            _buildInfoRow('Contact Number', application.contactNumber ?? ""),
             _buildInfoRow('Address', application.address ?? ""),
           ],
         ),
@@ -370,35 +394,33 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
     );
   }
 
-  Widget _buildButtonsRow()  {
+  Widget _buildButtonsRow() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         mainAxisSize: MainAxisSize.max,
         children: [
-          if(_profile.verificationStatus == ApplicationStatus.PENDING)
-          ...[
-          ElevatedButton(
-
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kGreenNormal, // ✅ Make it green
-              foregroundColor: Colors.white, // ✅ White text
+          if (_profile.verificationStatus == ApplicationStatus.PENDING) ...[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kGreenNormal, // ✅ Make it green
+                foregroundColor: Colors.white, // ✅ White text
+              ),
+              onPressed: _verifyApplication,
+              child: const Text('Verify'),
             ),
-            onPressed: _verifyApplication,
-            child: const Text('Verify'),
-          ),
-          const SizedBox(width: 10),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-                foregroundColor: kGreenNormal,
-                side: const BorderSide(color: kGreenNormal)),
-            onPressed: _rejectApplication,
-            child: const Text('Reject'),
-          ),]
-          else if(_profile.verificationStatus == ApplicationStatus.VERIFIED)
-            ...[
-              ElevatedButton(
+            const SizedBox(width: 10),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kGreenNormal,
+                  side: const BorderSide(color: kGreenNormal)),
+              onPressed: _rejectApplication,
+              child: const Text('Reject'),
+            ),
+          ] else if (_profile.verificationStatus ==
+              ApplicationStatus.VERIFIED) ...[
+            ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGreenNormal, // ✅ Make it green
                 foregroundColor: Colors.white, // ✅ White text
@@ -406,8 +428,7 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
               onPressed: _resetApplication,
               child: const Text('Reset'),
             ),
-
-            ]
+          ]
         ],
       ),
     );
@@ -424,9 +445,20 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
     final uri = Uri.parse(documentUrl);
 
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.platformDefault); // Opens browser or app
+      await launchUrl(uri,
+          mode: LaunchMode.platformDefault); // Opens browser or app
     } else {
       throw 'Could not launch $documentUrl';
     }
+  }
+
+  void _navigateToEditProfile(BuildContext context, PatientProfile profile,
+      ApplicationFormMode? applicationFormMode) {
+    final applicationFormConfig = ApplicationFormConfig(
+        initialData: profile,
+        applicationFormMode: applicationFormMode ?? ApplicationFormMode.VERIFY);
+    // Implement navigation to edit profile
+    Navigator.of(context).pushNamed(RouteGenerator.applicationForm,
+        arguments: applicationFormConfig);
   }
 }

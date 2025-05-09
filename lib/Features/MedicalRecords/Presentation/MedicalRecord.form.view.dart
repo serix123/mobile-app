@@ -3,7 +3,7 @@ import 'package:online_reservation/Core/Presentation/Components/responsiveLayout
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
 import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
 
-class MedicalRecordFormConfig{
+class MedicalRecordFormConfig {
   final int patientId;
   final MedicalRecord? initialData;
 
@@ -16,7 +16,8 @@ class MedicalRecordFormScreen extends StatefulWidget {
   final int patientId;
   final MedicalRecord? initialData;
 
-  const MedicalRecordFormScreen({super.key, this.initialData, required this.patientId});
+  const MedicalRecordFormScreen(
+      {super.key, this.initialData, required this.patientId});
 
   @override
   State<MedicalRecordFormScreen> createState() =>

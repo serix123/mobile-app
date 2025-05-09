@@ -42,12 +42,11 @@ class ResponsiveLayout extends StatelessWidget {
                 ),
                 actions: [
                   ...?actions,
-                  IconButton(
-                    icon: const Icon(Icons.person),
-                    onPressed: () => Navigator.of(context).pushNamed(RouteGenerator.profileScreen),
-            
-                    // isSelected: currentRoute == RouteGenerator.profileScreen,
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.person),
+                  //   onPressed: () => Navigator.of(context)
+                  //       .pushNamed(RouteGenerator.profileScreen),
+                  // ),
                   //  Add AppBar Items here
                 ],
               ),

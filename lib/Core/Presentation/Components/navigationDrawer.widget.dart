@@ -52,7 +52,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                         .pushNamed(RouteGenerator.homeScreen),
                     selected: currentRoute == RouteGenerator.homeScreen,
                   ),
-                if(provider.user!.isSuperuser)
+                if(provider.user!.isStaff)
                  ...[ _createDrawerItem(
                     context: context,
                     icon: Icons.menu_book,

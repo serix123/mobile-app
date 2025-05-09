@@ -312,7 +312,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
           )
         },
         initialData: resident,
-        onSubmit: (resident, user) async => Future.wait([
+        onSubmit: (resident, user) async => await Future.wait([
           context.read<ResidentProvider>().updateResident(resident),
           context.read<UserProvider>().updateUser(user),
           context.read<ResidentProvider>().getResidents(),

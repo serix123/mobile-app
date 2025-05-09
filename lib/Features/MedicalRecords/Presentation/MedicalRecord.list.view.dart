@@ -162,7 +162,7 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
                           const DataColumn(label: Text('Physician')),
                           const DataColumn(label: Text('Actions')),
                           // DataColumn(label: Text('Status')),
-                          if (userInfoProvider.user!.isSuperuser)
+                          if (userInfoProvider.user!.isStaff)
                             const DataColumn(label: Text('Admin Actions')),
                         ],
                         rows: provider.records
@@ -181,8 +181,8 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
 
   DataRow _buildDataRow(
       {required BuildContext context, required MedicalRecord record}) {
-    final isSuperuser =
-        Provider.of<UserInfoProvider>(context, listen: false).user!.isSuperuser;
+    final isStaff =
+        Provider.of<UserInfoProvider>(context, listen: false).user!.isStaff;
     final provider = context.read<MedicalRecordProvider>();
     return DataRow(
       cells: [
@@ -205,7 +205,7 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
             ],
           ),
         ),
-        if (isSuperuser)
+        if (isStaff)
           DataCell(
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

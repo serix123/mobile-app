@@ -422,7 +422,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         initialData: issue,
         // onSubmit: (data) {},
         onSubmit: (data) async {
-          Future.wait([
+          await Future.wait([
             context.read<IssueProvider>().updateIssue(data),
             context.read<IssueProvider>().getIssues(),
           ]);

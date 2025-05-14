@@ -12,7 +12,7 @@ class CustomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
         clipBehavior: Clip.antiAliasWithSaveLayer,
-        color: Colors.green[100],
+        color: Colors.teal[100],
         elevation: 3,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),

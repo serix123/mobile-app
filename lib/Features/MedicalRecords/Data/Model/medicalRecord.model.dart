@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart' show PatientProfile;
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/treatment.model.dart';
 
 enum DiagnosisStatus {
   GEN,
@@ -71,7 +72,7 @@ class MedicalRecord {
   final DateTime visitDate;
   final DiagnosisStatus diagnosisCategory;
   final String? diagnosisDetails;
-  final String? treatment;
+  final List<Treatment> treatments;
   final int? attendingDoctor;
   final String? doctorName;
   final String? notes;
@@ -84,7 +85,7 @@ class MedicalRecord {
     required this.visitDate,
     required this.diagnosisCategory,
     this.diagnosisDetails,
-    this.treatment,
+    required this.treatments,
     this.attendingDoctor,
     this.doctorName,
     this.notes,
@@ -98,7 +99,7 @@ class MedicalRecord {
     DateTime? visitDate,
     DiagnosisStatus? diagnosisCategory,
     String? diagnosisDetails,
-    String? treatment,
+    List<Treatment>? treatments,
     int? attendingDoctor,
     String? doctorName,
     String? notes,
@@ -111,7 +112,7 @@ class MedicalRecord {
       visitDate: visitDate ?? this.visitDate,
       diagnosisCategory: diagnosisCategory ?? this.diagnosisCategory,
       diagnosisDetails: diagnosisDetails ?? this.diagnosisDetails,
-      treatment: treatment ?? this.treatment,
+      treatments: treatments ?? this.treatments,
       attendingDoctor: attendingDoctor ?? this.attendingDoctor,
       doctorName: doctorName ?? this.doctorName,
       notes: notes ?? this.notes,
@@ -127,7 +128,10 @@ class MedicalRecord {
       visitDate: DateTime.parse(json['visit_date']),
       diagnosisCategory: _parseDiagnosis(json['diagnosis_category']),
       diagnosisDetails: json['diagnosis_details'],
-      treatment: json['treatment'],
+      treatments: (json['treatments'] as List<dynamic>?)
+          ?.map((treatmentJson) => Treatment.fromJson(treatmentJson))
+          .toList() ??
+          [],
       attendingDoctor: json['attending_doctor'],
       doctorName: json['doctor_name'],
       notes: json['notes'],
@@ -145,8 +149,8 @@ class MedicalRecord {
       // 'visit_date': visitDate.toIso8601String(),
       'diagnosis_category': diagnosisCategory.jsonName,
       'diagnosis_details': diagnosisDetails,
-      'treatment': treatment,
-      'attending_doctor': attendingDoctor,
+      'treatments': treatments.map((treatment) => treatment.toJson()).toList(),
+      // 'attending_doctor': attendingDoctor,
       // 'doctor_name': doctorName,
       'notes': notes,
       'follow_up_date': followUpDate?.toIso8601String(),

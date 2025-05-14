@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
 import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/treatment.model.dart';
 import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.form.view.dart';
+import 'package:provider/provider.dart';
 
 class MedicalRecordScreen extends StatelessWidget {
   static const String screenId = "/medRecord";
@@ -14,17 +17,23 @@ class MedicalRecordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<UserInfoProvider>(context);
+    final isStaff =  provider.user?.isStaff ?? false;
+
     return ResponsiveLayout(
-        mobileBody: body(context),
-        desktopBody: body(context),
-        title: const Text(title),
+      mobileBody: body(context),
+      desktopBody: body(context),
+      title: const Text(title),
       actions: [
+        if(isStaff)
         IconButton(
           icon: const Icon(Icons.add),
           onPressed: () {
-            final config = MedicalRecordFormConfig(patientId: record.patient,initialData: record);
-            Navigator.of(context)
-              .pushNamed(RouteGenerator.medicalRecordFormScreen,arguments: config);
+            final config = MedicalRecordFormConfig(
+                patientId: record.patient, initialData: record);
+            Navigator.of(context).pushNamed(
+                RouteGenerator.medicalRecordFormScreen,
+                arguments: config);
           },
         )
       ],
@@ -47,14 +56,23 @@ class MedicalRecordScreen extends StatelessWidget {
                 _buildInfoRow('Diagnosis Details', record.diagnosisDetails!),
             ],
           ),
-          if (record.treatment != null)
+          if (record.treatments.isNotEmpty) ...[
             _buildSectionTitle('Treatment Information'),
-          if (record.treatment != null)
-            _buildInfoCard(
+            ...record.treatments.map((treatment) => _buildInfoCard(
               children: [
-                _buildInfoRow('Treatment', record.treatment!),
+                _buildInfoRow('Medicine', treatment.medicineName ?? "Generic Medicine"),
+                _buildInfoRow('Dosage', treatment.dosage ?? 'Not specified'),
+                if(treatment.frequency != null)
+                _buildInfoRow('Frequency',
+                    FrequencyExtension.fromCode(treatment.frequency!.code)?.displayName
+                        ?? treatment.frequency!.displayName),
+                _buildInfoRow('Quantity',
+                    '${treatment.dispensedQuantity}/${treatment.prescribedQuantity}'),
+                if (treatment.notes?.isNotEmpty ?? false)
+                  _buildInfoRow('Notes', treatment.notes!),
               ],
-            ),
+            )),
+          ],
           _buildSectionTitle('Medical Team'),
           _buildInfoCard(
             children: [

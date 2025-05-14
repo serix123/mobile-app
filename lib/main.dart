@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_reservation/Features/MedicalInventory/Data/Service/inventory.service.dart';
+import 'package:online_reservation/Features/MedicalInventory/Domain/category.repository.dart';
 import 'package:online_reservation/Features/MedicalInventory/Domain/inventory.repository.dart';
+import 'package:online_reservation/Features/MedicalInventory/Domain/supplier.repository.dart';
 import 'package:online_reservation/Features/MedicalRecords/Data/Service/medicalRecord.service.dart';
 import 'package:online_reservation/Features/MedicalRecords/Domain/MedicalRecord.repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -94,13 +96,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ResourceProvider(context.read<ResourceApiService>())),
         ChangeNotifierProvider(create: (context) => ApplicationProvider(context.read<ApplicationApiService>())),
         ChangeNotifierProvider(create: (context) => MedicalRecordProvider(context.read<MedicalRecordApiService>())),
+        ChangeNotifierProvider(create: (context) => CategoryProvider(context.read<InventoryApiService>())),
+        ChangeNotifierProvider(create: (context) => SupplierProvider(context.read<InventoryApiService>())),
         ChangeNotifierProvider(create: (context) => InventoryProvider(context.read<InventoryApiService>())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Online Residence App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
           useMaterial3: true,
         ),
         initialRoute: RouteGenerator.loginScreen,

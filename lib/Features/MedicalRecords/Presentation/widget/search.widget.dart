@@ -52,7 +52,7 @@ class _SearchFieldsState extends State<SearchFields> {
         ElevatedButton(
 
           style: ElevatedButton.styleFrom(
-            backgroundColor: kGreenNormal, // ✅ Make it green
+            backgroundColor: Colors.teal, // ✅ Make it green
             foregroundColor: Colors.white, // ✅ White text
           ),
           onPressed: () {
@@ -66,8 +66,8 @@ class _SearchFieldsState extends State<SearchFields> {
         const SizedBox(width: 10),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
-              foregroundColor: kGreenNormal,
-              side: const BorderSide(color: kGreenNormal)),
+              foregroundColor: Colors.teal,
+              side: const BorderSide(color: Colors.teal)),
           onPressed: _resetFilters,
           child: const Text('Reset'),
         ),

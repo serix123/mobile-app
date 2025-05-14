@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
 import 'package:online_reservation/config/app.color.dart';
 
 class SearchFields extends StatefulWidget {
-  final void Function(String text, String status, String gender) onSearch;
+  final void Function(String query) onSearch;
   const SearchFields({super.key, required this.onSearch});
 
   @override
@@ -12,14 +13,13 @@ class SearchFields extends StatefulWidget {
 
 class _SearchFieldsState extends State<SearchFields> {
   final TextEditingController _searchController = TextEditingController();
-  String? _selectedStatus;
-  String? _selectedGender;
+  String? _selectedDiagnosis;
+
 
   void _resetFilters() {
     setState(() {
       _searchController.clear();
-      _selectedStatus = null;
-      _selectedGender = null;
+      _selectedDiagnosis = null;
     });
   }
 
@@ -36,8 +36,8 @@ class _SearchFieldsState extends State<SearchFields> {
             border: OutlineInputBorder(),
           ),
         ),
-        const SizedBox(height: 10),
-        _buildDropdownRow(),
+        // const SizedBox(height: 10),
+        // _buildDropdownRow(),
         const SizedBox(height: 10),
         _buildButtonsRow(),
       ],
@@ -58,8 +58,7 @@ class _SearchFieldsState extends State<SearchFields> {
           onPressed: () {
             widget.onSearch(
               _searchController.text,
-              _selectedStatus ?? "",
-              _selectedGender ?? "",
+              // _selectedDiagnosis ?? "",
             );
           },
           child: const Text('Search'),
@@ -81,43 +80,21 @@ class _SearchFieldsState extends State<SearchFields> {
       children: [
         Expanded(
           child: DropdownButtonFormField<String>(
-            value: _selectedStatus,
-            hint: const Text('Select Status'),
+            value: _selectedDiagnosis,
+            hint: const Text('Select Category'),
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
             ),
-            items: ApplicationStatus.values.map((status) {
+            items: DiagnosisStatus.values.map((status) {
               final displayName = status.displayName;
               return DropdownMenuItem(
-                value: displayName,
+                value: status.jsonName,
                 child: Text(displayName),
               );
             }).toList(),
             onChanged: (value) {
               setState(() {
-                _selectedStatus = value;
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            value: _selectedGender,
-            hint: const Text('Select Gender'),
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-            items: Gender.values.map((gender) {
-              final genderName = gender.displayName;
-              return DropdownMenuItem(
-                value: genderName,
-                child: Text(genderName),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedGender = value;
+                _selectedDiagnosis = value;
               });
             },
           ),

@@ -72,11 +72,11 @@ class MedicalRecordApiService extends TokenService{
       }
       throw Exception('Failed to create record: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to create record: $e');
+      throw Exception('Failed to create record: ${e.toString()}');
     }
   }
 
-  Future<MedicalRecord> updateApplication(
+  Future<MedicalRecord> updateRecord(
       {required MedicalRecord record}) async {
     try {
       String? token = await getAccessToken(storage);

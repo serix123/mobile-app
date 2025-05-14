@@ -49,7 +49,7 @@ class MedicalRecordProvider with ChangeNotifier {
           visitDate : record.visitDate,
           diagnosisCategory : record.diagnosisCategory,
           diagnosisDetails : record.diagnosisDetails,
-          treatment : record.treatment,
+          treatments : record.treatments,
           attendingDoctor : record.attendingDoctor,
           doctorName : record.doctorName,
           notes : record.notes,
@@ -63,25 +63,25 @@ class MedicalRecordProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateApplication(MedicalRecord record) async {
+  Future<void> updateRecord(MedicalRecord record) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      await _apiService.updateApplication(record: record);
+      final newRecord = await _apiService.updateRecord(record: record);
       final index = _records.indexWhere((v) => v.id == record.id);
       _records[index] = _records[index].copyWith(
-        id : record.id,
-        patient : record.patient,
-        patientDetails : record.patientDetails,
-        visitDate : record.visitDate,
-        diagnosisCategory : record.diagnosisCategory,
-        diagnosisDetails : record.diagnosisDetails,
-        treatment : record.treatment,
-        attendingDoctor : record.attendingDoctor,
-        doctorName : record.doctorName,
-        notes : record.notes,
-        followUpDate : record.followUpDate,
+        id : newRecord.id,
+        patient : newRecord.patient,
+        patientDetails : newRecord.patientDetails,
+        visitDate : newRecord.visitDate,
+        diagnosisCategory : newRecord.diagnosisCategory,
+        diagnosisDetails : newRecord.diagnosisDetails,
+        treatments : newRecord.treatments,
+        attendingDoctor : newRecord.attendingDoctor,
+        doctorName : newRecord.doctorName,
+        notes : newRecord.notes,
+        followUpDate : newRecord.followUpDate,
       );
       notifyListeners();
     } catch (e) {
@@ -114,7 +114,7 @@ class MedicalRecordProvider with ChangeNotifier {
     try {
       bool success = await _apiService.deleteRecord(recordId);
       if (success) {
-        _records.removeWhere((issue) => issue.id == recordId);
+        _records.removeWhere((record) => record.id == recordId);
         notifyListeners();
       }
     } catch (e) {

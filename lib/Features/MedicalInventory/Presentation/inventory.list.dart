@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Core/Presentation/Components/adminWrapper.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/paginationControls.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
+import 'package:online_reservation/Features/MedicalInventory/Data/Model/inventory.model.dart';
+import 'package:online_reservation/Features/MedicalInventory/Domain/category.repository.dart';
 import 'package:online_reservation/Features/MedicalInventory/Domain/inventory.repository.dart';
-import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
-import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.form.view.dart';
-import 'package:online_reservation/Features/MedicalRecords/Presentation/widget/list.item.dart';
-import 'package:online_reservation/Features/MedicalRecords/Presentation/widget/search.widget.dart';
+import 'package:online_reservation/Features/MedicalInventory/Domain/supplier.repository.dart';
+import 'package:online_reservation/Features/MedicalInventory/Presentation/widget/list.item.dart';
+import 'package:online_reservation/Features/MedicalInventory/Presentation/widget/search.widget.dart';
+import 'package:online_reservation/Utils/utils.dart';
 import 'package:online_reservation/config/app.color.dart';
 import 'package:provider/provider.dart';
-import 'package:online_reservation/Core/Domain/user.info.repository.dart';
-import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
-import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
-import 'package:online_reservation/Features/MedicalRecords/Domain/MedicalRecord.repository.dart';
 
 const _tableHeaderStyle = TextStyle(
   fontWeight: FontWeight.bold,
@@ -24,17 +25,18 @@ const _tableCellStyle = TextStyle(
   fontSize: 14,
 );
 
-class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
-  static const String screenId = "/medRecords";
-  static const String title = "Medical Records";
-  const MedicalRecordsList({super.key});
+class InventoryList extends StatelessWidget with WidgetsBindingObserver {
+  static const String screenId = "/inventoryList";
+  static const String title = "Inventory";
+  const InventoryList({super.key});
 
-  Future<void> _handleDeleteRecord(BuildContext context, int recordId) async {
+  Future<void> _handleDeleteMedicine(
+      BuildContext context, int medicineId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this record?'),
+        content: const Text('Are you sure you want to delete this item?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -50,11 +52,11 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
 
     if (confirmed == true) {
       try {
-        await context.read<MedicalRecordProvider>().deleteRecord(recordId);
+        await context.read<InventoryProvider>().deleteMedicine(medicineId);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Record deleted successfully')),
+          const SnackBar(content: Text('Item deleted successfully')),
         );
-        await context.read<MedicalRecordProvider>().getRecords();
+        await context.read<InventoryProvider>().getMedicines();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Delete failed: $e')),
@@ -63,19 +65,65 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
     }
   }
 
+  void _handleShowDetails(BuildContext context, Medicine medicine) {
+    // Show medicine details
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(medicine.name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Description: ${medicine.description}'),
+            const SizedBox(height: 8),
+            Text(
+                'Quantity: ${medicine.quantity} ${medicine.quantityUnit.displayName}'),
+            const SizedBox(height: 8),
+            Text('Category: ${medicine.category.name}'),
+            const SizedBox(height: 8),
+            Text('Supplier: ${medicine.supplier.name}'),
+            if (medicine.lastRestockDate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                  'Last Restock: ${Utils.formatDateISO(medicine.lastRestockDate!)}'),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.wait([
         Provider.of<UserInfoProvider>(context, listen: false).getUserInfo(),
-        Provider.of<MedicalRecordProvider>(context, listen: false).getRecords(),
         Provider.of<InventoryProvider>(context, listen: false).getMedicines(),
+        Provider.of<CategoryProvider>(context, listen: false).getCategories(),
+        Provider.of<SupplierProvider>(context, listen: false).getSuppliers(),
       ]);
     });
     return ResponsiveLayout(
       mobileBody: _mobileBody(),
       desktopBody: _desktopBody(),
       title: const Text(title),
+      actions: [
+
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(context).pushNamed(
+                  RouteGenerator.inventoryItemScreen);
+            },
+          )
+      ],
       currentRoute: screenId,
     );
   }
@@ -83,11 +131,11 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
   Widget _searchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Consumer<MedicalRecordProvider>(
+      child: Consumer<InventoryProvider>(
         builder: (context, provider, child) {
           return SearchFields(
-            onSearch: (text, category) {
-              provider.getRecords(query: text, category: category);
+            onSearch: (query) {
+              provider.getMedicines(query: query);
             },
           );
         },
@@ -108,30 +156,30 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
             _searchBar(),
             _paginationControls(),
             Expanded(
-              child: Consumer<MedicalRecordProvider>(
+              child: Consumer<InventoryProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (provider.error != null) return _buildErrorState(provider);
-                  if (provider.records.isEmpty) {
+                  if (provider.medicines.isEmpty) {
                     return _buildEmptyState(provider);
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.all(16),
-                    itemCount: provider.records.length,
+                    itemCount: provider.medicines.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final record = provider.records[index];
-                      final config = MedicalRecordFormConfig(
-                          patientId: record.patient, initialData: record);
-                      return RecordListItem(
-                          record: record,
+                      final medicine = provider.medicines[index];
+                      return InventoryListItem(
+                          medicine: medicine,
+                          onShow: () => _handleShowDetails(context, medicine),
                           onEdit: () => Navigator.of(context).pushNamed(
-                              RouteGenerator.medicalRecordFormScreen,
-                              arguments: config),
-                          onDelete: () => _handleDeleteRecord(context, record.id));
+                              RouteGenerator.inventoryItemScreen,
+                              arguments: medicine),
+                          onDelete: () =>
+                              _handleDeleteMedicine(context, medicine.id));
                     },
                   );
                 },
@@ -157,13 +205,12 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
             children: [
               _searchBar(),
               _paginationControls(),
-              Consumer<MedicalRecordProvider>(
-                  builder: (context, provider, child) {
+              Consumer<InventoryProvider>(builder: (context, provider, child) {
                 if (provider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (provider.error != null) return _buildErrorState(provider);
-                if (provider.records.isEmpty) {
+                if (provider.medicines.isEmpty) {
                   return _buildEmptyState(provider);
                 }
                 return Padding(
@@ -194,19 +241,18 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
                           },
                         ),
                         columns: [
-                          const DataColumn(label: Text('Full Name')),
-                          const DataColumn(label: Text('Diagnosis')),
-                          const DataColumn(label: Text('Details')),
-                          const DataColumn(label: Text('Treatment')),
-                          const DataColumn(label: Text('Physician')),
-                          const DataColumn(label: Text('Actions')),
-                          // DataColumn(label: Text('Status')),
+                          const DataColumn(label: Text('Name')),
+                          const DataColumn(label: Text('Category')),
+                          const DataColumn(label: Text('Quantity')),
+                          const DataColumn(label: Text('Supplier')),
+                          const DataColumn(label: Text('Last Restock Date')),
+                          const DataColumn(label: Text('Action')),
                           if (userInfoProvider.user!.isStaff)
                             const DataColumn(label: Text('Admin Actions')),
                         ],
-                        rows: provider.records
-                            .map((record) =>
-                                _buildDataRow(context: context, record: record))
+                        rows: provider.medicines
+                            .map((medicine) => _buildDataRow(
+                                context: context, medicine: medicine))
                             .toList()),
                   )),
                 );
@@ -219,17 +265,18 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
   }
 
   DataRow _buildDataRow(
-      {required BuildContext context, required MedicalRecord record}) {
+      {required BuildContext context, required Medicine medicine}) {
     final isStaff =
         Provider.of<UserInfoProvider>(context, listen: false).user!.isStaff;
-    final provider = context.read<MedicalRecordProvider>();
+    final provider = context.read<InventoryProvider>();
     return DataRow(
       cells: [
-        DataCell(Text(record.patientDetails.fullName)),
-        DataCell(Text(record.diagnosisCategory.displayName)),
-        DataCell(Text(record.diagnosisDetails ?? "")),
-        DataCell(Text(record.treatments.isEmpty ? "N/A" : "Prescribed")),
-        DataCell(Text(record.doctorName ?? "")),
+        DataCell(Text(medicine.name)),
+        DataCell(Text(medicine.category.name)),
+        DataCell(
+            Text("${medicine.quantity} ${medicine.quantityUnit.displayName}")),
+        DataCell(Text(medicine.supplier.name)),
+        DataCell(Text(Utils.formatDateISO(medicine.lastRestockDate))),
         DataCell(
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -237,9 +284,7 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
               _buildActionButton(
                   icon: Icons.remove_red_eye,
                   color: Colors.teal,
-                  onPressed: () => Navigator.of(context).pushNamed(
-                      RouteGenerator.medicalRecordScreen,
-                      arguments: record),
+                  onPressed: () => _handleShowDetails(context, medicine),
                   tooltip: "Open"),
             ],
           ),
@@ -252,18 +297,14 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
                 _buildAdminActionButton(
                   icon: Icons.edit,
                   color: Colors.blue,
-                  onPressed: () {
-                    final config = MedicalRecordFormConfig(
-                        patientId: record.patient, initialData: record);
-                    Navigator.of(context).pushNamed(
-                        RouteGenerator.medicalRecordFormScreen,
-                        arguments: config);
-                  },
+                  onPressed: () => Navigator.of(context).pushNamed(
+                      RouteGenerator.inventoryItemScreen,
+                      arguments: medicine),
                 ),
                 _buildAdminActionButton(
                   icon: Icons.delete,
                   color: Colors.red,
-                  onPressed: () => _handleDeleteRecord(context, record.id),
+                  onPressed: () => _handleDeleteMedicine(context, medicine.id),
                 ),
               ],
             ),
@@ -303,8 +344,26 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildErrorState(InventoryProvider provider) {
+    return GenericErrorState(
+        errorMessage: provider.error ?? "Cannot retrieve inventory items",
+        onRetry: () async => await provider.getMedicines());
+  }
+
+  Widget _buildEmptyState(InventoryProvider provider) {
+    return GenericEmptyState(
+      title: 'No Items Found.',
+      description: 'When new items are created, they will appear here',
+      icon: Icons.assignment_outlined,
+      actionButton: ElevatedButton(
+        onPressed: () => provider.getMedicines(),
+        child: const Text('Reload'),
+      ),
+    );
+  }
+
   Widget _paginationControls() {
-    return Consumer<MedicalRecordProvider>(
+    return Consumer<InventoryProvider>(
       builder: (context, provider, _) {
         return PaginationControls(
             hasNext: provider.hasNext,
@@ -312,24 +371,6 @@ class MedicalRecordsList extends StatelessWidget with WidgetsBindingObserver {
             onNext: provider.loadNextPage,
             onPrevious: provider.loadPreviousPage);
       },
-    );
-  }
-
-  Widget _buildErrorState(MedicalRecordProvider provider) {
-    return GenericErrorState(
-        errorMessage: provider.error ?? "Cannot retrieve medical records",
-        onRetry: () async => await provider.getRecords());
-  }
-
-  Widget _buildEmptyState(MedicalRecordProvider provider) {
-    return GenericEmptyState(
-      title: 'No Records Found.',
-      description: 'When new records are created, they will appear here',
-      icon: Icons.assignment_outlined,
-      actionButton: ElevatedButton(
-        onPressed: () => provider.getRecords(),
-        child: const Text('Reload'),
-      ),
     );
   }
 }

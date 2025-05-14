@@ -38,7 +38,10 @@ class RecordListItem extends StatelessWidget {
                 children: [
                   _buildInfoRow('Full Name', record.patientDetails.fullName),
                   _buildInfoRow('Diagnosis', record.diagnosisDetails ?? ""),
-                  _buildInfoRow('Treatment', record.treatment ?? ""),
+                  ...record.treatments.map((treatment) {
+                    return _buildInfoRow('Medicine', treatment.medicineName ?? "");
+                  },),
+                  // _buildInfoRow('Treatment', record.treatments ?? ""),
                   _buildInfoRow('Doctor', record.doctorName ?? ""),
                   _buildInfoRow('Visit Date', Utils.formatDateISO(record.visitDate)),
                   if (record.followUpDate != null)

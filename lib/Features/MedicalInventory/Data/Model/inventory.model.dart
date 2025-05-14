@@ -1,11 +1,51 @@
-import 'dart:convert';
+import 'package:online_reservation/Features/MedicalInventory/Data/Model/category.model.dart';
+import 'package:online_reservation/Features/MedicalInventory/Data/Model/supplier.model.dart';
+
+enum MedicineUnit {
+  units('UN', 'Units'),
+  packs('PC', 'Packs'),
+  bottles('BT', 'Bottles'),
+  boxes('BX', 'Boxes'),
+  vials('VL', 'Vials');
+
+  final String code;
+  final String displayName;
+
+  const MedicineUnit(this.code, this.displayName);
+
+  static MedicineUnit? fromCode(String code) {
+    try {
+      return MedicineUnit.values.firstWhere((unit) => unit.code == code);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static MedicineUnit? fromDisplayName(String displayName) {
+    try {
+      return MedicineUnit.values.firstWhere(
+              (unit) => unit.displayName == displayName);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static List<String> get displayNames {
+    return MedicineUnit.values.map((unit) => unit.displayName).toList();
+  }
+
+  static List<String> get codes {
+    return MedicineUnit.values.map((unit) => unit.code).toList();
+  }
+}
+
 
 class Medicine {
   final int id;
   final String name;
   final String description;
   final int quantity;
-  final String quantityUnit;
+  final MedicineUnit quantityUnit;
   final Category category;
   final Supplier supplier;
   final DateTime? lastRestockDate;
@@ -26,7 +66,7 @@ class Medicine {
     String? name,
     String? description,
     int? quantity,
-    String? quantityUnit,
+    MedicineUnit? quantityUnit,
     Category? category,
     Supplier? supplier,
     DateTime? lastRestockDate,
@@ -49,7 +89,7 @@ class Medicine {
       name: json['name'],
       description: json['description'],
       quantity: json['quantity'],
-      quantityUnit: json['quantity_unit'],
+      quantityUnit: MedicineUnit.fromCode(json['quantity_unit']) ?? MedicineUnit.units,
       category: Category.fromJson(json['category']),
       supplier: Supplier.fromJson(json['supplier']),
       lastRestockDate: json['last_restock_date'] != null
@@ -64,108 +104,12 @@ class Medicine {
       'name': name,
       'description': description,
       'quantity': quantity,
-      'quantity_unit': quantityUnit,
-      'category': category.toJson(),
-      'supplier': supplier.toJson(),
+      'quantity_unit': quantityUnit.code,
+      'category_id': category.id,
+      'supplier_id': supplier.id,
+      // 'category': category.toJson(),
+      // 'supplier': supplier.toJson(),
       'last_restock_date': lastRestockDate?.toIso8601String(),
-    };
-  }
-}
-
-class Category {
-  final int id;
-  final String name;
-  final String description;
-
-  Category({
-    required this.id,
-    required this.name,
-    required this.description,
-  });
-
-  Category copyWith({
-    int? id,
-    String? name,
-    String? description,
-  }) {
-    return Category(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-    );
-  }
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-    };
-  }
-}
-
-class Supplier {
-  final int id;
-  final String name;
-  final String contactPerson;
-  final String email;
-  final String phoneNumber;
-  final String address;
-
-  Supplier({
-    required this.id,
-    required this.name,
-    required this.contactPerson,
-    required this.email,
-    required this.phoneNumber,
-    required this.address,
-  });
-
-  Supplier copyWith({
-    int? id,
-    String? name,
-    String? contactPerson,
-    String? email,
-    String? phoneNumber,
-    String? address,
-  }) {
-    return Supplier(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      contactPerson: contactPerson ?? this.contactPerson,
-      email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      address: address ?? this.address,
-    );
-  }
-
-  factory Supplier.fromJson(Map<String, dynamic> json) {
-    return Supplier(
-      id: json['id'],
-      name: json['name'],
-      contactPerson: json['contact_person'],
-      email: json['email'],
-      phoneNumber: json['phone_number'],
-      address: json['address'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'contact_person': contactPerson,
-      'email': email,
-      'phone_number': phoneNumber,
-      'address': address,
     };
   }
 }

@@ -404,7 +404,7 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
           if (_profile.verificationStatus == ApplicationStatus.PENDING) ...[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: kGreenNormal, // ✅ Make it green
+                backgroundColor: Colors.teal, // ✅ Make it green
                 foregroundColor: Colors.white, // ✅ White text
               ),
               onPressed: _verifyApplication,
@@ -413,8 +413,8 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
             const SizedBox(width: 10),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
-                  foregroundColor: kGreenNormal,
-                  side: const BorderSide(color: kGreenNormal)),
+                  foregroundColor: Colors.teal,
+                  side: const BorderSide(color: Colors.teal)),
               onPressed: _rejectApplication,
               child: const Text('Reject'),
             ),
@@ -422,7 +422,7 @@ class _PatientApplicationScreenState extends State<PatientApplicationScreen> {
               ApplicationStatus.VERIFIED) ...[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: kGreenNormal, // ✅ Make it green
+                backgroundColor: Colors.teal, // ✅ Make it green
                 foregroundColor: Colors.white, // ✅ White text
               ),
               onPressed: _resetApplication,

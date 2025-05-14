@@ -52,8 +52,9 @@ class CustomNavigationDrawer extends StatelessWidget {
                         .pushNamed(RouteGenerator.homeScreen),
                     selected: currentRoute == RouteGenerator.homeScreen,
                   ),
-                if(provider.user!.isStaff)
-                 ...[ _createDrawerItem(
+                // if(provider.user!.isStaff)
+                //  ...[
+                   _createDrawerItem(
                     context: context,
                     icon: Icons.menu_book,
                     text: 'Medical Records',
@@ -61,14 +62,15 @@ class CustomNavigationDrawer extends StatelessWidget {
                         .pushNamed(RouteGenerator.medicalRecordsList),
                     selected: currentRoute == RouteGenerator.medicalRecordsList,
                   ),
+                   if(provider.user!.isStaff)
+                  ...[
                   _createDrawerItem(
                     context: context,
                     icon: Icons.screen_search_desktop,
                     text: 'Inventory',
-                    onTap: () {},
-                    // onTap: () => Navigator.of(context)
-                    //     .pushNamed(RouteGenerator.issuesListScreen),
-                    selected: currentRoute == RouteGenerator.issuesListScreen,
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.inventoryList),
+                    selected: currentRoute == RouteGenerator.inventoryList,
                   ),]
                   // if(provider.user!.isSuperuser)
                   // _createDrawerItem(
@@ -129,7 +131,7 @@ class CustomNavigationDrawer extends StatelessWidget {
             child: ListTile(
               leading: const Icon(
                 Icons.exit_to_app,
-                color: kGreenNormal,
+                color: Colors.teal,
               ),
               title: const Text('Logout'),
               onTap: () {
@@ -161,7 +163,7 @@ class CustomNavigationDrawer extends StatelessWidget {
     required bool selected,
   }) {
     return ListTile(
-      leading: Icon(icon, color: kGreenNormal),
+      leading: Icon(icon, color: Colors.teal),
       title: Text(text),
       onTap: onTap,
       selected: selected,

@@ -142,7 +142,7 @@ class Treatment {
       'dispensed_quantity': dispensedQuantity,
       if (startDate != null) 'start_date': startDate,
       if (durationDays != null) 'duration_days': durationDays,
-      'medical_record': medicalRecord,
+      // 'medical_record': medicalRecord,
       'medicine': medicine,
       if (notes != null) 'notes': notes,
     };

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Domain/user.info.repository.dart';
 import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/config/config.dart';
+import 'package:online_reservation/config/test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
@@ -48,6 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    // if(kDebugMode){
+    //   emailController.text = email;
+    //   passwordController.text = pw;
+    // }
   }
 
   @override
@@ -96,17 +102,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: emailController,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.green.shade50,
+                    fillColor: Colors.teal.shade50,
                     labelText: 'Email',
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.green.shade50,
+                        color: Colors.teal.shade50,
                         width: 2,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.green.shade50,
+                        color: Colors.teal.shade50,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(6),
@@ -126,16 +132,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     filled: true,
-                    fillColor: Colors.green.shade50,
+                    fillColor: Colors.teal.shade50,
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.green.shade50,
+                        color: Colors.teal.shade50,
                         width: 2,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.green.shade50,
+                        color: Colors.teal.shade50,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(6),

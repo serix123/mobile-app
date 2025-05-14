@@ -51,9 +51,11 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
       _initData(context);
     });
     return ResponsiveLayout(
-        mobileBody: _mobileBody(),
-        desktopBody: _desktopBody(),
-        title: const Text(title));
+      mobileBody: _mobileBody(),
+      desktopBody: _desktopBody(),
+      title: const Text(title),
+      currentRoute: screenId,
+    );
   }
 
   Widget _searchBar() {
@@ -225,7 +227,7 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
             children: [
               _buildActionButton(
                   icon: Icons.remove_red_eye,
-                  color: kGreenNormal,
+                  color: Colors.teal,
                   onPressed: () => Navigator.of(context).pushNamed(
                       RouteGenerator.patientApplicationScreen,
                       arguments: patient),
@@ -234,7 +236,7 @@ class ApplicationList extends StatelessWidget with WidgetsBindingObserver {
                   patient.verificationStatus == ApplicationStatus.VERIFIED)
                 _buildActionButton(
                     icon: Icons.playlist_add_outlined,
-                    color: kGreenNormal,
+                    color: Colors.teal,
                     onPressed: () => Navigator.of(context).pushNamed(
                         RouteGenerator.medicalRecordFormScreen,
                         arguments: patient.id),

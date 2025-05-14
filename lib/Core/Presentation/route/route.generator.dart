@@ -13,6 +13,9 @@ import 'package:online_reservation/Features/MedApplication/Presentation/applicat
 import 'package:online_reservation/Features/MedApplication/Presentation/application.list.view.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/application.profile.dart';
 import 'package:online_reservation/Features/MedApplication/Presentation/application.view.dart';
+import 'package:online_reservation/Features/MedicalInventory/Data/Model/inventory.model.dart';
+import 'package:online_reservation/Features/MedicalInventory/Presentation/inventory.list.dart';
+import 'package:online_reservation/Features/MedicalInventory/Presentation/inventory.view.dart';
 import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
 import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.form.view.dart';
 import 'package:online_reservation/Features/MedicalRecords/Presentation/MedicalRecord.list.view.dart';
@@ -49,23 +52,39 @@ class RouteGenerator {
   static const medicalRecordsList = MedicalRecordsList.screenId;
   static const medicalRecordScreen = MedicalRecordScreen.screenId;
   static const medicalRecordFormScreen = MedicalRecordFormScreen.screenId;
-
+  static const inventoryList = InventoryList.screenId;
+  static const inventoryItemScreen = InventoryItemScreen.screenId;
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
-
     final args = settings.arguments;
 
     switch (settings.name) {
       case homeScreen:
         return MaterialPageRoute(builder: (ctx) {
           final authProvider = Provider.of<AuthProvider>(ctx, listen: false);
-          final userInfoProvider = Provider.of<UserInfoProvider>(ctx, listen: false);
+          final userInfoProvider =
+              Provider.of<UserInfoProvider>(ctx, listen: false);
           final isLoggedIn = authProvider.isLoggedIn;
           final isStaff = userInfoProvider.user?.isStaff;
           if (!isLoggedIn) return const LoginScreen();
-          if(userInfoProvider.user == null) return const LoginScreen();
-          return isStaff! ? const ApplicationList() : const PatientProfileScreen();
+          if (userInfoProvider.user == null) return const LoginScreen();
+          return isStaff!
+              ? const ApplicationList()
+              : const PatientProfileScreen();
         });
+
+      case inventoryList:
+        return MaterialPageRoute(builder: (_) => const InventoryList());
+
+      case inventoryItemScreen:
+        if (args is Medicine) {
+          return MaterialPageRoute(
+            builder: (_) => InventoryItemScreen(
+              medicine: args,
+            ),
+          );
+        }
+        return MaterialPageRoute(builder: (_) => InventoryItemScreen());
 
       case applicationList:
         return MaterialPageRoute(builder: (_) => const ApplicationList());
@@ -76,7 +95,10 @@ class RouteGenerator {
       case applicationForm:
         if (args is ApplicationFormConfig) {
           return MaterialPageRoute(
-            builder: (_) => ApplicationForm(initialData: args.initialData,applicationFormMode: args.applicationFormMode, ),
+            builder: (_) => ApplicationForm(
+              initialData: args.initialData,
+              applicationFormMode: args.applicationFormMode,
+            ),
           );
         }
         return _errorRoute();
@@ -87,7 +109,9 @@ class RouteGenerator {
       case medicalRecordScreen:
         if (args is MedicalRecord) {
           return MaterialPageRoute(
-            builder: (_) => MedicalRecordScreen(record: args, ),
+            builder: (_) => MedicalRecordScreen(
+              record: args,
+            ),
           );
         }
         return _errorRoute();
@@ -95,11 +119,16 @@ class RouteGenerator {
       case medicalRecordFormScreen:
         if (args is MedicalRecordFormConfig) {
           return MaterialPageRoute(
-            builder: (_) => MedicalRecordFormScreen(initialData: args.initialData,patientId: args.patientId, ),
+            builder: (_) => MedicalRecordFormScreen(
+              initialData: args.initialData,
+              patientId: args.patientId,
+            ),
           );
         }
         return MaterialPageRoute(
-          builder: (_) => MedicalRecordFormScreen(patientId: args as int,),
+          builder: (_) => MedicalRecordFormScreen(
+            patientId: args as int,
+          ),
         );
 
       case patientApplicationScreen:
@@ -120,7 +149,6 @@ class RouteGenerator {
         return _errorRoute();
     }
   }
-
 
   static Route<dynamic> _errorRoute() {
     return MaterialPageRoute(

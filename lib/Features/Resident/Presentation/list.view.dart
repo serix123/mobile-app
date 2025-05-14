@@ -112,7 +112,7 @@ class ResidentListItem extends StatelessWidget {
       case 'admin':
         return Colors.red.shade700;
       case 'officer':
-        return kGreenNormal;
+        return Colors.teal;
       default:
         return Colors.grey.shade600;
     }

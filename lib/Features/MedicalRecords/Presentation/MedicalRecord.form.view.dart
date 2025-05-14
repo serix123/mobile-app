@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Features/MedApplication/Data/Model/application.model.dart';
+import 'package:online_reservation/Features/MedicalInventory/Domain/inventory.repository.dart';
 import 'package:online_reservation/Features/MedicalRecords/Data/Model/medicalRecord.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Data/Model/treatment.model.dart';
+import 'package:online_reservation/Features/MedicalRecords/Domain/MedicalRecord.repository.dart';
+import 'package:online_reservation/Features/MedicalRecords/Presentation/widget/medicine.modal.dart';
+import 'package:provider/provider.dart';
 
 class MedicalRecordFormConfig {
   final int patientId;
@@ -28,32 +34,67 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
   final _formKey = GlobalKey<FormState>(); // Example categories
 
   // Controllers
+  // late List<Medicine> _medicines;
+  List<Treatment> _treatments = [];
   late DiagnosisStatus _diagnosisCategory;
   late TextEditingController _diagnosisDetailsController;
-  late TextEditingController _treatmentController;
   late TextEditingController _notesController;
   DateTime? _followUpDate;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Provider.of<InventoryProvider>(context, listen: false)
+          .getMedicines();
+    });
     // Initialize with existing data if editing
     final initial = widget.initialData;
     _diagnosisCategory = initial?.diagnosisCategory ?? DiagnosisStatus.OTH;
     _diagnosisDetailsController =
         TextEditingController(text: initial?.diagnosisDetails);
-    _treatmentController = TextEditingController(text: initial?.treatment);
     _notesController = TextEditingController(text: initial?.notes);
     _followUpDate = initial?.followUpDate;
+    _treatments = initial?.treatments ?? [];
   }
 
   @override
   void dispose() {
     _diagnosisCategory;
     _diagnosisDetailsController.dispose();
-    _treatmentController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  void _selectMedicines() async {
+    final selectedMedicines =
+        await showMedicineSelectionModal(context: context);
+    final List<Treatment> treatments = selectedMedicines.map(
+      (medicine) {
+        return Treatment(
+            prescribedQuantity: 1, // Default value
+            dispensedQuantity: 1, // Default value
+            frequency: Frequency.bid, // Default value
+            medicalRecord: widget.initialData?.id ?? 0,
+            medicine: medicine.id);
+      },
+    ).toList();
+    setState(() {
+      // _medicines = selectedMedicines;
+      _treatments = treatments;
+    });
+  }
+
+  void _updateTreatment(int index, Treatment updatedTreatment) {
+    setState(() {
+      _treatments[index] = updatedTreatment;
+    });
+  }
+
+  void _removeTreatment(int index) {
+    setState(() {
+      _treatments.removeAt(index);
+    });
   }
 
   Future<void> _selectFollowUpDate() async {
@@ -69,40 +110,79 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final medicalRecord = MedicalRecord(
-        id: widget.initialData?.id ?? 0, // ID would typically come from backend
-        patient: widget.patientId,
-        patientDetails: widget.initialData?.patientDetails ??
-            PatientProfile(
-              id: 0,
-              firstName: '',
-              lastName: '',
-              email: '',
-              dob: DateTime.now(),
-              gender: Gender.OTHER,
-              contactNumber: '',
-              address: '',
-              verificationStatus: ApplicationStatus.UNVERIFIED,
-              idDocument: '',
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            ),
-        visitDate: DateTime.now(),
-        diagnosisCategory: _diagnosisCategory,
-        diagnosisDetails: _diagnosisDetailsController.text,
-        treatment: _treatmentController.text,
-        attendingDoctor: widget.initialData?.attendingDoctor ?? 0,
-        notes: _notesController.text,
-        followUpDate: _followUpDate,
-      );
+  void _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
 
-      // Handle submission (e.g., API call)
-      print('Submitting: ${medicalRecord.toJson()}');
+    final shouldSubmit = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false, // user must tap a button
+        builder: (ctx) => AlertDialog(
+                title: const Text('Confirm Submission'),
+                content:
+                    const Text('Are you sure you want to submit this form?'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel')),
+                  TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Yes, submit')),
+                ]));
 
+    if (shouldSubmit != true) return;
+    final provider = context.read<MedicalRecordProvider>();
+
+    final medicalRecord = MedicalRecord(
+      id: widget.initialData?.id ?? 0, // ID would typically come from backend
+      patient: widget.patientId,
+      patientDetails: widget.initialData?.patientDetails ??
+          PatientProfile(
+            id: 0,
+            firstName: '',
+            lastName: '',
+            email: '',
+            dob: DateTime.now(),
+            gender: Gender.OTHER,
+            contactNumber: '',
+            address: '',
+            verificationStatus: ApplicationStatus.UNVERIFIED,
+            idDocument: '',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+      visitDate: DateTime.now(),
+      diagnosisCategory: _diagnosisCategory,
+      diagnosisDetails: _diagnosisDetailsController.text,
+      attendingDoctor: widget.initialData?.attendingDoctor ?? 0,
+      notes: _notesController.text,
+      followUpDate: _followUpDate,
+      treatments: _treatments,
+    );
+
+    try {
+      if (widget.initialData != null) {
+        await provider.updateRecord(medicalRecord);
+      } else {
+        await provider.createRecord(medicalRecord);
+      }
+      print("error : ${provider.error}");
+      if (provider.error != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Submitted successfully!')));
+        }
+      }
+      await provider.getRecords();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      }
+    } finally {
       // Navigate back
-      Navigator.pop(context, medicalRecord);
+      if (mounted) Navigator.pop(context, medicalRecord);
+      print('Submitting: ${medicalRecord.toJson()}');
     }
   }
 
@@ -148,7 +228,6 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
                 }
               },
             ),
-
             const SizedBox(height: 20),
 
             // Details
@@ -160,18 +239,32 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
               ),
               maxLines: 4,
             ),
-
             const SizedBox(height: 30),
 
             // Treatment
-            TextFormField(
-              controller: _treatmentController,
-              decoration: const InputDecoration(
-                labelText: 'Treatment',
-                border: OutlineInputBorder(),
+            if (_treatments.isEmpty)
+              ElevatedButton(
+                onPressed: _selectMedicines,
+                child: const Text('Select medicines'),
               ),
-              maxLines: 4,
-            ),
+            if (_treatments.isNotEmpty) ...[
+              ..._treatments.asMap().entries.map((entry) {
+                final index = entry.key;
+                final treatment = entry.value;
+
+                return _buildTreatmentForm(
+                  treatment: treatment,
+                  onChanged: (updatedTreatment) =>
+                      _updateTreatment(index, updatedTreatment),
+                  onRemoved: () => _removeTreatment(index),
+                );
+              }),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _selectMedicines,
+                child: const Text('Add More Medicines'),
+              ),
+            ],
 
             const SizedBox(height: 30),
 
@@ -184,7 +277,6 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
               ),
               maxLines: 4,
             ),
-
             const SizedBox(height: 30),
 
             // Submit Button
@@ -199,6 +291,122 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTreatmentForm({
+    required Treatment treatment,
+    required Function(Treatment) onChanged,
+    required VoidCallback onRemoved,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                treatment.medicineName ?? "Generic medicine",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: onRemoved,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  initialValue: treatment.prescribedQuantity.toString(),
+                  decoration: const InputDecoration(
+                    labelText: 'Prescribed Qty.',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Required';
+                    final num = int.tryParse(value);
+                    if (num == null) return 'Enter a valid number';
+                    if (num <= 0) return 'Must be positive';
+                    return null;
+                  },
+                  onChanged: (value) {
+                    onChanged(treatment.copyWith(
+                      prescribedQuantity: int.tryParse(value) ?? 0,
+                    ));
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  initialValue: treatment.dispensedQuantity.toString(),
+                  decoration: const InputDecoration(
+                    labelText: 'Dispensed Qty',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Required';
+                    final num = int.tryParse(value);
+                    if (num == null) return 'Enter a valid number';
+                    if (num <= 0) return 'Must be positive';
+                    if (num > treatment.prescribedQuantity) {
+                      return 'Cannot exceed prescribed';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    onChanged(treatment.copyWith(
+                      dispensedQuantity: int.tryParse(value) ?? 0,
+                    ));
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<Frequency>(
+            value: treatment.frequency!,
+            items: Frequency.values.map((freq) {
+              return DropdownMenuItem(
+                value: freq,
+                child: Text(freq.displayName),
+              );
+            }).toList(),
+            decoration: const InputDecoration(
+              labelText: 'Frequency',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              if (value != null) {
+                onChanged(treatment.copyWith(frequency: value));
+              }
+            },
+          ),
+          if (treatment.dosage != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              'Dosage: ${treatment.dosage}',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ],
+        ],
       ),
     );
   }

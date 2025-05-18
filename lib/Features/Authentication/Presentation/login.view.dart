@@ -151,13 +151,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Text('Login'),
                     ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context)
-                          .pushReplacementNamed(RouteGenerator.registerScreen);
-                    },
-                    child: const Text('Don\'t have an account? Register'),
-                  ),
+                  // TextButton(
+                  //   onPressed: () {
+                  //     Navigator.of(context)
+                  //         .pushReplacementNamed(RouteGenerator.registerScreen);
+                  //   },
+                  //   child: const Text('Don\'t have an account? Register'),
+                  // ),
                 ],
               ),
             ),

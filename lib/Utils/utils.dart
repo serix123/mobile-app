@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:intl/intl.dart';
 
 class Utils {
   // Prevents the class from being instantiated or extended
@@ -13,6 +14,11 @@ class Utils {
   static String formatDate(DateTime date) {
     // Use any date formatting logic here, for simplicity let's return ISO8601
     return date.toIso8601String();
+  }
+
+  static String formatDateISO(DateTime? date) {
+    date ??= DateTime(2000, 1, 1, 0, 0, 0);
+    return DateFormat('dd MMM yyyy').format(date);
   }
 
   // Static method for custom logging

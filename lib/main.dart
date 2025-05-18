@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Data/Service/community_resource.service.dart';
 import 'package:online_reservation/Features/CommunityResources/Domain/community_resource.repository.dart';
+import 'package:online_reservation/Features/Events/Data/Service/event.service.dart';
+import 'package:online_reservation/Features/Events/Domain/event.repository.dart';
 import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
 import 'package:online_reservation/Features/Profile/Data/Service/profile.service.dart';
@@ -67,6 +69,9 @@ class MyApp extends StatelessWidget {
         Provider(
             create: (context) =>
                 ResourceApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                EventApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
         ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
         ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
@@ -74,6 +79,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => UserProvider(context.read<UserApiService>()..getUsers())),
         ChangeNotifierProvider(create: (context) => ResidentProvider(context.read<ResidentApiService>())),
         ChangeNotifierProvider(create: (context) => ResourceProvider(context.read<ResourceApiService>())),
+        ChangeNotifierProvider(create: (context) => EventProvider(context.read<EventApiService>())),
       ],
       child: Consumer<AuthProvider>(builder: (context, authProvider, _) {
         return MaterialApp(

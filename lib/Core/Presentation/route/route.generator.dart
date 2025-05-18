@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.view.dart';
+import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
+import 'package:online_reservation/Features/Events/Presentation/event.form.dart';
+import 'package:online_reservation/Features/Events/Presentation/event.list.dart';
+import 'package:online_reservation/Features/Events/Presentation/event.view.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
@@ -15,8 +18,6 @@ import 'package:online_reservation/Features/Users/Presentation/user.list.view.da
 import 'package:online_reservation/Features/Users/Presentation/user.view.dart';
 import 'package:online_reservation/Features/Visitor/Presentation/visitor.list.view.dart';
 import 'package:online_reservation/Features/Visitor/Presentation/visitor.view.dart';
-import 'package:online_reservation/Features/Visitor/list.view.dart';
-import 'package:online_reservation/main.dart';
 import 'package:provider/provider.dart';
 
 class RouteGenerator {
@@ -34,9 +35,14 @@ class RouteGenerator {
   static const userScreen = UserScreen.screenId;
   static const resourceListScreen = ResourceListScreen.screenId;
   static const resourceFormScreen = ResourceFormScreen.screenId;
+  static const eventListScreen = EventListScreen.screenId;
+  static const eventViewScreen = EventViewScreen.screenId;
+  static const eventEditScreen = EventEditScreen.screenId;
 
-  static Route<dynamic> generateRoute(RouteSettings settings, bool isLoggedIn, BuildContext context) {
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+  static Route<dynamic> generateRoute(
+      RouteSettings settings, bool isLoggedIn, BuildContext context) {
+    final profileProvider =
+        Provider.of<ProfileProvider>(context, listen: false);
     final args = settings.arguments;
 
     if (isLoggedIn) {
@@ -130,6 +136,31 @@ class RouteGenerator {
             }
           }
           return _errorRoute();
+        case eventViewScreen:
+          if (args is Event) {
+            return MaterialPageRoute(
+              builder: (_) => EventViewScreen(
+                event: args,
+              ),
+            );
+          }
+
+          return _errorRoute();
+        case eventEditScreen:
+          if (args is Event) {
+            return MaterialPageRoute(
+              builder: (_) => EventEditScreen(
+                event: args,
+              ),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (_) => const EventEditScreen(),
+            );
+          }
+
+        case eventListScreen:
+          return MaterialPageRoute(builder: (_) => const EventListScreen());
         case resourceListScreen:
           return MaterialPageRoute(builder: (_) => const ResourceListScreen());
         case residentListScreen:

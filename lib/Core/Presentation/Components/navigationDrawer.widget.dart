@@ -53,6 +53,14 @@ class CustomNavigationDrawer extends StatelessWidget {
 
                   _createDrawerItem(
                     context: context,
+                    icon: Icons.event,
+                    text: 'Events Upcoming',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.eventListScreen),
+                    selected: currentRoute == RouteGenerator.eventListScreen,
+                  ),
+                  _createDrawerItem(
+                    context: context,
                     icon: Icons.menu_book,
                     text: 'Resource Index',
                     onTap: () => Navigator.of(context)

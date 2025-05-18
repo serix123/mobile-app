@@ -117,7 +117,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this item?'),
+          content: const Text('Are you sure you want to delete this data?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

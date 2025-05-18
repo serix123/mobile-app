@@ -196,7 +196,7 @@ class _VisitorFormScreenState extends State<VisitorFormScreen> {
                           }
                         }
                       },
-                      child: const Text('Create Item'),
+                      child: const Text('Register Visitor'),
                     ),
                 if (widget.mode == FormMode.edit)
                   if (visitProvider.isLoading)

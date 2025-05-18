@@ -102,7 +102,7 @@ class _ResourceFormScreenState extends State<ResourceFormScreen> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveLayout(
-      title: Text(widget.mode == FormMode.create ? 'Apply Visitor' : 'Update Visitor'),
+      title: Text(widget.mode == FormMode.create ? 'Register Resource' : 'Update Resource'),
       desktopBody: FormContainer(
         width: MediaQuery.of(context).size.width,
         child: buildForm(context),
@@ -186,7 +186,7 @@ class _ResourceFormScreenState extends State<ResourceFormScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
                   },
-                  child: const Text('Create Item'),
+                  child: const Text('Register Resource'),
                 ),
             if (widget.mode == FormMode.edit)
               if (resourceProvider.isLoading)

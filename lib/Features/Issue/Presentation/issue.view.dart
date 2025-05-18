@@ -189,7 +189,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       }
                     }
                   },
-                  child: const Text('Create Item'),
+                  child: const Text('Create Issue'),
                 ),
             if (widget.mode == FormMode.edit)
               if (issueProvider.isLoading)
@@ -208,7 +208,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         }
                       },
-                      child: const Text('Update Item'),
+                      child: const Text('Update Issue'),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -216,7 +216,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),
-                      child: const Text('Delete Item'),
+                      child: const Text('Delete Issue'),
                     ),
                   ],
                 ),

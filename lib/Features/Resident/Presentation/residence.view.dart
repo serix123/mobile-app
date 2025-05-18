@@ -230,7 +230,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
                             }
                           },
-                          child: const Text('Update Item'),
+                          child: const Text('Update Resident'),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -238,7 +238,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                           ),
-                          child: const Text('Delete Item'),
+                          child: const Text('Delete Resident'),
                         ),
                       ],
                     ),

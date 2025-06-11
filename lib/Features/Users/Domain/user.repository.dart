@@ -3,15 +3,16 @@ import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/Features/Users/Data/Model/user.model.dart';
 import 'package:online_reservation/Features/Users/Data/Service/user.service.dart';
 
-class UserProvider with ChangeNotifier{
-
+class UserProvider with ChangeNotifier {
   final UserApiService _apiService;
   PaginatedResults<User>? _paginatedUsers;
   bool _isLoading = false;
   String? _error;
+  User? _userInfo;
 
   UserProvider(this._apiService);
 
+  User? get userInfo => _userInfo;
   List<User> get users => _paginatedUsers?.results ?? [];
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -28,6 +29,21 @@ class UserProvider with ChangeNotifier{
     } catch (e) {
       _error = e.toString();
       _paginatedUsers = null;
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getUserInfo() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _userInfo = await _apiService.getUserInfo();
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
     }
     _isLoading = false;
     notifyListeners();
@@ -58,7 +74,15 @@ class UserProvider with ChangeNotifier{
     try {
       await _apiService.updatePermission(user: user);
       final index = _paginatedUsers!.results.indexWhere((v) => v.id == user.id);
-      _paginatedUsers!.results[index] = _paginatedUsers!.results[index].copyWith(user);
+      _paginatedUsers!.results[index] = _paginatedUsers!.results[index]
+          .copyWith(
+              email: user.email,
+              id: user.id,
+              lastName: user.lastName,
+              firstName: user.firstName,
+              isStaff: user.isStaff,
+              isSuperuser: user.isSuperuser,
+              groups: user.groups);
       notifyListeners();
     } catch (e) {
       _error = e.toString();

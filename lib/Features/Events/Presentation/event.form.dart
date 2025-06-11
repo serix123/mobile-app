@@ -111,6 +111,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
         isAttending: widget.event?.isAttending ?? false,
         createdAt: widget.event?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
+        attendeesList: widget.event?.attendeesList ?? []
       );
       final provider = context.read<EventProvider>();
       try {

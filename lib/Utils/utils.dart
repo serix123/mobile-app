@@ -131,6 +131,46 @@ class Utils {
       return {'fileName': null, 'fileBytes': null};
     }
   }
+
+  static int calculateTotalPages(int totalCount, int itemsPerPage) {
+    return (totalCount / itemsPerPage).ceil();
+  }
+  static String formatCommentTimestamp(DateTime dateTime, {DateTime? now}) {
+    final DateTime referenceTime = now ?? DateTime.now(); // Use provided 'now' for testing, otherwise actual now
+    final Duration difference = referenceTime.difference(dateTime);
+
+    // Less than a minute ago (0-59 seconds)
+    if (difference.inSeconds < 60) {
+      if (difference.inSeconds < 5) return 'Just now'; // For very recent
+      return '${difference.inSeconds}s';
+    }
+
+    // Less than an hour ago (1-59 minutes)
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    }
+
+    // Less than 24 hours ago (1-23 hours)
+    if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    }
+
+    // Yesterday
+    final DateTime yesterday = DateTime(referenceTime.year, referenceTime.month, referenceTime.day - 1);
+    final DateTime postDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (postDate.isAtSameMomentAs(yesterday)) {
+      return 'Yesterday at ${DateFormat('h:mm a').format(dateTime)}';
+    }
+
+    // Within the current year (e.g., "May 20 at 5:00 PM")
+    if (dateTime.year == referenceTime.year) {
+      return DateFormat('MMM d at h:mm a').format(dateTime);
+    }
+
+    // Previous years (e.g., "Dec 20, 2023 at 3:00 PM")
+    return DateFormat('MMM d, yyyy at h:mm a').format(dateTime);
+  }
 }
 
 enum ListType { All, Personal, ImmediateHead, PersonInCharge, Admin }

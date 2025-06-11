@@ -106,7 +106,9 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
           firstName: _firstNameController.text,
           lastName: _lastNameController.text,
           isStaff: _selectedRole == roles[0]  || _selectedRole == roles[1] ? true : false,
-          isSuperuser: _selectedRole == roles[0] ? true : false);
+          isSuperuser: _selectedRole == roles[0] ? true : false,
+        groups: [],
+      );
       widget.onSubmit(resident,user);
     }
   }

@@ -30,9 +30,28 @@ class UserApiService extends TokenService{
               (json) => User.fromJson(json),
         );
       }
-      throw Exception('Failed to get issues: ${response.statusCode}');
+      throw Exception('Failed to get users: ${response.statusCode}');
     }catch(e){
-      throw Exception('Failed to get issues: $e');
+      throw Exception('Failed to get users: $e');
+    }
+  }
+
+  Future<User> getUserInfo() async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${authURL}info'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return User.fromJson(jsonDecode(response.body));
+      }
+      throw Exception('Failed to get user info: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get user info: $e');
     }
   }
 
@@ -51,9 +70,9 @@ class UserApiService extends TokenService{
       if (response.statusCode == 200) {
         return User.fromJson(jsonDecode(response.body));
       }
-      throw Exception('Failed to update issue: ${response.statusCode}');
+      throw Exception('Failed to update user: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to update issue: $e');
+      throw Exception('Failed to update user: $e');
     }
   }
 
@@ -92,9 +111,9 @@ class UserApiService extends TokenService{
       if (response.statusCode == 200) {
         return User.fromJson(jsonDecode(response.body));
       }
-      throw Exception('Failed to update issue: ${response.statusCode}');
+      throw Exception('Failed to update user: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to update issue: $e');
+      throw Exception('Failed to update user: $e');
     }
   }
 }

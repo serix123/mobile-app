@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Core/Presentation/Components/FormFieldMode.dart';
+import 'package:online_reservation/Features/Authentication/Domain/auth.repository.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/login.view.dart';
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
@@ -8,6 +10,7 @@ import 'package:online_reservation/Features/Events/Presentation/event.form.dart'
 import 'package:online_reservation/Features/Events/Presentation/event.list.dart';
 import 'package:online_reservation/Features/Events/Presentation/event.view.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
+import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
@@ -21,11 +24,14 @@ import 'package:online_reservation/Features/Visitor/Presentation/visitor.view.da
 import 'package:provider/provider.dart';
 
 class RouteGenerator {
-  // static const homeScreen = MyHomePage.screenId;
-  static const loginScreen = LoginScreen.screenId;
-  static const registerScreen = RegistrationScreen.screenId;
   static const visitorFormScreen = VisitorFormScreen.screenId;
   static const visitorListScreen = VisitsListScreen.screenId;
+  static const resourceListScreen = ResourceListScreen.screenId;
+  static const resourceFormScreen = ResourceFormScreen.screenId;
+
+  static const homeScreen = "/Home";
+  static const loginScreen = LoginScreen.screenId;
+  static const registerScreen = RegistrationScreen.screenId;
   static const issueFormScreen = IssueFormScreen.screenId;
   static const issuesListScreen = IssuesListScreen.screenId;
   static const profileScreen = ProfileScreen.screenId;
@@ -33,158 +39,36 @@ class RouteGenerator {
   static const residenceFormScreen = ResidenceFormScreen.screenId;
   static const userListScreen = UserListScreen.screenId;
   static const userScreen = UserScreen.screenId;
-  static const resourceListScreen = ResourceListScreen.screenId;
-  static const resourceFormScreen = ResourceFormScreen.screenId;
   static const eventListScreen = EventListScreen.screenId;
   static const eventViewScreen = EventViewScreen.screenId;
   static const eventEditScreen = EventEditScreen.screenId;
 
-  static Route<dynamic> generateRoute(
-      RouteSettings settings, bool isLoggedIn, BuildContext context) {
-    final profileProvider =
-        Provider.of<ProfileProvider>(context, listen: false);
+  static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
-
-    if (isLoggedIn) {
-      switch (settings.name) {
-        case visitorFormScreen:
-          if (args is VisitorScreenConfig) {
-            return MaterialPageRoute(
-              builder: (_) => VisitorFormScreen(
-                mode: args.mode,
-                onSubmit: args.onSubmit,
-                initialData: args.initialData,
-                onDelete: args.onDelete,
-              ),
-            );
-          } else {
-            return MaterialPageRoute(
-              builder: (_) => VisitorFormScreen(
-                mode: FormMode.create,
-                onSubmit: (item) {},
-                onDelete: () {},
-              ),
-            );
+    switch (settings.name) {
+      case homeScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          return const IssuesListScreen();
+        });
+      case issuesListScreen:
+        return MaterialPageRoute(builder: (_) => const IssuesListScreen());
+      case issueFormScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is RouteArguments) {
+            return IssueFormScreen(initialData: args.data as Issue? ,mode: args.mode,);
           }
-
-        case resourceFormScreen:
-          if (args is ResourceScreenConfig) {
-            return MaterialPageRoute(
-              builder: (_) => ResourceFormScreen(
-                mode: args.mode,
-                onSubmit: args.onSubmit,
-                initialData: args.initialData,
-                onDelete: args.onDelete,
-              ),
-            );
-          } else {
-            return MaterialPageRoute(
-              builder: (_) => ResourceFormScreen(
-                mode: FormMode.create,
-                onSubmit: (item) {},
-                onDelete: () {},
-              ),
-            );
-          }
-        case issueFormScreen:
-          if (args is IssueScreenConfig) {
-            return MaterialPageRoute(
-              builder: (_) => IssueFormScreen(
-                mode: args.mode,
-                onSubmit: args.onSubmit,
-                initialData: args.initialData,
-                onDelete: args.onDelete,
-              ),
-            );
-          } else {
-            return MaterialPageRoute(
-              builder: (_) => IssueFormScreen(
-                mode: FormMode.create,
-                onSubmit: (item) {},
-                onDelete: () {},
-              ),
-            );
-          }
-        case userScreen:
-          if (args is UserScreenConfig) {
-            return MaterialPageRoute(
-              builder: (_) => UserScreen(
-                user: args.user,
-              ),
-            );
-          } else {
-            return MaterialPageRoute(
-              builder: (_) => const UserScreen(
-                user: null,
-              ),
-            );
-          }
-        case userListScreen:
-          if (profileProvider.user!.isSuperuser) {
-            return MaterialPageRoute(builder: (_) => const UserListScreen());
-          }
-          return _errorRoute();
-        case residenceFormScreen:
-          if (profileProvider.user!.isSuperuser) {
-            if (args is ResidenceScreenConfig) {
-              return MaterialPageRoute(
-                  builder: (_) => ResidenceFormScreen(
-                        onSubmit: args.onSubmit,
-                        initialData: args.initialData,
-                        onDelete: args.onDelete,
-                      ));
-            }
-          }
-          return _errorRoute();
-        case eventViewScreen:
-          if (args is Event) {
-            return MaterialPageRoute(
-              builder: (_) => EventViewScreen(
-                event: args,
-              ),
-            );
-          }
-
-          return _errorRoute();
-        case eventEditScreen:
-          if (args is Event) {
-            return MaterialPageRoute(
-              builder: (_) => EventEditScreen(
-                event: args,
-              ),
-            );
-          } else {
-            return MaterialPageRoute(
-              builder: (_) => const EventEditScreen(),
-            );
-          }
-
-        case eventListScreen:
-          return MaterialPageRoute(builder: (_) => const EventListScreen());
-        case resourceListScreen:
-          return MaterialPageRoute(builder: (_) => const ResourceListScreen());
-        case residentListScreen:
-          return MaterialPageRoute(builder: (_) => const ResidentListScreen());
-        case issuesListScreen:
-          return MaterialPageRoute(builder: (_) => const IssuesListScreen());
-        case visitorListScreen:
-          return MaterialPageRoute(builder: (_) => const VisitsListScreen());
-        case profileScreen:
-          return MaterialPageRoute(builder: (_) => const ProfileScreen());
-        case loginScreen:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-        default:
-          return _errorRoute();
-      }
-    } else {
-      switch (settings.name) {
-        case loginScreen:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-        case registerScreen:
-          return MaterialPageRoute(builder: (_) => const RegistrationScreen());
-        default:
-          return MaterialPageRoute(builder: (_) => const LoginScreen());
-      }
+          return const LoginScreen();
+        });
+      case loginScreen:
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
+      case registerScreen:
+        return MaterialPageRoute(builder: (_) => const RegistrationScreen());
+      default:
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
     }
   }
 

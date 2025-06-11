@@ -61,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(User user) {
+  Widget _buildProfileHeader(UserProfile user) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -76,11 +76,7 @@ class ProfileScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.verified_user),
               title: const Text('Account Type'),
-              subtitle: Text(user.isSuperuser
-                  ? 'Administrator'
-                  : user.isStaff
-                      ? 'Security'
-                      : 'Regular User'),
+              subtitle: Text(user.group),
             ),
           ],
         ),

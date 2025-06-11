@@ -1,5 +1,11 @@
 // models/user.dart
-class User {
+
+class UserProfile{
+
+  static const String RESIDENT = "Resident";
+  static const String GUARD = "Guard";
+  static const String OFFICER = "Officer";
+
   final int id;
   final String email;
   final String firstName;
@@ -7,8 +13,9 @@ class User {
   final bool isStaff;
   final bool isSuperuser;
   final Residence? residence;
+  final String group;
 
-  User({
+  UserProfile({
     required this.id,
     required this.email,
     required this.firstName,
@@ -16,10 +23,17 @@ class User {
     required this.isStaff,
     required this.isSuperuser,
     this.residence,
+    required this.group,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    // Safely get the first group if the 'groups' array exists and is not empty
+    String? firstGroup;
+    if (json['groups'] is List && (json['groups'] as List).isNotEmpty) {
+      firstGroup = (json['groups'] as List<dynamic>)[0].toString();
+    }
+
+    return UserProfile(
       id: json['id'] as int,
       email: json['email'] as String,
       firstName: json['first_name'] as String,
@@ -27,11 +41,16 @@ class User {
       isStaff: json['is_staff'] as bool,
       isSuperuser: json['is_superuser'] as bool,
       residence: Residence.fromJson(json['residence'] as Map<String, dynamic>),
+      group: firstGroup ?? RESIDENT,
     );
   }
 
   String get fullName => '$firstName $lastName';
-  String get role => residence?.role ?? "Resident";
+  String get role => group;
+
+  bool get isResident => group == UserProfile.RESIDENT;
+  bool get isOfficer => group == UserProfile.OFFICER;
+  bool get isGuard => group == UserProfile.GUARD;
 }
 
 class Residence {

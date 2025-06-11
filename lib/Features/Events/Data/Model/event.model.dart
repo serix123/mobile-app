@@ -10,6 +10,7 @@ class Event {
   final bool isAttending;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<String> attendeesList;
 
   Event({
     required this.id,
@@ -23,6 +24,7 @@ class Event {
     required this.isAttending,
     required this.createdAt,
     required this.updatedAt,
+    required this.attendeesList,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class Event {
       isAttending: json['is_attending'] ?? false,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
+      attendeesList: List<String>.from(json['attendees_list'] ?? []),
     );
   }
 
@@ -78,6 +81,7 @@ class Event {
     bool? isAttending,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<String>? attendeesList,
   }) {
     return Event(
       id: id ?? this.id,
@@ -91,6 +95,7 @@ class Event {
       isAttending: isAttending ?? this.isAttending,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      attendeesList: attendeesList ?? this.attendeesList,
     );
   }
 

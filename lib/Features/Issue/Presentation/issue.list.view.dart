@@ -1,13 +1,16 @@
 // issues_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:online_reservation/Core/Presentation/Components/FormFieldMode.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/customCard.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/paginationControls.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/search.widget.dart';
 import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
-import 'package:online_reservation/Features/Issue/listItem.dart';
+import 'package:online_reservation/Features/Issue/Presentation/widget/listItem.dart';
+import 'package:online_reservation/Features/Issue/Presentation/widget/search.widget.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
@@ -33,12 +36,36 @@ class IssuesListScreen extends StatefulWidget {
 }
 
 class _IssuesListScreenState extends State<IssuesListScreen> {
+  void _initData() async {
+    final task = [
+      context.read<ProfileProvider>().getProfile(),
+      context.read<IssueProvider>().getIssues(),
+    ];
+    await Future.wait(task);
+  }
+
+  Future<void> _navigateToForm(BuildContext context, FormFieldMode mode,
+      {Issue? issue}) async {
+    final result = await Navigator.of(context).pushNamed(
+      RouteGenerator.issueFormScreen,
+      arguments: RouteArguments(mode: mode, data: issue),
+    );
+
+    if (result == true) {
+      final task = [
+        context.read<ProfileProvider>().getProfile(),
+        context.read<IssueProvider>().getIssues(),
+      ];
+      await Future.wait(task);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     // Load data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<IssueProvider>().getIssues();
+      _initData();
     });
   }
 
@@ -46,7 +73,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
   Widget build(BuildContext context) {
     return ResponsiveLayout(
       currentRoute: IssuesListScreen.screenId,
-      title: appBar(),
+      title: const Text(IssuesListScreen.title),
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -54,78 +81,75 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.add),
-          onPressed: () => Navigator.of(context).pushNamed(
-              RouteGenerator.issueFormScreen,
-              arguments: IssueScreenConfig(
-                  mode: FormMode.create,
-                  onSubmit: (issue) => context
-                      .read<IssueProvider>()
-                      .createIssue(issue)
-                      .then((_) => context.read<IssueProvider>().getIssues()))),
+          onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),
         )
       ],
-      desktopBody: _buildTable(),
+      desktopBody: _buildMobile(),
       mobileBody: _buildMobile(),
     );
   }
 
-  Widget appBar() {
-    return Row(
-      children: [
-        const Expanded(flex: 1, child: Text(IssuesListScreen.title)),
-        const SizedBox(
-          width: 8,
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Consumer<IssueProvider>(
-              builder: (context, issueProvider, child) {
-                return SearchField(
-                  onSearchChanged: (query) =>
-                      issueProvider.getIssues(query: query),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+  Widget _searchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Consumer<IssueProvider>(
+        builder: (context, provider, child) {
+          return SearchFields(
+            onSearch: (text, status, priority) => provider.getIssues(
+                query: text, status: status, priority: priority),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildMobile() {
-    return Consumer2<ProfileProvider, IssueProvider>(
-      builder: (context, profileProvider, provider, _) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (provider.error != null) return _buildErrorState();
-        if (provider.issues.isEmpty) return _buildEmptyState();
+    return Column(
+      children: [
+        _searchBar(),
+        _paginationControls(),
+        Expanded(
+          child: Consumer2<ProfileProvider, IssueProvider>(
+            builder: (context, profileProvider, provider, _) {
+              if (provider.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (provider.error != null) return _buildErrorState();
+              if (provider.issues.isEmpty) return _buildEmptyState();
 
-        return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: provider.issues.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final issue = provider.issues[index];
-            final isSuperUser = profileProvider.user!.isSuperuser;
-            if (isSuperUser) {
-              return IssueListItem(
-                issue: issue,
-                onResolve: () => _handleResolveIssue(context, issue.id!),
-                onDelete: () => _handleDeleteIssue(context, issue.id!),
-                onEdit: () => _handleUpdateIssue(context, issue),
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: provider.issues.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final issue = provider.issues[index];
+                  final isSuperUser = profileProvider.user!.isSuperuser;
+                  if (isSuperUser) {
+                    return IssueListItem(
+                      issue: issue,
+                      // onResolve: () => _handleResolveIssue(context, issue.id!),
+                      onDelete: () => _handleDeleteIssue(context, issue.id!),
+                      onEdit: () => _navigateToForm(
+                          context, FormFieldMode.UPDATE,
+                          issue: issue),
+                      onTap: () => _navigateToForm(context, FormFieldMode.READ,
+                          issue: issue),
+                    );
+                  } else {
+                    return IssueListItem(
+                      issue: issue,
+                      // onResolve: () => _handleResolveIssue(context, issue.id!),
+                      onTap: () => _navigateToForm(context, FormFieldMode.READ,
+                          issue: issue),
+                    );
+                  }
+                },
               );
-            } else {
-              return IssueListItem(
-                issue: issue,
-                onResolve: () => _handleResolveIssue(context, issue.id!),
-              );
-            }
-          },
-        );
-      },
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -216,7 +240,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       cells: [
         DataCell(Text(issue.title)),
         DataCell(Text(issue.description)),
-        DataCell(Text(issue.residentName!)),
+        DataCell(Text(issue.userFullName!)),
         DataCell(Text(issue.reportedDate != null ? reportedDateTime : "-")),
         DataCell(
             Text(issue.reportedDate != null ? resolvedDateTime : "Ongoing")),
@@ -241,7 +265,9 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                 _buildAdminActionButton(
                   icon: Icons.edit,
                   color: Colors.blue,
-                  onPressed: () => _handleUpdateIssue(context, issue),
+                  onPressed: () => _navigateToForm(
+                      context, FormFieldMode.UPDATE,
+                      issue: issue),
                 ),
                 _buildAdminActionButton(
                   icon: Icons.delete,
@@ -309,12 +335,8 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(
-            RouteGenerator.issueFormScreen,
-            arguments: IssueScreenConfig(
-                mode: FormMode.create,
-                onSubmit: (data) =>
-                    context.read<IssueProvider>().createIssue(data))),
+        onPressed: () =>
+            Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen),
         child: const Text('Create New Issue'),
       ),
     );
@@ -326,12 +348,8 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => Navigator.of(context).pushNamed(
-            RouteGenerator.issueFormScreen,
-            arguments: IssueScreenConfig(
-                mode: FormMode.create,
-                onSubmit: (data) async =>
-                    await context.read<IssueProvider>().createIssue(data))),
+        onPressed: () =>
+            Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen),
         child: const Text('Create New Issue'),
       ),
     );
@@ -410,24 +428,19 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
   void _handleUpdateIssue(BuildContext context, Issue issue) {
     Navigator.of(context).pushNamed(
       RouteGenerator.issueFormScreen,
-      arguments: IssueScreenConfig(
-        mode: FormMode.edit,
-        onDelete: () async => {
-          await context.read<IssueProvider>().deleteIssue(issue.id!),
-          Navigator.pop(context),
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Issue deleted successfully')),
-          )
-        },
-        initialData: issue,
-        // onSubmit: (data) {},
-        onSubmit: (data) async {
-          Future.wait([
-            context.read<IssueProvider>().updateIssue(data),
-            context.read<IssueProvider>().getIssues(),
-          ]);
-        },
-      ),
+      arguments: issue,
+    );
+  }
+
+  Widget _paginationControls() {
+    return Consumer<IssueProvider>(
+      builder: (context, provider, _) {
+        return PaginationControls(
+            hasNext: provider.hasNext,
+            hasPrevious: provider.hasPrevious,
+            onNext: provider.loadNextPage,
+            onPrevious: provider.loadPreviousPage);
+      },
     );
   }
 }

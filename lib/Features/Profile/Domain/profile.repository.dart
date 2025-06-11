@@ -5,13 +5,13 @@ import 'package:online_reservation/Features/Profile/Data/Service/profile.service
 class ProfileProvider with ChangeNotifier{
 
   final ProfileApiService _apiService;
-  late User? _user;
+  UserProfile? _user;
   bool _isLoading = false;
   String? _error;
 
   ProfileProvider(this._apiService);
 
-  User? get user => _user;
+  UserProfile? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
 

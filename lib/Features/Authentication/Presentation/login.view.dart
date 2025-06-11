@@ -35,10 +35,29 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _login() async {
+    final authProvider = context.read<AuthProvider>();
+    // final userInfoProvider = context.read<UserInfoProvider>();
+    await authProvider
+        .login(emailController.text, passwordController.text)
+        .then((_) async {
+      if (authProvider.isLoggedIn) {
+        setState(() {
+          emailController.clear();
+          passwordController.clear();
+        });
+        // await userInfoProvider.getUserInfo();
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed(
+            RouteGenerator.homeScreen,
+          );
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final emailController = TextEditingController();
-    // final passwordController = TextEditingController();
     final authProvider = context.watch<AuthProvider>();
     final profileProvider = context.watch<ProfileProvider>();
     return PopScope(
@@ -59,14 +78,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: 180,
                     child: Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       child: Image.asset(
                         logoPath,
                         fit: BoxFit.cover,
                       )
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -123,29 +142,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 40),
+                  if(authProvider.error != null)
+                    Text("${authProvider.error}",style: const TextStyle(color: error),),
                   if (authProvider.isLoading)
                     const CircularProgressIndicator()
                   else
                     ElevatedButton(
-                      onPressed: () async => await authProvider
-                          .login(emailController.text, passwordController.text)
-                          .then((_) async => await profileProvider.getProfile())
-                          .then((_) {
-                        emailController.clear();
-                        passwordController.clear();
-                      }).then((_) {
-                        if (authProvider.error == null) {
-                          Navigator.of(context).pushReplacementNamed(
-                              RouteGenerator.visitorListScreen,
-                              arguments: ScreenConfig(
-                                  mode: FormMode.create, onSubmit: (e) {}));
-                        } else {
-                          final snackBar = SnackBar(
-                              content: Text(
-                                  'Login Failed. Please try again. ${authProvider.error!}'));
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        }
-                      }),
+                      onPressed: (){ _login();},
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
                       ),

@@ -6,6 +6,7 @@ class User {
   final String lastName;
   final bool isStaff;
   final bool isSuperuser;
+  final List<String> groups;
 
   User({
     required this.id,
@@ -14,6 +15,7 @@ class User {
     required this.lastName,
     required this.isStaff,
     required this.isSuperuser,
+    required this.groups,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class User {
       lastName: json['last_name'] as String,
       isStaff: json['is_staff'] as bool,
       isSuperuser: json['is_superuser'] as bool,
+        groups: List<String>.from(json['groups'] ?? []),
     );
   }
 
@@ -44,8 +47,24 @@ class User {
     return 'Regular User';
   }
 
-  User copyWith(User user) {
-    return user;
+  User copyWith({
+    int? id,
+    String? email,
+    String? firstName,
+    String? lastName,
+    bool? isStaff,
+    bool? isSuperuser,
+    List<String>? groups,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      isStaff: isStaff ?? this.isStaff,
+      isSuperuser: isSuperuser ?? this.isSuperuser,
+      groups: groups ?? this.groups,
+    );
   }
 }
 

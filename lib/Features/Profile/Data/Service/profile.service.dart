@@ -11,7 +11,7 @@ class ProfileApiService extends TokenService {
     required super.client,
   });
 
-  Future<User?> getProfile() async  {
+  Future<UserProfile?> getProfile() async  {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
@@ -22,12 +22,11 @@ class ProfileApiService extends TokenService {
         },
       );
       if (response.statusCode == 200) {
-        return User.fromJson(jsonDecode(response.body));
+        return UserProfile.fromJson(jsonDecode(response.body));
       }
-      throw Exception('Failed to create issue: ${response.statusCode}');
+      throw Exception('Failed to get profile: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to create issue: $e');
+      throw Exception('Failed to get profile: $e');
     }
-    return null;
   }
 }

@@ -5,8 +5,8 @@ import 'package:online_reservation/Features/Resident/Data/Model/resident.model.d
 extension RoleTypeExtension on RoleType {
   String get displayName {
     switch (this) {
-      case RoleType.ADMIN:
-        return 'Admin';
+      case RoleType.GUARD:
+        return 'Guard';
       case RoleType.OFFICER:
         return 'Officer';
       case RoleType.RESIDENT:
@@ -18,7 +18,7 @@ extension RoleTypeExtension on RoleType {
 
   IconData get icon {
     switch (this) {
-      case RoleType.ADMIN:
+      case RoleType.GUARD:
         return Icons.security;
       case RoleType.OFFICER:
         return Icons.badge;

@@ -4,12 +4,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_reservation/Features/CommunityResources/Data/Service/community_resource.service.dart';
 import 'package:online_reservation/Features/CommunityResources/Domain/community_resource.repository.dart';
+import 'package:online_reservation/Features/Documents/Data/Service/category.service.dart';
+import 'package:online_reservation/Features/Documents/Data/Service/document.service.dart';
+import 'package:online_reservation/Features/Documents/Domain/category.repository.dart';
+import 'package:online_reservation/Features/Documents/Domain/document.repository.dart';
 import 'package:online_reservation/Features/Events/Data/Service/event.service.dart';
 import 'package:online_reservation/Features/Events/Domain/event.repository.dart';
 import 'package:online_reservation/Features/Issue/Data/Service/issue.comment.service.dart';
 import 'package:online_reservation/Features/Issue/Data/Service/issue.service.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.comment.repository.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
+import 'package:online_reservation/Features/Notice/Data/Service/notice.service.dart';
+import 'package:online_reservation/Features/Notice/Domain/notice.repository.dart';
 import 'package:online_reservation/Features/Profile/Data/Service/profile.service.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Resident/Data/Service/resident.service.dart';
@@ -75,6 +81,15 @@ class MyApp extends StatelessWidget {
         Provider(
             create: (context) =>
                 IssueCommentApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                NoticeApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                CategoryApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
+        Provider(
+            create: (context) =>
+                DocumentApiService(storage: context.read<FlutterSecureStorage>(), client: context.read<http.Client>())),
         ChangeNotifierProvider(create: (context) => AuthProvider(context.read<AuthService>())),
         ChangeNotifierProvider(create: (context) => VisitProvider(context.read<VisitApiService>())),
         ChangeNotifierProvider(create: (context) => IssueProvider(context.read<IssueApiService>())),
@@ -84,6 +99,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ResourceProvider(context.read<ResourceApiService>())),
         ChangeNotifierProvider(create: (context) => EventProvider(context.read<EventApiService>())),
         ChangeNotifierProvider(create: (context) => CommentProvider(context.read<IssueCommentApiService>())),
+        ChangeNotifierProvider(create: (context) => NoticeProvider(context.read<NoticeApiService>())),
+        ChangeNotifierProvider(create: (context) => CategoryProvider(context.read<CategoryApiService>())),
+        ChangeNotifierProvider(create: (context) => DocumentProvider(context.read<DocumentApiService>())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

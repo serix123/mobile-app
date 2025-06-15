@@ -31,7 +31,7 @@ class IssueListItem extends StatelessWidget {
   Widget buildItemList() {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, child) {
-        final isSuperUser = profileProvider.user!.isSuperuser;
+        final isOfficer = profileProvider.user!.isOfficer;
         return Card(
           child: Stack(
             children: [
@@ -162,7 +162,7 @@ class IssueListItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isSuperUser)
+              if (isOfficer)
                 Positioned(
                   right: 0,
                   top: 0,

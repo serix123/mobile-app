@@ -165,11 +165,11 @@ class Utils {
 
     // Within the current year (e.g., "May 20 at 5:00 PM")
     if (dateTime.year == referenceTime.year) {
-      return DateFormat('MMM d at h:mm a').format(dateTime);
+      return DateFormat('MMM d h:mm a').format(dateTime);
     }
 
     // Previous years (e.g., "Dec 20, 2023 at 3:00 PM")
-    return DateFormat('MMM d, yyyy at h:mm a').format(dateTime);
+    return DateFormat('MMM d, yyyy h:mm a').format(dateTime);
   }
 }
 

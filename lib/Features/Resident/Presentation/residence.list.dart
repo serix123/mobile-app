@@ -52,7 +52,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
         ),
       ],
       mobileBody: _buildMobile(),
-      desktopBody: _buildTable(),
+      desktopBody: _buildMobile(),
       title: appBar(),
       currentRoute: ResidentListScreen.screenId,
     );
@@ -300,25 +300,15 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
     }
   }
 
-  void _handleUpdateVisit(BuildContext context, Resident resident) {
-    Navigator.of(context).pushNamed(
+  Future<void> _handleUpdateVisit(BuildContext context, Resident resident) async {
+    final result = await Navigator.of(context).pushNamed(
       RouteGenerator.residenceFormScreen,
-      arguments: ResidenceScreenConfig(
-        onDelete: () async => {
-          await context.read<UserProvider>().deleteUser(resident.id),
-          Navigator.pop(context),
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Resident deleted successfully')),
-          )
-        },
-        initialData: resident,
-        onSubmit: (resident, user) async => Future.wait([
-          context.read<ResidentProvider>().updateResident(resident),
-          context.read<UserProvider>().updateUser(user),
-          context.read<ResidentProvider>().getResidents(),
-        ]),
-        // await context.read<UserProvider>().updateUser(data),
-      ),
+      arguments: resident,
     );
+
+    if(result != null){
+      // await context.read<UserProvider>().getUsers(user);
+      await context.read<ResidentProvider>().getResidents();
+    }
   }
 }

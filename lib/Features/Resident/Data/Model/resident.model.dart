@@ -1,7 +1,7 @@
 // models/resident.dart
 import 'package:intl/intl.dart';
 
-enum RoleType { ADMIN, OFFICER, RESIDENT, ALL }
+enum RoleType { GUARD, OFFICER, RESIDENT, ALL }
 
 class Resident {
   final int id;

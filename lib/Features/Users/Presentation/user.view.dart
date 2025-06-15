@@ -98,11 +98,7 @@ class _UserScreenState extends State<UserScreen> {
             ListTile(
               leading: const Icon(Icons.verified_user),
               title: const Text('Account Type'),
-              subtitle: Text(user.isSuperuser
-                  ? 'Administrator'
-                  : user.isStaff
-                  ? 'Security'
-                  : 'Regular User'),
+              subtitle: Text(user.group ?? ""),
             ),
           ],
         ),
@@ -120,7 +116,7 @@ class _UserScreenState extends State<UserScreen> {
             const Text('User Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _buildInfoRow('Full Name', user.fullName),
-            _buildInfoRow('Role', user.role),
+            _buildInfoRow('Role', user.group ?? ""),
             _buildInfoRow('Email', user.email),
           ],
         ),

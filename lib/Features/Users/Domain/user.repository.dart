@@ -80,9 +80,22 @@ class UserProvider with ChangeNotifier {
               id: user.id,
               lastName: user.lastName,
               firstName: user.firstName,
-              isStaff: user.isStaff,
-              isSuperuser: user.isSuperuser,
-              groups: user.groups);
+              group: user.group);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> updateUserRole(User user) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _apiService.updateUserRole(user: user);
       notifyListeners();
     } catch (e) {
       _error = e.toString();

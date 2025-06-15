@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/formContainer.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
+import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
 import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
@@ -9,31 +10,18 @@ import 'package:online_reservation/Features/Users/Domain/user.repository.dart';
 import 'package:provider/provider.dart';
 
 
-const List<String> roles = ['Admin', 'Officer', 'Resident'];
-
-class ResidenceScreenConfig {
-  Resident? initialData;
-  Function(Resident, User) onSubmit;
-  Function()? onDelete;
-
-  ResidenceScreenConfig({this.initialData, required this.onSubmit, this.onDelete});
-}
+const List<String> roles = ['Guard', 'Officer', 'Resident'];
 
 class ResidenceFormScreen extends StatefulWidget {
 
   static const String screenId = "/ResidenceForm";
   final FormMode mode;
   final Resident? initialData;
-  final Function(Resident, User) onSubmit;
-  final Function()? onDelete;
 
   const ResidenceFormScreen({
     super.key,
     this.mode = FormMode.edit,
-    this.initialData,
-    required this.onSubmit,
-    this.onDelete,
-  });
+    this.initialData });
 
   @override
   _ResidenceFormScreenState createState() => _ResidenceFormScreenState();
@@ -88,28 +76,56 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final resident = Resident(
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final shouldSubmit = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false, // user must tap a button
+        builder: (ctx) => AlertDialog(
+            title: const Text('Confirm Submission'),
+            content:
+            const Text('Are you sure you want to submit this form?'),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel')),
+              TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text('Yes, submit')),
+            ]));
+
+    if (shouldSubmit != true) return;
+
+
+    final resident = Resident(
+      id: widget.initialData?.id ?? 0,
+      firstName: _firstNameController.text,
+      lastName: _lastNameController.text,
+      userEmail: _emailController.text,
+      address: _addressController.text,
+      contactNumber: _contactController.text,
+      role: _selectedRole,
+      registrationDate: widget.initialData!.registrationDate,
+    );
+    final user = User(
         id: widget.initialData?.id ?? 0,
+        email: _emailController.text,
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
-        userEmail: _emailController.text,
-        address: _addressController.text,
-        contactNumber: _contactController.text,
-        role: widget.initialData!.role,
-        registrationDate: widget.initialData!.registrationDate,
-      );
-      final user = User(
-          id: widget.initialData?.id ?? 0,
-          email: _emailController.text,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          isStaff: _selectedRole == roles[0]  || _selectedRole == roles[1] ? true : false,
-          isSuperuser: _selectedRole == roles[0] ? true : false,
-        groups: [],
-      );
-      widget.onSubmit(resident,user);
+        group: _selectedRole,
+    );
+
+
+    if (mounted) {
+      await context.read<ResidentProvider>().updateResident(resident);
+      final error = context.read<ResidentProvider>().error;
+      if (error == null) {
+        Navigator.pop(context, true);
+      }else{
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $error')));
+      }
     }
   }
 
@@ -127,8 +143,9 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                widget.onDelete?.call();
+
+
+                Navigator.pop(context,true);
               },
               child: const Text('Delete'),
             ),
@@ -214,6 +231,10 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                 const SizedBox(height: 26),
                 _buildStatusDropdown(),
                 const SizedBox(height: 32),
+                if (residentProvider.error != null)
+                  ErrorText(residentProvider.error!),
+                if (userProvider.error != null)
+                  ErrorText(userProvider.error!),
                 if (widget.mode == FormMode.edit)
                   if (residentProvider.isLoading && userProvider.isLoading)
                     const Center(child: CircularProgressIndicator())
@@ -221,17 +242,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                     Column(
                       children: [
                         ElevatedButton(
-                          onPressed: () {
-                            _submitForm();
-                            if (residentProvider.error == null && userProvider.error == null) {
-                              Navigator.of(context).pop();
-                            } else {
-                              final snackBar = SnackBar(
-                                  content: Text(
-                                      'Submission Failed. Please try again. ${residentProvider.error!} \n${userProvider.error!}'));
-                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            }
-                          },
+                          onPressed: () => _submitForm(),
                           child: const Text('Update Resident'),
                         ),
                         const SizedBox(height: 16),

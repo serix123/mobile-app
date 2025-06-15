@@ -111,7 +111,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         Expanded(
           child: Consumer2<ProfileProvider, IssueProvider>(
             builder: (context, profileProvider, provider, _) {
-              if (provider.isLoading) {
+              if (profileProvider.isLoading || provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
               if (provider.error != null) return _buildErrorState();

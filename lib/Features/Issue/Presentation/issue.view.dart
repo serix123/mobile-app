@@ -1,23 +1,21 @@
 import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' show extension;
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:online_reservation/Core/Presentation/Components/FormFieldMode.dart';
 import 'package:online_reservation/Core/Presentation/Components/buildState.view.dart';
 import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
-import 'package:online_reservation/Features/Issue/Data/Model/issue.comment.model.dart';
-import 'package:online_reservation/Features/Issue/Domain/issue.comment.repository.dart';
-import 'package:online_reservation/Features/Issue/Presentation/widget/comment.list.dart';
-import 'package:online_reservation/Features/Profile/Data/Model/profile.model.dart';
-import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
-import 'package:path/path.dart' show extension;
-import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/formContainer.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
+import 'package:online_reservation/Features/Issue/Data/Model/issue.comment.model.dart';
 import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
+import 'package:online_reservation/Features/Issue/Domain/issue.comment.repository.dart';
 import 'package:online_reservation/Features/Issue/Domain/issue.repository.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:online_reservation/Features/Issue/Presentation/widget/comment.list.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 
 class IssueFormScreen extends StatefulWidget {
   static const String screenId = "/IssuesForm";
@@ -67,6 +65,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         TextEditingController(text: widget.initialData?.description ?? '');
     _selectedStatus = widget.initialData?.status;
     _selectedPriority = widget.initialData?.priority;
+    _fileExt = widget.initialData?.imageUrl?.split('.').last ?? "";
+
   }
 
   @override
@@ -296,7 +296,6 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     }
   }
 
-  // This function will be called when the button is pressed
   void _showBottomModal() {
     showModalBottomSheet(
       context: context,
@@ -305,34 +304,43 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       isScrollControlled: true,
       builder: (BuildContext context) {
         // This is the content of your bottom modal sheet
-        return Container(
-          // Optional: Add padding to give some space from the edges
-          padding: const EdgeInsets.all(16.0),
-          // Optional: Constrain height if it's too tall, or use FittedBox/Flexible
-          // A good practice is to wrap in SingleChildScrollView if content might overflow
-          height: MediaQuery.of(context).size.height *
-              0.75, // Take 75% of screen height
-          width: MediaQuery.of(context).size.width *
-              0.50,
-          child: Consumer<CommentProvider>(
-            builder: (context, commentProvider, child) {
-              if (commentProvider.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (commentProvider.error != null)
-                      GenericErrorState(errorMessage: commentProvider.error!,
-                      onRetry: () async => await commentProvider.getComments(issueId: widget.initialData!.id!),
+        return FractionallySizedBox(
+          heightFactor: 0.75,
+          widthFactor: 0.9,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16,
+              right: 16,
+              top: 16,
+            ),
+            child: Consumer<CommentProvider>(
+              builder: (context, commentProvider, child) {
+                if (commentProvider.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Comments",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                    CommentListWidget(comments: commentProvider.comments),
-                  ],
-                ),
-              );
-            },
+                      if (commentProvider.error != null)
+                        GenericErrorState(
+                          errorMessage: commentProvider.error!,
+                          onRetry: () async => await commentProvider
+                              .getComments(issueId: widget.initialData!.id!),
+                        ),
+                      CommentListWidget(comments: commentProvider.comments),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
@@ -405,11 +413,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     // Dropdowns
                     buildIssuePriorityDropdown(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     //Image Uploader
                     Column(
@@ -425,32 +433,15 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                               child: const Text('Upload Image'),
                             ),
                             const SizedBox(width: 16),
-                            if (_selectedFile != null) ...[
-                              Expanded(
-                                child: Text(
-                                  _selectedFile?.name ?? "File Not Found",
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (widget.initialData?.imageUrl != null &&
-                                  (_fileExt == "jpg" || _fileExt == "png"))
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: _buildImageDisplay(),
-                                  ),
-                                )
-                            ] else if (widget.initialData?.imageUrl != null)
-                              Text(
-                                  widget.initialData!.imageUrl!.split('/').last)
+                            if (_selectedFile != null)
+                              ..._buildUploadedImageDisplay()
                             else
                               const Text('No image uploaded'),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     if (issueProvider.error != null)
                       ErrorText(issueProvider.error!),
@@ -501,7 +492,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
 
                       // Dropdowns
                       Row(
@@ -513,7 +504,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                           Expanded(child: buildIssueStatusDropdown()),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
 
                       //Image Uploader
                       Column(
@@ -532,33 +523,18 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                                 child: const Text('Open Image'),
                               ),
                               const SizedBox(width: 16),
-                              if (_selectedFile != null) ...[
-                                Expanded(
-                                  child: Text(
-                                    _selectedFile?.name ?? "File Not Found",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (widget.initialData?.imageUrl != null &&
-                                    (_fileExt == "jpg" || _fileExt == "png"))
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: _buildImageDisplay(),
-                                    ),
-                                  )
-                              ] else if (widget.initialData?.imageUrl != null)
-                                Text(widget.initialData!.imageUrl!
-                                    .split('/')
-                                    .last)
+                              if (_selectedFile != null)
+                                ..._buildUploadedImageDisplay()
+                              else if (widget.initialData?.imageUrl != null  &&
+                                  (_fileExt == "jpg" || _fileExt == "png"))
+                                ..._buildImageNetwork()
                               else
                                 const Text('No image uploaded'),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
 
                       TextFormField(
                         maxLines: 3,
@@ -577,7 +553,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         //   return null;
                         // },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
 
                       if (issueProvider.error != null)
                         ErrorText(issueProvider.error!),
@@ -590,6 +566,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                               : () => _submitComment(),
                           child: const Text('Update Issue'),
                         ),
+                      const SizedBox(height: 18),
                     ],
                   ),
                 ),
@@ -625,7 +602,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     // Dropdowns
                     Row(
@@ -635,7 +612,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         Expanded(child: buildIssueStatusDropdown()),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     //Image Uploader
                     Column(
@@ -651,32 +628,18 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                               child: const Text('Upload Image'),
                             ),
                             const SizedBox(width: 16),
-                            if (_selectedFile != null) ...[
-                              Expanded(
-                                child: Text(
-                                  _selectedFile?.name ?? "File Not Found",
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (widget.initialData?.imageUrl != null &&
-                                  (_fileExt == "jpg" || _fileExt == "png"))
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: _buildImageDisplay(),
-                                  ),
-                                )
-                            ] else if (widget.initialData?.imageUrl != null)
-                              Text(
-                                  widget.initialData!.imageUrl!.split('/').last)
+                            if (_selectedFile != null)
+                              ..._buildUploadedImageDisplay()
+                            else if (widget.initialData?.imageUrl != null  &&
+                                (_fileExt == "jpg" || _fileExt == "png"))
+                              ..._buildImageNetwork()
                             else
                               const Text('No image uploaded'),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     if (issueProvider.error != null)
                       ErrorText(issueProvider.error!),
@@ -737,7 +700,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     // Dropdowns
                     Row(
@@ -749,7 +712,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         // Expanded(child: buildIssueStatusDropdown()),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     //Image Uploader
                     Column(
@@ -768,32 +731,18 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                               child: const Text('Open Image'),
                             ),
                             const SizedBox(width: 16),
-                            if (_selectedFile != null) ...[
-                              Expanded(
-                                child: Text(
-                                  _selectedFile?.name ?? "File Not Found",
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (widget.initialData?.imageUrl != null &&
-                                  (_fileExt == "jpg" || _fileExt == "png"))
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: _buildImageDisplay(),
-                                  ),
-                                )
-                            ] else if (widget.initialData?.imageUrl != null)
-                              Text(
-                                  widget.initialData!.imageUrl!.split('/').last)
+                            if (_selectedFile != null)
+                              ..._buildUploadedImageDisplay()
+                            else if (widget.initialData?.imageUrl != null  &&
+                                (_fileExt == "jpg" || _fileExt == "png"))
+                              ..._buildImageNetwork()
                             else
                               const Text('No image uploaded'),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     if (issueProvider.error != null)
                       ErrorText(issueProvider.error!),
@@ -977,15 +926,15 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     if (kIsWeb && _selectedFileWeb != null) {
       return Image.memory(
         _selectedFileWeb!,
-        width: 200,
-        height: 200,
+        width: 150,
+        height: 150,
         fit: BoxFit.contain,
       );
     } else if (!kIsWeb && _selectedFile?.path != null) {
       return Image.file(
         File(_selectedFile!.path!),
-        width: 200,
-        height: 200,
+        width: 150,
+        height: 150,
         fit: BoxFit.contain,
       );
     } else {
@@ -1026,5 +975,105 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     //     );
     //   },
     // );
+  }
+
+  List<Widget> _buildUploadedImageDisplay() {
+    if (_selectedFile != null) {
+      if (kIsWeb) {
+        if (_selectedFileWeb != null) {
+          return [
+            Expanded(
+              child: Text(
+                _selectedFile?.name ?? "File Not Found",
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 16),
+            ClipRRect(
+              // Optional: Clip corners for a nicer look
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.memory(
+                _selectedFileWeb!,
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+            )
+          ];
+        }
+      } else {
+        if (_selectedFile?.path != null) {
+          return [
+            Expanded(
+              child: Text(
+                _selectedFile?.name ?? "File Not Found",
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 16),
+            ClipRRect(
+              // Optional: Clip corners for a nicer look
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.file(
+                File(_selectedFile!.path!),
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+            )
+          ];
+        }
+      }
+      return [
+        Expanded(
+          child: Text(
+            _selectedFile?.name ?? "File Not Found",
+            overflow: TextOverflow.ellipsis,
+          ),
+        )
+      ];
+    }
+    return [const Text('No image selected.')];
+  }
+
+  List<Widget> _buildImageNetwork() {
+    return [
+      Expanded(child: Text(widget.initialData!.imageUrl!.split('/').last)),
+      const SizedBox(width: 16),
+      ClipRRect(
+        // Optional: Clip corners for a nicer look
+        borderRadius: BorderRadius.circular(8.0),
+        child: Image.network(
+          widget.initialData!.imageUrl!,
+          width: 150,
+          // Take full width of the card
+          height: 150,
+          // Fixed height, adjust as needed
+          fit: BoxFit.contain,
+          // Cover the area, cropping if necessary
+          loadingBuilder: (BuildContext context, Widget child,
+              ImageChunkEvent? loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              alignment: Alignment.center,
+              height: 150,
+              color: Colors.grey[200],
+              child:
+              const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+            );
+          },
+        ),
+      )
+    ];
   }
 }

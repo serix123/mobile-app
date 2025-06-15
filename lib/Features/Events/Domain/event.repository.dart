@@ -1,10 +1,10 @@
-
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
 import 'package:online_reservation/Features/Events/Data/Service/event.service.dart';
 
-class EventProvider with ChangeNotifier{
+class EventProvider with ChangeNotifier {
   final EventApiService _apiService;
 
   PaginatedResults<Event>? _paginatedEvents;
@@ -20,14 +20,57 @@ class EventProvider with ChangeNotifier{
   bool get hasNext => _paginatedEvents?.next != null;
   bool get hasPrevious => _paginatedEvents?.previous != null;
 
-  Future<void> getEvents(
-      {int page = 1, String query = ""}) async {
+  Future<void> getEvents({int page = 1, String query = ""}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedEvents = await _apiService.getEvents(
-          page: page, query: query);
+      _paginatedEvents = await _apiService.getEvents(page: page, query: query);
+      _events = _paginatedEvents?.results ?? [];
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getPastEvents({int page = 1, String query = ""}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _paginatedEvents = await _apiService.getPastEvents(page: page, query: query);
+      _events = _paginatedEvents?.results ?? [];
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getOngoingEvents({int page = 1, String query = ""}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _paginatedEvents = await _apiService.getOngoingEvents(page: page, query: query);
+      _events = _paginatedEvents?.results ?? [];
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getUpcomingEvents({int page = 1, String query = ""}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _paginatedEvents = await _apiService.getUpcomingEvents(page: page, query: query);
       _events = _paginatedEvents?.results ?? [];
     } catch (e) {
       _error = e.toString();
@@ -45,7 +88,7 @@ class EventProvider with ChangeNotifier{
       final event = await _apiService.getEvent(id);
       final index = _events.indexWhere((v) => v.id == event.id);
       _events[index] = _events[index].copyWith(
-        id : event.id,
+        id: event.id,
         name: event.name,
         attendeesCount: event.attendeesCount,
         details: event.details,
@@ -73,7 +116,7 @@ class EventProvider with ChangeNotifier{
       final newEvent = await _apiService.updateEvent(event: event);
       final index = _events.indexWhere((v) => v.id == event.id);
       _events[index] = _events[index].copyWith(
-        id : newEvent.id,
+        id: newEvent.id,
         name: newEvent.name,
         attendeesCount: newEvent.attendeesCount,
         details: newEvent.details,
@@ -94,19 +137,22 @@ class EventProvider with ChangeNotifier{
     notifyListeners();
   }
 
-  Future<void> createEvent(Event event) async {
+  Future<Event?> createEvent(Event event) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      await _apiService.createEvent(event: event);
+      final newEvent = await _apiService.createEvent(event: event);
+      _isLoading = false;
       notifyListeners();
+      return newEvent;
     } catch (e) {
       _error = e.toString();
       notifyListeners();
     }
     _isLoading = false;
     notifyListeners();
+    return null;
   }
 
   Future<void> deleteEvent(int eventId) async {
@@ -135,7 +181,7 @@ class EventProvider with ChangeNotifier{
       final newEvent = await _apiService.attendEvent(eventId);
       final index = _events.indexWhere((v) => v.id == newEvent.id);
       _events[index] = _events[index].copyWith(
-        id : newEvent.id,
+        id: newEvent.id,
         name: newEvent.name,
         attendeesCount: newEvent.attendeesCount,
         details: newEvent.details,
@@ -164,7 +210,7 @@ class EventProvider with ChangeNotifier{
       final newEvent = await _apiService.unattendEvent(eventId);
       final index = _events.indexWhere((v) => v.id == newEvent.id);
       _events[index] = _events[index].copyWith(
-        id : newEvent.id,
+        id: newEvent.id,
         name: newEvent.name,
         attendeesCount: newEvent.attendeesCount,
         details: newEvent.details,
@@ -185,6 +231,24 @@ class EventProvider with ChangeNotifier{
     notifyListeners();
   }
 
+  Future<void> uploadFile(int eventId, PlatformFile file, bool isWeb) async {
+    _isLoading = true;
+    // _error = null;
+    notifyListeners();
+    try {
+      await _apiService.uploadFileAdaptive(eventId, file, isWeb);
+      notifyListeners();
+    } catch (e) {
+      if(_error != null) {
+        _error = "$_error ${e.toString()}";
+      }else{
+        _error = e.toString();
+      }
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
 
   Future<void> loadNextPage() async {
     if (hasNext) {
@@ -204,5 +268,4 @@ class EventProvider with ChangeNotifier{
     final uri = Uri.parse(url);
     return int.parse(uri.queryParameters['page'] ?? '1');
   }
-
 }

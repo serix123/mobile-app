@@ -2,6 +2,7 @@ class Event {
   final int id;
   final String name;
   final DateTime date;
+  final String? imageUrl;
   final String details;
   final String location;
   final int creatorId;
@@ -10,12 +11,13 @@ class Event {
   final bool isAttending;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<String> attendeesList;
+  final List<EventAttendees>? attendeesList;
 
   Event({
     required this.id,
     required this.name,
     required this.date,
+    this.imageUrl,
     required this.details,
     required this.location,
     required this.creatorId,
@@ -24,14 +26,16 @@ class Event {
     required this.isAttending,
     required this.createdAt,
     required this.updatedAt,
-    required this.attendeesList,
+     this.attendeesList,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+
     return Event(
       id: json['id'],
       name: json['name'],
       date: DateTime.parse(json['date']),
+      imageUrl: json['image'] as String?,
       details: json['details'],
       location: json['location'],
       creatorId: json['creator'],
@@ -40,7 +44,9 @@ class Event {
       isAttending: json['is_attending'] ?? false,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-      attendeesList: List<String>.from(json['attendees_list'] ?? []),
+      attendeesList: (json['attendees_list'] as List<dynamic>?)
+          ?.map((e) => EventAttendees.fromJson(e))
+          .toList(),
     );
   }
 
@@ -73,6 +79,7 @@ class Event {
     int? id,
     String? name,
     DateTime? date,
+    String? imageUrl,
     String? details,
     String? location,
     int? creatorId,
@@ -81,12 +88,13 @@ class Event {
     bool? isAttending,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<String>? attendeesList,
+    List<EventAttendees>? attendeesList,
   }) {
     return Event(
       id: id ?? this.id,
       name: name ?? this.name,
       date: date ?? this.date,
+      imageUrl: imageUrl ?? this.imageUrl,
       details: details ?? this.details,
       location: location ?? this.location,
       creatorId: creatorId ?? this.creatorId,
@@ -106,37 +114,25 @@ class Event {
         'attendeesCount: $attendeesCount, isAttending: $isAttending, '
         'createdAt: $createdAt, updatedAt: $updatedAt)';
   }
+}
 
-  // @override
-  // bool operator ==(Object other) {
-  //   if (identical(this, other)) return true;
-  //
-  //   return other is Event &&
-  //       other.id == id &&
-  //       other.name == name &&
-  //       other.date == date &&
-  //       other.details == details &&
-  //       other.location == location &&
-  //       other.creatorId == creatorId &&
-  //       other.creatorName == creatorName &&
-  //       other.attendeesCount == attendeesCount &&
-  //       other.isAttending == isAttending &&
-  //       other.createdAt == createdAt &&
-  //       other.updatedAt == updatedAt;
-  // }
-  //
-  // @override
-  // int get hashCode {
-  //   return id.hashCode ^
-  //   name.hashCode ^
-  //   date.hashCode ^
-  //   details.hashCode ^
-  //   location.hashCode ^
-  //   creatorId.hashCode ^
-  //   creatorName.hashCode ^
-  //   attendeesCount.hashCode ^
-  //   isAttending.hashCode ^
-  //   createdAt.hashCode ^
-  //   updatedAt.hashCode;
-  // }
+class EventAttendees{
+  final String fullName;
+  final String? email;
+  final String? contactNumber;
+
+  EventAttendees({
+    required this.fullName,
+    this.contactNumber,
+    this.email
+  });
+
+  factory EventAttendees.fromJson(Map<String, dynamic> json) {
+
+    return EventAttendees(
+      fullName: json['full_name'] ?? "Resident User",
+      contactNumber: json['contact_number'] as String?,
+      email: json['email'] as String?,
+    );
+  }
 }

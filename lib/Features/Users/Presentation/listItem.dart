@@ -23,14 +23,14 @@ class UserListItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _getRoleColor(context, user.role),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(user.role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
-            ),
+            // Container(
+            //   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            //   decoration: BoxDecoration(
+            //     color: _getRoleColor(context, user.role),
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Text(user.role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
+            // ),
             const SizedBox(width: 12),
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),

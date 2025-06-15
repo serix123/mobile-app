@@ -48,7 +48,6 @@ class ResidentListItem extends StatelessWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
-                const SizedBox(height: 8),
                 // _buildStatusDropdown(),
               ],
             ),
@@ -109,9 +108,9 @@ class ResidentListItem extends StatelessWidget {
 
   Color _getRoleColor(String role) {
     switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.red.shade700;
       case 'officer':
+        return Colors.red.shade700;
+      case 'guard':
         return kGreenNormal;
       default:
         return Colors.grey.shade600;

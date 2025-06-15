@@ -27,22 +27,29 @@ class _SearchFieldsState extends State<SearchFields> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            labelText: 'Search',
-            prefixIcon: Icon(Icons.search),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        _buildDropdownRow(),
-        const SizedBox(height: 10),
-        _buildButtonsRow(),
-      ],
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, child) {
+        if (profileProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildDropdownRow(),
+            const SizedBox(height: 10),
+            _buildButtonsRow(),
+          ],
+        );
+      },
     );
   }
 
@@ -79,7 +86,7 @@ class _SearchFieldsState extends State<SearchFields> {
   }
 
   Widget _buildDropdownRow() {
-    final isOfficer = context.read<ProfileProvider>().user!.isOfficer;
+    final isOfficer = context.read<ProfileProvider>().user?.isOfficer ?? false;
     return Row(
       children: [
         Expanded(

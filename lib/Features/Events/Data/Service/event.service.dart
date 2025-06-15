@@ -1,16 +1,17 @@
-
 import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:online_reservation/Core/Data/API_Services/token.service.dart';
 import 'package:online_reservation/Core/Data/Models/paginated.model.dart';
 import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
 import 'package:online_reservation/config/host.dart';
 
-class EventApiService extends TokenService{
+class EventApiService extends TokenService {
   static const String baseUrl = '${appURL}events/';
   EventApiService({required super.storage, required super.client});
 
-  Future<Event> createEvent({required Event event}) async  {
+  Future<Event> createEvent({required Event event}) async {
     try {
       String? token = await getAccessToken(storage);
       final body = json.encode(event.toCreateJson());
@@ -52,7 +53,10 @@ class EventApiService extends TokenService{
     }
   }
 
-  Future<PaginatedResults<Event>> getEvents({int page = 1, String query = "",}) async {
+  Future<PaginatedResults<Event>> getEvents({
+    int page = 1,
+    String query = "",
+  }) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
@@ -65,7 +69,82 @@ class EventApiService extends TokenService{
       if (response.statusCode == 200) {
         return PaginatedResults<Event>.fromJson(
           jsonDecode(response.body),
-              (json) => Event.fromJson(json),
+          (json) => Event.fromJson(json),
+        );
+      }
+      throw Exception('Failed to get events: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get events: $e');
+    }
+  }
+
+  Future<PaginatedResults<Event>> getPastEvents({
+    int page = 1,
+    String query = "",
+  }) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${baseUrl}past/?page=$page&q=$query'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return PaginatedResults<Event>.fromJson(
+          jsonDecode(response.body),
+          (json) => Event.fromJson(json),
+        );
+      }
+      throw Exception('Failed to get events: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get events: $e');
+    }
+  }
+
+  Future<PaginatedResults<Event>> getOngoingEvents({
+    int page = 1,
+    String query = "",
+  }) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${baseUrl}ongoing_this_month/?page=$page&q=$query'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return PaginatedResults<Event>.fromJson(
+          jsonDecode(response.body),
+          (json) => Event.fromJson(json),
+        );
+      }
+      throw Exception('Failed to get events: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get events: $e');
+    }
+  }
+
+  Future<PaginatedResults<Event>> getUpcomingEvents({
+    int page = 1,
+    String query = "",
+  }) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${baseUrl}upcoming/?page=$page&q=$query'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return PaginatedResults<Event>.fromJson(
+          jsonDecode(response.body),
+          (json) => Event.fromJson(json),
         );
       }
       throw Exception('Failed to get events: ${response.statusCode}');
@@ -78,8 +157,7 @@ class EventApiService extends TokenService{
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse(
-            '$baseUrl$id/'),
+        Uri.parse('$baseUrl$id/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -159,6 +237,61 @@ class EventApiService extends TokenService{
       throw Exception('Failed to update event: ${response.statusCode}');
     } catch (e) {
       throw Exception('Failed to resolve event: $e');
+    }
+  }
+
+  Future<void> uploadFileAdaptive(
+      int eventId, PlatformFile file, bool isWeb) async {
+    try {
+      String? token = await getAccessToken(storage);
+      if (token == null) throw Exception("Invalid Access not found.");
+      // Create a multipart request
+      var request = http.MultipartRequest(
+          'PUT', Uri.parse('$baseUrl$eventId/upload/'));
+
+      if (isWeb) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image', // field name for the file
+            file.bytes!,
+            filename: file.name, // optional, defaults to basename
+          ),
+        );
+      } else {
+        // Attach file
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image', // field name for the file
+            file.path!,
+            filename: file.name, // optional, defaults to basename
+          ),
+        );
+      }
+
+      // Add any other fields if needed
+      // request.fields['description'] = 'File upload test';
+
+      // Optionally set headers
+      request.headers.addAll({
+        'Content-Type': 'multipart/form-data',
+        'Authorization': 'Bearer $token',
+      });
+
+      // Send the request
+      var response = await request.send();
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        // print('Upload successful');
+        // Optionally read response body
+        // final responseBody = await response.stream.bytesToString();
+        // print('Response body: $responseBody');
+      } else {
+        // print('Upload failed with status: ${response.statusCode}');
+        throw Exception(response.statusCode);
+      }
+    } catch (e) {
+      throw Exception('Failed to update event image: $e');
     }
   }
 }

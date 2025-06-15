@@ -7,6 +7,8 @@ import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
 import 'package:online_reservation/Features/Events/Domain/event.repository.dart';
 import 'package:online_reservation/Features/Events/Presentation/widget/event.search.dart';
 import 'package:online_reservation/Features/Events/Presentation/widget/eventCard.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class EventListScreen extends StatefulWidget {
@@ -18,13 +20,49 @@ class EventListScreen extends StatefulWidget {
   State<EventListScreen> createState() => _EventListScreenState();
 }
 
-class _EventListScreenState extends State<EventListScreen> {
+class _EventListScreenState extends State<EventListScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  void _initData() async {
+    final task = [
+      context.read<ProfileProvider>().getProfile(),
+    context.read<EventProvider>().getOngoingEvents()
+    ];
+    await Future.wait(task);
+  }
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this,initialIndex: 1);
+    _tabController.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EventProvider>().getEvents();
+      _initData();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _handleTabChange() async {
+    if (_tabController.indexIsChanging) return;
+    final provider = context.read<EventProvider>();
+    switch (_tabController.index) {
+      case 0:
+        await provider.getPastEvents();
+        break;
+      case 1:
+        await provider.getOngoingEvents();
+        break;
+      case 2:
+        await provider.getUpcomingEvents();
+        break;
+    }
   }
 
   void _handlePostCreate() async {
@@ -33,18 +71,38 @@ class _EventListScreenState extends State<EventListScreen> {
 
     if (result != null) {
       final provider = context.read<EventProvider>();
-      await provider.getEvents();
+      switch (_tabController.index) {
+        case 0:
+          await provider.getPastEvents();
+          break;
+        case 1:
+          await provider.getOngoingEvents();
+          break;
+        case 2:
+          await provider.getUpcomingEvents();
+          break;
+      }
     }
   }
 
-  void _handlepostEdit(Event event) async {
+  void _handlePostEdit(Event event) async {
     final result = await Navigator.pushNamed(
         context, RouteGenerator.eventViewScreen,
         arguments: event);
 
     if (result != null) {
       final provider = context.read<EventProvider>();
-      await provider.getEvents();
+      switch (_tabController.index) {
+        case 0:
+          await provider.getPastEvents();
+          break;
+        case 1:
+          await provider.getOngoingEvents();
+          break;
+        case 2:
+          await provider.getUpcomingEvents();
+          break;
+      }
     }
   }
 
@@ -118,13 +176,19 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isOfficer = context.read<ProfileProvider>().user?.isOfficer ?? false;
     return ResponsiveLayout(
       mobileBody: _mobileBody(),
       desktopBody: _mobileBody(),
       title: const Text(EventListScreen.title),
       actions: [
         IconButton(
-          icon: const Icon(Icons.edit),
+          icon: const Icon(Icons.refresh),
+          onPressed: () => _initData(),
+        ),
+        if(isOfficer)
+        IconButton(
+          icon: const Icon(Icons.add),
           onPressed: () => _handlePostCreate(),
         ),
       ],
@@ -138,7 +202,18 @@ class _EventListScreenState extends State<EventListScreen> {
         builder: (context, provider, child) {
           return SearchFields(
             onSearch: (text) {
-              provider.getEvents(query: text);
+              switch (_tabController.index) {
+                case 0:
+                  provider.getPastEvents(query: text);
+                  break;
+                case 1:
+                  provider.getOngoingEvents(query: text);
+                  break;
+                case 2:
+                  provider.getUpcomingEvents(query: text);
+                  break;
+              }
+              // provider.getEvents(query: text);
             },
           );
         },
@@ -151,6 +226,17 @@ class _EventListScreenState extends State<EventListScreen> {
       children: [
         _searchBar(),
         _paginationControls(),
+        TabBar(
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.blue,
+          controller: _tabController,
+          tabs: const [
+            Tab(text: "Past Events"),
+            Tab(text: "Ongoing Events"),
+            Tab(text: "Upcoming Events"),
+          ],
+        ),
         Expanded(
           child: Consumer<EventProvider>(
             builder: (context, provider, child) {
@@ -170,7 +256,7 @@ class _EventListScreenState extends State<EventListScreen> {
                   final event = provider.events[index];
                   return InkWell(
                     child: EventCard(event: event),
-                    onTap: () => _handlepostEdit(event),
+                    onTap: () => _handlePostEdit(event),
                   );
                 },
               );
@@ -179,6 +265,32 @@ class _EventListScreenState extends State<EventListScreen> {
         ),
       ],
     );
+  }
+
+  Widget _EventTabList() {
+    return DefaultTabController(
+        length: 3,
+        child: Column(
+          children: [
+            const TabBar(
+              labelColor: Colors.blue,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.blue,
+              tabs: [
+                Tab(icon: Icon(Icons.warning), text: "Open"),
+                Tab(icon: Icon(Icons.check_circle), text: "Resolved"),
+                Tab(icon: Icon(Icons.list), text: "All"),
+              ],
+            ),
+            const TabBarView(
+              children: [
+                Center(child: Text("Open Issues")),
+                Center(child: Text("Resolved Issues")),
+                Center(child: Text("All Issues")),
+              ],
+            ),
+          ],
+        ));
   }
 
   Widget _paginationControls() {
@@ -205,7 +317,19 @@ class _EventListScreenState extends State<EventListScreen> {
       description: 'When new events are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () => provider.getEvents(),
+        onPressed: () {
+          switch (_tabController.index) {
+            case 0:
+              provider.getPastEvents();
+              break;
+            case 1:
+              provider.getOngoingEvents();
+              break;
+            case 2:
+              provider.getUpcomingEvents();
+              break;
+          }
+        },
         child: const Text('Reload'),
       ),
     );

@@ -5,6 +5,9 @@ import 'package:online_reservation/Features/Authentication/Presentation/login.vi
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.view.dart';
+import 'package:online_reservation/Features/Documents/Data/Model/document.model.dart';
+import 'package:online_reservation/Features/Documents/Presentation/document.form.dart';
+import 'package:online_reservation/Features/Documents/Presentation/document.list.dart';
 import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
 import 'package:online_reservation/Features/Events/Presentation/event.form.dart';
 import 'package:online_reservation/Features/Events/Presentation/event.list.dart';
@@ -13,8 +16,13 @@ import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
 import 'package:online_reservation/Features/Issue/Data/Model/issue.model.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.list.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
+import 'package:online_reservation/Features/Notice/Data/Model/notice.model.dart';
+import 'package:online_reservation/Features/Notice/Presentation/notice.form.dart';
+import 'package:online_reservation/Features/Notice/Presentation/notice.list.dart';
+import 'package:online_reservation/Features/Notice/Presentation/notice.view.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Profile/Presentation/profile.view.dart';
+import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
 import 'package:online_reservation/Features/Resident/Presentation/residence.list.dart';
 import 'package:online_reservation/Features/Resident/Presentation/residence.view.dart';
 import 'package:online_reservation/Features/Users/Presentation/user.list.view.dart';
@@ -42,6 +50,11 @@ class RouteGenerator {
   static const eventListScreen = EventListScreen.screenId;
   static const eventViewScreen = EventViewScreen.screenId;
   static const eventEditScreen = EventEditScreen.screenId;
+  static const noticeListScreen = NoticeListScreen.screenId;
+  static const noticeEditScreen = NoticeEditScreen.screenId;
+  static const noticeViewScreen = NoticeViewScreen.screenId;
+  static const documentListScreen = DocumentListScreen.screenId;
+  static const documentEditScreen = DocumentEditScreen.screenId;
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -51,6 +64,70 @@ class RouteGenerator {
           final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
           if (!isLoggedIn) return const LoginScreen();
           return const IssuesListScreen();
+        });
+      case profileScreen:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case residentListScreen:
+        return MaterialPageRoute(builder: (_) => const ResidentListScreen());
+      case residenceFormScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is Resident?) {
+            return ResidenceFormScreen(initialData: args);
+          }
+          return const LoginScreen();
+        });
+      case documentListScreen:
+        return MaterialPageRoute(builder: (_) => const DocumentListScreen());
+      case documentEditScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is DocumentEditScreenConfig) {
+            return DocumentEditScreen(document: args.document,category: args.category,);
+          }
+          return const LoginScreen();
+        });
+      case noticeListScreen:
+        return MaterialPageRoute(builder: (_) => const NoticeListScreen());
+      case noticeEditScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is Notice?) {
+            return NoticeEditScreen(notice: args,);
+          }
+          return const LoginScreen();
+        });
+      case noticeViewScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is Notice) {
+            return NoticeViewScreen(notice: args,);
+          }
+          return const LoginScreen();
+        });
+      case eventListScreen:
+        return MaterialPageRoute(builder: (_) => const EventListScreen());
+      case eventViewScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is Event) {
+            return EventViewScreen(event: args,);
+          }
+          return const LoginScreen();
+        });
+      case eventEditScreen:
+        return MaterialPageRoute(builder: (ctx) {
+          final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
+          if (!isLoggedIn) return const LoginScreen();
+          if(args is Event?) {
+            return EventEditScreen(event: args,);
+          }
+          return const LoginScreen();
         });
       case issuesListScreen:
         return MaterialPageRoute(builder: (_) => const IssuesListScreen());

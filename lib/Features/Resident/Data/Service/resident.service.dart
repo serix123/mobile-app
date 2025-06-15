@@ -11,12 +11,12 @@ class ResidentApiService extends TokenService {
   ResidentApiService({required super.storage, required super.client});
 
   Future<PaginatedResults<Resident>> getResidents(
-      {int page = 1, String query = "", RoleType role = RoleType.ALL}) async {
+      {int page = 1, String query = "", RoleType role = RoleType.RESIDENT}) async {
     final String roleQuery;
 
     switch (role) {
-      case RoleType.ADMIN:
-        roleQuery = "Admin";
+      case RoleType.GUARD:
+        roleQuery = "Guard";
         break;
       case RoleType.OFFICER:
         roleQuery = "Officer";
@@ -73,6 +73,7 @@ class ResidentApiService extends TokenService {
     try {
       String? token = await getAccessToken(storage);
       final body = json.encode(resident.toJson());
+      print(body);
       final response = await client.patch(
         Uri.parse('$baseUrl${resident.id}/'),
         body: body,

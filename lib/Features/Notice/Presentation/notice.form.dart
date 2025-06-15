@@ -1,37 +1,30 @@
-// event_edit_screen.dart
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
+import 'package:online_reservation/Features/Notice/Data/Model/notice.model.dart';
+import 'package:online_reservation/Features/Notice/Domain/notice.repository.dart';
 import 'package:path/path.dart' show extension;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
-import 'package:online_reservation/Features/Events/Data/Model/event.model.dart';
-import 'package:online_reservation/Features/Events/Domain/event.repository.dart';
 
-class EventEditScreen extends StatefulWidget {
-  static const String screenId = "/eventEdit";
-  static const String title = "Event";
-  final Event? event;
-
-  const EventEditScreen({super.key, this.event});
+class NoticeEditScreen extends StatefulWidget {
+  static const String screenId = "/noticeEdit";
+  static const String title = "Notice";
+  final Notice? notice;
+  const NoticeEditScreen({super.key, this.notice});
 
   @override
-  State<EventEditScreen> createState() => _EventEditScreenState();
+  State<NoticeEditScreen> createState() => _NoticeEditScreenState();
 }
 
-class _EventEditScreenState extends State<EventEditScreen> {
-  late final TextEditingController _nameController;
+class _NoticeEditScreenState extends State<NoticeEditScreen> {
+  late final TextEditingController _titleController;
   late final TextEditingController _detailsController;
-  late final TextEditingController _locationController;
-  late DateTime _selectedDate;
-  late TimeOfDay _selectedTime;
-
   final _formKey = GlobalKey<FormState>();
-
   PlatformFile? _selectedFile;
   Uint8List? _selectedFileWeb;
   late var _fileExt;
@@ -39,20 +32,16 @@ class _EventEditScreenState extends State<EventEditScreen> {
   @override
   void initState() {
     super.initState();
-    final event = widget.event;
-    _nameController = TextEditingController(text: event?.name ?? '');
-    _detailsController = TextEditingController(text: event?.details ?? '');
-    _locationController = TextEditingController(text: event?.location ?? '');
-    _selectedDate = event?.date ?? DateTime.now();
-    _selectedTime = TimeOfDay.fromDateTime(event?.date ?? DateTime.now());
-    _fileExt = event?.imageUrl?.split('.').last ?? "";
+    final notice = widget.notice;
+    _titleController = TextEditingController(text: notice?.title ?? '');
+    _detailsController = TextEditingController(text: notice?.details ?? '');
+    _fileExt = notice?.imageUrl?.split('.').last ?? "";
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _titleController.dispose();
     _detailsController.dispose();
-    _locationController.dispose();
     _selectedFile = null;
     super.dispose();
   }
@@ -102,85 +91,44 @@ class _EventEditScreenState extends State<EventEditScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: widget.event?.date ?? DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
-
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final eventDate = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _selectedTime.hour,
-        _selectedTime.minute,
-      );
-
       final shouldSubmit = await showDialog<bool>(
           context: context,
           barrierDismissible: false, // user must tap a button
           builder: (ctx) => AlertDialog(
-                  title: const Text('Confirm Submission'),
-                  content:
-                      const Text('Are you sure you want to submit this form?'),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        child: const Text('Cancel')),
-                    TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text('Yes, submit')),
-                  ]));
+              title: const Text('Confirm Submission'),
+              content:
+              const Text('Are you sure you want to submit this form?'),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel')),
+                TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Yes, submit')),
+              ]));
 
       if (shouldSubmit != true) return;
 
-      final event = Event(
-        id: widget.event?.id ?? 0,
-        name: _nameController.text,
-        date: eventDate,
+      final notice = Notice(
+        id: widget.notice?.id ?? 0,
+        title: _titleController.text,
         details: _detailsController.text,
-        location: _locationController.text,
-        creatorId: widget.event?.creatorId ?? 1, // Get from auth
-        creatorName: widget.event?.creatorName ?? 'Current User',
-        attendeesCount: widget.event?.attendeesCount ?? 0,
-        isAttending: widget.event?.isAttending ?? false,
-        createdAt: widget.event?.createdAt ?? DateTime.now(),
-        updatedAt: DateTime.now(),
-        // attendeesList: widget.event?.attendeesList ?? []
+        createdDate: widget.notice?.createdDate ?? DateTime.now(),
+        updatedDate: DateTime.now(),
       );
-      final provider = context.read<EventProvider>();
+      final provider = context.read<NoticeProvider>();
       try {
-        if (widget.event != null) {
-          await provider.updateEvent(event);
+        if (widget.notice != null) {
+          await provider.updateNotice(notice);
           if (_selectedFile != null) {
-            await provider.uploadFile(widget.event!.id, _selectedFile!, kIsWeb);
+            await provider.uploadFile(widget.notice!.id!, _selectedFile!, kIsWeb);
           }
         } else {
-          final newItem = await provider.createEvent(event);
+          final newItem = await provider.createNotice(notice);
           if (newItem != null && _selectedFile != null) {
-            await provider.uploadFile(newItem.id, _selectedFile!, kIsWeb);
+            await provider.uploadFile(newItem.id!, _selectedFile!, kIsWeb);
           }
         }
       } catch (e) {
@@ -191,45 +139,11 @@ class _EventEditScreenState extends State<EventEditScreen> {
         }
       } finally {
         if (mounted) {
-          final error = context.read<EventProvider>().error;
+          final error = context.read<NoticeProvider>().error;
           if (error == null) {
             Navigator.pop(context, true);
           }
         }
-      }
-    }
-  }
-
-  Future<void> _handleDeleteEvent() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this event?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final provider = context.read<EventProvider>();
-      await provider.deleteEvent(widget.event!.id);
-      if (provider.error != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ${provider.error}')));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Event deleted successfully')),
-        );
-        Navigator.pop(context, true);
       }
     }
   }
@@ -239,13 +153,14 @@ class _EventEditScreenState extends State<EventEditScreen> {
     return ResponsiveLayout(
       mobileBody: body(context),
       desktopBody: body(context),
-      title: Text(widget.event == null ? 'Create Event' : 'Edit Event'),
+      title: Text(widget.notice == null ? 'Create Notice' : 'Edit Notice'),
       actions: [
-        if (widget.event != null)
+        if (widget.notice != null)
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
-              _handleDeleteEvent();
+              // Handle delete
+              Navigator.pop(context, 'delete');
             },
           ),
       ],
@@ -253,7 +168,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
   }
 
   Widget body(BuildContext context) {
-    return Consumer<EventProvider>(
+    return Consumer<NoticeProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -265,7 +180,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
             child: Column(
               children: [
                 TextFormField(
-                  controller: _nameController,
+                  controller: _titleController,
                   decoration: const InputDecoration(
                     labelText: 'Event Name',
                     border: OutlineInputBorder(),
@@ -293,63 +208,6 @@ class _EventEditScreenState extends State<EventEditScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _locationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Location',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter event location';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _selectDate(context),
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Date',
-                            border: OutlineInputBorder(),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                  DateFormat('MMM d, y').format(_selectedDate)),
-                              const Icon(Icons.calendar_today),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _selectTime(context),
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Time',
-                            border: OutlineInputBorder(),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(_selectedTime.format(context)),
-                              const Icon(Icons.access_time),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 Row(
                   children: [
                     ElevatedButton(
@@ -359,7 +217,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                     const SizedBox(width: 16),
                     if (_selectedFile != null)
                       ..._buildUploadedImageDisplay()
-                    else if (widget.event?.imageUrl != null &&
+                    else if (widget.notice?.imageUrl != null &&
                         (_fileExt == "jpg" || _fileExt == "png"))
                       ..._buildImageNetwork()
                     else
@@ -377,7 +235,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: Text(
-                        widget.event == null ? 'Create Event' : 'Save Changes'),
+                        widget.notice == null ? 'Create Notice' : 'Save Changes'),
                   ),
               ],
             ),
@@ -448,13 +306,13 @@ class _EventEditScreenState extends State<EventEditScreen> {
 
   List<Widget> _buildImageNetwork() {
     return [
-      Expanded(child: Text(widget.event!.imageUrl!.split('/').last)),
+      Expanded(child: Text(widget.notice!.imageUrl!.split('/').last)),
       const SizedBox(width: 16),
       ClipRRect(
         // Optional: Clip corners for a nicer look
         borderRadius: BorderRadius.circular(8.0),
         child: Image.network(
-          widget.event!.imageUrl!,
+          widget.notice!.imageUrl!,
           width: 200,
           // Take full width of the card
           height: 200,
@@ -468,7 +326,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                    loadingProgress.expectedTotalBytes!
                     : null,
               ),
             );
@@ -479,7 +337,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
               height: 150,
               color: Colors.grey[200],
               child:
-                  const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+              const Icon(Icons.broken_image, size: 50, color: Colors.grey),
             );
           },
         ),

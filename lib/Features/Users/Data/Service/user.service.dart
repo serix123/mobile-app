@@ -116,4 +116,26 @@ class UserApiService extends TokenService{
       throw Exception('Failed to update user: $e');
     }
   }
+
+  Future<User> updateUserRole({required User user}) async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.post(
+        Uri.parse('$baseUrl${user.id}/set_group/'),
+        body: {
+          'group': '${user.group}'
+        },
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return User.fromJson(jsonDecode(response.body));
+      }
+      throw Exception('Failed to update user role: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to update user role: $e');
+    }
+  }
 }

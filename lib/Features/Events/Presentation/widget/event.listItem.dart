@@ -28,24 +28,84 @@ class EventListItem extends StatelessWidget {
     return Card(
       child: Stack(
         children: [
-          GestureDetector(
+          InkWell(
             onTap: () {},
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Title', event.name),
-                  _buildInfoRow('Details', event.details),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: (event.imageUrl != null)
+                      ? ClipRRect(
+                    // Optional: Clip corners for a nicer look
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      event.imageUrl!,
+                      width: 150, // Take full width of the card
+                      height: 150, // Fixed height, adjust as needed
+                      fit: BoxFit
+                          .contain, // Cover the area, cropping if necessary
+                      loadingBuilder: (BuildContext context,
+                          Widget child,
+                          ImageChunkEvent? loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value:
+                            loadingProgress.expectedTotalBytes !=
+                                null
+                                ? loadingProgress
+                                .cumulativeBytesLoaded /
+                                loadingProgress
+                                    .expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          alignment: Alignment.center,
+                          height: 150,
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.broken_image,
+                              size: 50, color: Colors.grey),
+                        );
+                      },
+                    ),
+                  )
+                      : Container(
+                    // Placeholder when no image URL
+                    alignment: Alignment.center,
+                    width: 150,
+                    height: 150,
+                    color: Colors.grey[
+                    350], // Light grey background for the icon
+                    child: const Icon(
+                      Icons.image, // The image icon
+                      size: 50, // Size of the icon
+                      color: Colors.grey, // Color of the icon
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow('Title', event.name),
+                        _buildInfoRow('Details', event.details),
 
-                  // _buildInfoRow('Treatment', event.treatments ?? ""),
-                  _buildInfoRow('Location', event.location ?? ""),
-                  _buildInfoRow('Date', Utils.formatDateISO(event.date)),
-                  _buildInfoRow('Attending', "${event.attendeesCount}"),
-                  const SizedBox(height: 8),
+                        // _buildInfoRow('Treatment', event.treatments ?? ""),
+                        _buildInfoRow('Location', event.location ?? ""),
+                        _buildInfoRow('Date', Utils.formatDateISO(event.date)),
+                        _buildInfoRow('Attending', "${event.attendeesCount}"),
+                        const SizedBox(height: 8),
 
-                ],
-              ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Positioned(

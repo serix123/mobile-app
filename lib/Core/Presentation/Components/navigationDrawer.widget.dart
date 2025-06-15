@@ -43,7 +43,15 @@ class CustomNavigationDrawer extends StatelessWidget {
                   ),
                   _createDrawerItem(
                     context: context,
-                    icon: Icons.event,
+                    icon: Icons.campaign_outlined,
+                    text: 'Community Notice',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.noticeListScreen),
+                    selected: currentRoute == RouteGenerator.noticeListScreen,
+                  ),
+                  _createDrawerItem(
+                    context: context,
+                    icon: Icons.event_note_outlined,
                     text: 'Events Upcoming',
                     onTap: () => Navigator.of(context)
                         .pushNamed(RouteGenerator.eventListScreen),
@@ -57,7 +65,15 @@ class CustomNavigationDrawer extends StatelessWidget {
                         .pushNamed(RouteGenerator.issuesListScreen),
                     selected: currentRoute == RouteGenerator.issuesListScreen,
                   ),
-                  if (provider.user!.isSuperuser)
+                  _createDrawerItem(
+                    context: context,
+                    icon: Icons.file_copy_outlined,
+                    text: 'Documents',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.documentListScreen),
+                    selected: currentRoute == RouteGenerator.documentListScreen,
+                  ),
+                  if (provider.user!.isOfficer)
                     _createDrawerItem(
                       context: context,
                       icon: Icons.people,

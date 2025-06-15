@@ -66,7 +66,6 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     _selectedStatus = widget.initialData?.status;
     _selectedPriority = widget.initialData?.priority;
     _fileExt = widget.initialData?.imageUrl?.split('.').last ?? "";
-
   }
 
   @override
@@ -360,24 +359,19 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget body() {
-    return Consumer<ProfileProvider>(
-      builder: (context, profileProvider, child) {
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Column(
-              children: [
-                FormContainer(
-                  width: MediaQuery.of(context).size.width,
-                  child: buildForm(),
-                ),
-                if(!profileProvider.user!.isResident)
-                _buildCommentSection()
-              ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Column(
+          children: [
+            FormContainer(
+              width: MediaQuery.of(context).size.width,
+              child: buildForm(),
             ),
-          ),
-        );
-      },
+            _buildCommentSection()
+          ],
+        ),
+      ),
     );
   }
 
@@ -423,9 +417,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                     // Dropdowns
                     Row(
                       children: [
-                        Expanded(
-                            child:
-                            buildIssuePriorityDropdown()),
+                        Expanded(child: buildIssuePriorityDropdown()),
                         const SizedBox(width: 10),
                         Expanded(child: buildIssueStatusDropdown()),
                       ],
@@ -509,9 +501,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       // Dropdowns
                       Row(
                         children: [
-                          Expanded(
-                              child:
-                                  buildIssuePriorityDropdown()),
+                          Expanded(child: buildIssuePriorityDropdown()),
                           const SizedBox(width: 10),
                           Expanded(child: buildIssueStatusDropdown()),
                         ],
@@ -537,7 +527,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                               const SizedBox(width: 16),
                               if (_selectedFile != null)
                                 ..._buildUploadedImageDisplay()
-                              else if (widget.initialData?.imageUrl != null  &&
+                              else if (widget.initialData?.imageUrl != null &&
                                   (_fileExt == "jpg" || _fileExt == "png"))
                                 ..._buildImageNetwork()
                               else
@@ -642,7 +632,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                             const SizedBox(width: 16),
                             if (_selectedFile != null)
                               ..._buildUploadedImageDisplay()
-                            else if (widget.initialData?.imageUrl != null  &&
+                            else if (widget.initialData?.imageUrl != null &&
                                 (_fileExt == "jpg" || _fileExt == "png"))
                               ..._buildImageNetwork()
                             else
@@ -721,7 +711,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                             child:
                                 buildIssuePriorityDropdown(isReadOnly: true)),
                         const SizedBox(width: 10),
-                        Expanded(child: buildIssueStatusDropdown(isReadOnly: true)),
+                        Expanded(
+                            child: buildIssueStatusDropdown(isReadOnly: true)),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -745,7 +736,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                             const SizedBox(width: 16),
                             if (_selectedFile != null)
                               ..._buildUploadedImageDisplay()
-                            else if (widget.initialData?.imageUrl != null  &&
+                            else if (widget.initialData?.imageUrl != null &&
                                 (_fileExt == "jpg" || _fileExt == "png"))
                               ..._buildImageNetwork()
                             else
@@ -875,7 +866,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget buildIssueStatusDropdown({bool isReadOnly = false}) {
-    final isResident = context.read<ProfileProvider>().user?.isResident ?? false;
+    final isResident =
+        context.read<ProfileProvider>().user?.isResident ?? false;
     return DropdownButtonFormField<IssueStatus?>(
       value: _selectedStatus,
       decoration: const InputDecoration(
@@ -883,18 +875,27 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      items: !isResident ?
-      IssueStatus.values.where((status) => status != IssueStatus.DRAFT).map((status) {
-        return DropdownMenuItem<IssueStatus>(
-          value: status,
-          child: Text(status.displayName), // Use the extension for display
-        );
-      }).toList() : IssueStatus.values.where((status) => status != IssueStatus.RESOLVED && status != IssueStatus.IN_PROGRESS).map((status) {
-        return DropdownMenuItem<IssueStatus>(
-          value: status,
-          child: Text(status.displayName), // Use the extension for display
-        );
-      }).toList(),
+      items: !isResident
+          ? IssueStatus.values
+              .where((status) => status != IssueStatus.DRAFT)
+              .map((status) {
+              return DropdownMenuItem<IssueStatus>(
+                value: status,
+                child:
+                    Text(status.displayName), // Use the extension for display
+              );
+            }).toList()
+          : IssueStatus.values
+              .where((status) =>
+                  status != IssueStatus.RESOLVED &&
+                  status != IssueStatus.IN_PROGRESS)
+              .map((status) {
+              return DropdownMenuItem<IssueStatus>(
+                value: status,
+                child:
+                    Text(status.displayName), // Use the extension for display
+              );
+            }).toList(),
       onChanged: isReadOnly
           ? null
           : (IssueStatus? newValue) {
@@ -1077,7 +1078,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+                        loadingProgress.expectedTotalBytes!
                     : null,
               ),
             );
@@ -1088,7 +1089,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               height: 150,
               color: Colors.grey[200],
               child:
-              const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                  const Icon(Icons.broken_image, size: 50, color: Colors.grey),
             );
           },
         ),

@@ -227,6 +227,7 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
                         : () => _handleCreateEdit(
                             category: doc.category, document: doc),
                   )),
+              if(isOfficer)
               addFileButton(category),
               // Subcategories
               ...category.subcategories

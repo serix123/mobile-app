@@ -124,12 +124,12 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                     const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final issue = provider.issues[index];
-                  final isSuperUser = profileProvider.user!.isSuperuser;
-                  if (isSuperUser) {
+                  final isResident = profileProvider.user!.isResident;
+                  if (!isResident) {
                     return IssueListItem(
                       issue: issue,
                       // onResolve: () => _handleResolveIssue(context, issue.id!),
-                      onDelete: () => _handleDeleteIssue(context, issue.id!),
+                      // onDelete: () => _handleDeleteIssue(context, issue.id!),
                       onEdit: () => _navigateToForm(
                           context, FormFieldMode.UPDATE,
                           issue: issue),
@@ -139,7 +139,9 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
                   } else {
                     return IssueListItem(
                       issue: issue,
-                      // onResolve: () => _handleResolveIssue(context, issue.id!),
+                      onEdit: () => _navigateToForm(
+                          context, FormFieldMode.UPDATE,
+                          issue: issue),
                       onTap: () => _navigateToForm(context, FormFieldMode.READ,
                           issue: issue),
                     );
@@ -348,8 +350,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
       actionButton: ElevatedButton(
-        onPressed: () =>
-            Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen),
+        onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),
         child: const Text('Create New Issue'),
       ),
     );

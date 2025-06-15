@@ -10,7 +10,7 @@ class IssueListItem extends StatelessWidget {
   final VoidCallback onTap;
   // final VoidCallback onResolve;
   final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
+  // final VoidCallback? onDelete;
   // final Function(String) onStatusChanged;
 
   const IssueListItem({
@@ -18,7 +18,7 @@ class IssueListItem extends StatelessWidget {
     required this.issue,
     // required this.onResolve,
     this.onEdit,
-    this.onDelete,
+    // this.onDelete,
     required this.onTap,
     // required this.onStatusChanged,
   });
@@ -31,7 +31,7 @@ class IssueListItem extends StatelessWidget {
   Widget buildItemList() {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, child) {
-        final isOfficer = profileProvider.user!.isOfficer;
+        // final isOfficer = profileProvider.user!.isOfficer;
         return Card(
           child: Stack(
             children: [
@@ -162,7 +162,7 @@ class IssueListItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isOfficer)
+              // if (isOfficer)
                 Positioned(
                   right: 0,
                   top: 0,
@@ -184,19 +184,19 @@ class IssueListItem extends StatelessWidget {
                           title: Text('Edit'),
                         ),
                       ),
-                      const PopupMenuItem<String>(
-                        value: 'delete',
-                        child: ListTile(
-                          leading: Icon(Icons.delete, color: Colors.red),
-                          title: Text('Delete'),
-                        ),
-                      ),
+                      // const PopupMenuItem<String>(
+                      //   value: 'delete',
+                      //   child: ListTile(
+                      //     leading: Icon(Icons.delete, color: Colors.red),
+                      //     title: Text('Delete'),
+                      //   ),
+                      // ),
                     ],
                     onSelected: (String value) {
                       // if (value == 'resolve') onResolve();
                       if (value == 'edit') onEdit != null ? onEdit!() : () {};
-                      if (value == 'delete')
-                        onDelete != null ? onDelete!() : () {};
+                      // if (value == 'delete')
+                      //   onDelete != null ? onDelete!() : () {};
                     },
                   ),
                 )

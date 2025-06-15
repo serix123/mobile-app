@@ -165,7 +165,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       title: _titleController.text,
       description: _descriptionController.text,
       priority: _selectedPriority!,
-      status: _selectedStatus!,
+      status: _selectedStatus ?? IssueStatus.DRAFT,
     );
     final provider = context.read<IssueProvider>();
     try {
@@ -360,25 +360,30 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget body() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Column(
-          children: [
-            FormContainer(
-              width: MediaQuery.of(context).size.width,
-              child: buildForm(),
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, child) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Column(
+              children: [
+                FormContainer(
+                  width: MediaQuery.of(context).size.width,
+                  child: buildForm(),
+                ),
+                if(!profileProvider.user!.isResident)
+                _buildCommentSection()
+              ],
             ),
-            _buildCommentSection()
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget buildForm() {
     final profileProvider = context.read<ProfileProvider>();
-    final isOfficer = profileProvider.user!.isOfficer;
+    final isResident = profileProvider.user!.isResident;
     return Consumer<IssueProvider>(
       builder: (context, issueProvider, child) {
         switch (formFieldMode) {
@@ -416,8 +421,15 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                     const SizedBox(height: 18),
 
                     // Dropdowns
-                    buildIssuePriorityDropdown(),
-                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                            child:
+                            buildIssuePriorityDropdown()),
+                        const SizedBox(width: 10),
+                        Expanded(child: buildIssueStatusDropdown()),
+                      ],
+                    ),
 
                     //Image Uploader
                     Column(
@@ -459,7 +471,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               ),
             );
           case FormFieldMode.UPDATE:
-            if (isOfficer) {
+            if (!isResident) {
               return Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Form(
@@ -499,7 +511,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         children: [
                           Expanded(
                               child:
-                                  buildIssuePriorityDropdown(isReadOnly: true)),
+                                  buildIssuePriorityDropdown()),
                           const SizedBox(width: 10),
                           Expanded(child: buildIssueStatusDropdown()),
                         ],
@@ -708,8 +720,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         Expanded(
                             child:
                                 buildIssuePriorityDropdown(isReadOnly: true)),
-                        // const SizedBox(width: 10),
-                        // Expanded(child: buildIssueStatusDropdown()),
+                        const SizedBox(width: 10),
+                        Expanded(child: buildIssueStatusDropdown(isReadOnly: true)),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -863,6 +875,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget buildIssueStatusDropdown({bool isReadOnly = false}) {
+    final isResident = context.read<ProfileProvider>().user?.isResident ?? false;
     return DropdownButtonFormField<IssueStatus?>(
       value: _selectedStatus,
       decoration: const InputDecoration(
@@ -870,7 +883,13 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      items: IssueStatus.values.map((status) {
+      items: !isResident ?
+      IssueStatus.values.where((status) => status != IssueStatus.DRAFT).map((status) {
+        return DropdownMenuItem<IssueStatus>(
+          value: status,
+          child: Text(status.displayName), // Use the extension for display
+        );
+      }).toList() : IssueStatus.values.where((status) => status != IssueStatus.RESOLVED && status != IssueStatus.IN_PROGRESS).map((status) {
         return DropdownMenuItem<IssueStatus>(
           value: status,
           child: Text(status.displayName), // Use the extension for display

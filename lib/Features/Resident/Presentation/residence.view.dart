@@ -3,6 +3,7 @@ import 'package:online_reservation/Core/Presentation/Components/formContainer.wi
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
 import 'package:online_reservation/Features/FormModule/Data/item.model.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
 import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
 import 'package:online_reservation/Features/Users/Data/Model/user.model.dart';
@@ -171,8 +172,9 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
   }
 
   Widget buildForm(BuildContext context) {
-    return Consumer2<UserProvider, ResidentProvider>(
-      builder: (context, userProvider, residentProvider, child) {
+    return Consumer3<UserProvider, ResidentProvider, ProfileProvider>(
+      builder: (context, userProvider, residentProvider,profileProvider, child) {
+        final isOfficer = profileProvider.user?.isOfficer ?? false;
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -180,6 +182,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
             child: ListView(
               children: <Widget>[
                 TextFormField(
+                  enabled: isOfficer,
                   controller: _firstNameController,
                   decoration: const InputDecoration(labelText: 'First Name'),
                   validator: (value) {
@@ -190,6 +193,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                   },
                 ),
                 TextFormField(
+                  enabled: isOfficer,
                   controller: _lastNameController,
                   decoration: const InputDecoration(labelText: 'Last Name'),
                   // maxLines: 2,
@@ -201,6 +205,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                   },
                 ),
                 TextFormField(
+                  enabled: isOfficer,
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
                   // maxLines: 2,
@@ -212,6 +217,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                   },
                 ),
                 TextFormField(
+                  enabled: isOfficer,
                   controller: _contactController,
                   decoration: const InputDecoration(labelText: 'Contact'),
                   // maxLines: 2,
@@ -220,6 +226,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                   },
                 ),
                 TextFormField(
+                  enabled: isOfficer,
                   controller: _addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
                   maxLines: 2,
@@ -229,7 +236,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                 ),
                 // Status Dropdown
                 const SizedBox(height: 26),
-                _buildStatusDropdown(),
+                _buildStatusDropdown(isOfficer),
                 const SizedBox(height: 32),
                 if (residentProvider.error != null)
                   ErrorText(residentProvider.error!),
@@ -241,7 +248,8 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                   else
                     Column(
                       children: [
-                        ElevatedButton(
+                        if(isOfficer)
+                        ...[ElevatedButton(
                           onPressed: () => _submitForm(),
                           child: const Text('Update Resident'),
                         ),
@@ -252,7 +260,7 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
                             backgroundColor: Colors.red,
                           ),
                           child: const Text('Delete Resident'),
-                        ),
+                        ),]
                       ],
                     ),
               ],
@@ -263,8 +271,15 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
     );
   }
 
-  Widget _buildStatusDropdown() {
+  Widget _buildStatusDropdown(bool isOfficer) {
 
+    // if(!isOfficer){
+    //   return TextFormField(
+    //     enabled: false,
+    //     controller: TextEditingController(text: _selectedRole),
+    //     decoration: InputDecoration(labelText: 'Role', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),)),
+    //   );
+    // }
     return DropdownButtonFormField<String>(
       value: _selectedRole,
       decoration: const InputDecoration(
@@ -273,15 +288,14 @@ class _ResidenceFormScreenState extends State<ResidenceFormScreen> {
       ),
       items: roles.map((String role) {
         return DropdownMenuItem<String>(
+          enabled: isOfficer,
           value: role,
           child: Text(role),
         );
       }).toList(),
-      onChanged: (String? newValue) {
-        setState(() {
+      onChanged:!isOfficer ? null : (String? newValue) => setState(() {
           _selectedRole = newValue!;
-        });
-      },
+        }),
     );
   }
 }

@@ -959,23 +959,25 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       ),
       items: !isResident
           ? IssueStatus.values
-              .where((status) => status != IssueStatus.DRAFT)
+              // .where((status) => status != IssueStatus.DRAFT)
               .map((status) {
               return DropdownMenuItem<IssueStatus>(
+                enabled: status != IssueStatus.DRAFT,
                 value: status,
                 child:
-                    Text(status.displayName), // Use the extension for display
+                    Text(status.displayName,style: status == IssueStatus.DRAFT ? TextStyle(color: Theme.of(context).disabledColor):null,), // Use the extension for display
               );
             }).toList()
           : IssueStatus.values
-              .where((status) =>
-                  status != IssueStatus.RESOLVED &&
-                  status != IssueStatus.IN_PROGRESS)
+              // .where((status) =>
+              //     status != IssueStatus.RESOLVED &&
+              //     status != IssueStatus.IN_PROGRESS)
               .map((status) {
               return DropdownMenuItem<IssueStatus>(
+                enabled: status != IssueStatus.RESOLVED && status != IssueStatus.IN_PROGRESS,
                 value: status,
                 child:
-                    Text(status.displayName), // Use the extension for display
+                    Text(status.displayName, style: status == IssueStatus.RESOLVED || status == IssueStatus.IN_PROGRESS ? TextStyle(color: Theme.of(context).disabledColor): null,), // Use the extension for display
               );
             }).toList(),
       onChanged: isReadOnly

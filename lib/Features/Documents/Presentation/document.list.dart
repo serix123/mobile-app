@@ -260,7 +260,7 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
 
   Widget _buildErrorState() {
     return GenericEmptyState(
-      title: 'No Issue Requests',
+      title: 'No Documents Found',
       description:
           'When new document requests are created, they will appear here',
       icon: Icons.assignment_outlined,
@@ -275,7 +275,7 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
 
   Widget _buildEmptyState() {
     return GenericEmptyState(
-      title: 'No Issue Requests',
+      title: 'No Documents Available',
       description:
           'When new document requests are created, they will appear here',
       icon: Icons.assignment_outlined,

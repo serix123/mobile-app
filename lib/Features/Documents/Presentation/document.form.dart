@@ -296,7 +296,7 @@ class _DocumentEditScreenState extends State<DocumentEditScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Document Name',
+                    labelText: 'Document Category',
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {

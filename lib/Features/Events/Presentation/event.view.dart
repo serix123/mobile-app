@@ -224,7 +224,7 @@ class EventViewScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               if (provider.error != null) ErrorText(provider.error!),
-              if (event.creatorId != user.id || user.isResident) ...[
+              if (user.isResident && event.date.isAfter(DateTime.now())) ...[
                 if (event.isAttending)
                   ElevatedButton(
                     onPressed: () {
@@ -302,6 +302,7 @@ class EventViewScreen extends StatelessWidget {
               Text(
                 value,
                 style: Theme.of(context).textTheme.bodyLarge,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -338,10 +339,10 @@ class EventViewScreen extends StatelessWidget {
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: attendees!.length,
+          itemCount: attendees.length,
           separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (context, index) {
-            final attendee = attendees![index];
+            final attendee = attendees[index];
             return ListTile(
               leading: const Icon(Icons.person),
               title: Text(attendee.fullName),

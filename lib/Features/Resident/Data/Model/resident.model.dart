@@ -1,7 +1,35 @@
 // models/resident.dart
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 enum RoleType { GUARD, OFFICER, RESIDENT, ALL }
+extension RoleTypeExtension on RoleType {
+  String get displayName {
+    switch (this) {
+      case RoleType.GUARD:
+        return 'Guard';
+      case RoleType.OFFICER:
+        return 'Officer';
+      case RoleType.RESIDENT:
+        return 'Resident';
+      case RoleType.ALL:
+        return 'All';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case RoleType.GUARD:
+        return Icons.security;
+      case RoleType.OFFICER:
+        return Icons.badge;
+      case RoleType.RESIDENT:
+        return Icons.person;
+      case RoleType.ALL:
+        return Icons.people;
+    }
+  }
+}
 
 class Resident {
   final int id;

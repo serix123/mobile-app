@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
+import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
 import 'package:path/path.dart' show extension;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,6 +41,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   IssuePriority? _selectedPriority;
   PlatformFile? _selectedFile;
   Uint8List? _selectedFileWeb;
+  int? _selectedAssignee;
   late var _fileExt;
 
   void _initData() async {
@@ -46,6 +49,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       context
           .read<CommentProvider>()
           .getComments(issueId: widget.initialData!.id!),
+      context.read<ResidentProvider>().getResidents()
     ];
     await Future.wait(task);
   }
@@ -66,6 +70,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     _selectedStatus = widget.initialData?.status;
     _selectedPriority = widget.initialData?.priority;
     _fileExt = widget.initialData?.imageUrl?.split('.').last ?? "";
+    _selectedAssignee = widget.initialData?.assigneeId;
   }
 
   @override
@@ -164,6 +169,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       title: _titleController.text,
       description: _descriptionController.text,
       priority: _selectedPriority!,
+      assigneeId: _selectedAssignee,
       status: _selectedStatus ?? IssueStatus.DRAFT,
     );
     final provider = context.read<IssueProvider>();
@@ -346,6 +352,75 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     );
   }
 
+  void _showAssignModal() async {
+    final selectedId = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              final filteredList = context
+                  .read<ResidentProvider>()
+                  .residents
+                  .where((res) => res.role != RoleType.RESIDENT.displayName)
+                  .toList();
+              return Container(
+                padding: const EdgeInsets.all(16),
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Assign Personnel',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    // const SizedBox(height: 12),
+                    // TextField(
+                    //   decoration: const InputDecoration(
+                    //     hintText: 'Search personnel...',
+                    //     prefixIcon: Icon(Icons.search),
+                    //     border: OutlineInputBorder(),
+                    //   ),
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       _searchQuery = value;
+                    //     });
+                    //   },
+                    // ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredList.length,
+                        itemBuilder: (context, index) {
+                          final person = filteredList[index];
+                          return ListTile(
+                            leading: const Icon(Icons.person),
+                            title: Text(person.fullName),
+                            onTap: () {
+                              Navigator.pop(context, person.id);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+    if (selectedId != null) {
+      setState(() {
+        _selectedAssignee = selectedId;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ResponsiveLayout(
@@ -412,6 +487,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 18),
+                    _buildSelectAssignee(),
                     const SizedBox(height: 18),
 
                     // Dropdowns
@@ -496,6 +573,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 18),
+                      _buildSelectAssignee(),
                       const SizedBox(height: 18),
 
                       // Dropdowns
@@ -605,7 +684,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       },
                     ),
                     const SizedBox(height: 18),
-
+                    _buildSelectAssignee(),
+                    const SizedBox(height: 18),
                     // Dropdowns
                     Row(
                       children: [
@@ -702,6 +782,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 18),
+                    _buildSelectAssignee(),
                     const SizedBox(height: 18),
 
                     // Dropdowns
@@ -1095,5 +1177,30 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         ),
       )
     ];
+  }
+
+  Widget _buildSelectAssignee() {
+    Resident? assignee = _selectedAssignee != null
+        ? context.read<ResidentProvider>().residents
+        .firstWhere(
+          (res) => res.id == _selectedAssignee,
+    )
+        : null;
+    return Row(
+      children: [
+        const Text('Assigned Authority:',
+            style: TextStyle(fontSize: 16)),
+        const SizedBox(width: 12),
+        // if(assignee != null)
+        Text(assignee?.fullName ?? "No User Assigned"),
+        const SizedBox(width: 12),
+        if(formFieldMode == FormFieldMode.CREATE || formFieldMode == FormFieldMode.UPDATE)
+          TextButton.icon(
+            icon: const Icon(Icons.person_add),
+            label: const Text('Assign Personnel'),
+            onPressed: _showAssignModal,
+          ),
+      ],
+    );
   }
 }

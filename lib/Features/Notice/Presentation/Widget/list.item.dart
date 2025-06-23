@@ -34,35 +34,44 @@ class NoticeListItem extends StatelessWidget {
                 onTap: onTap,
                 child: Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: (notice.imageUrl != null)
-                          ? ClipRRect(
-                        // Optional: Clip corners for a nicer look
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          notice.imageUrl!,
-                          width: 150, // Take full width of the card
-                          height: 150, // Fixed height, adjust as needed
-                          fit: BoxFit
-                              .contain, // Cover the area, cropping if necessary
-                        ),
-                      )
-                          : Container(
-                        // Placeholder when no image URL
-                        alignment: Alignment.center,
-                        width: 150,
-                        height: 150,
-                        color: Colors
-                            .grey[350], // Light grey background for the icon
-                        child: const Icon(
-                          Icons.image, // The image icon
-                          size: 50, // Size of the icon
-                          color: Colors.grey, // Color of the icon
-                        ),
-                      ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final imageSize = (constraints.maxWidth * 0.3).clamp(80.0, 150.0);
+                        return ConstrainedBox(constraints: BoxConstraints(
+                          maxWidth: imageSize,
+                          maxHeight: imageSize,
+                        ),child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: (notice.imageUrl != null)
+                              ? ClipRRect(
+                            // Optional: Clip corners for a nicer look
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              notice.imageUrl!,
+                              width: double.infinity,
+                              height: double.infinity, // Fixed height, adjust as needed
+                              fit: BoxFit
+                                  .contain, // Cover the area, cropping if necessary
+                            ),
+                          )
+                              : Container(
+                            // Placeholder when no image URL
+                            alignment: Alignment.center,
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors
+                                .grey[350], // Light grey background for the icon
+                            child: const Icon(
+                              Icons.image, // The image icon
+                              size: 50, // Size of the icon
+                              color: Colors.grey, // Color of the icon
+                            ),
+                          ),
+                        ),);
+                      },
                     ),
                     Expanded(
+                      flex: 2,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(

@@ -12,6 +12,7 @@ import 'package:online_reservation/Features/Issue/Presentation/issue.view.dart';
 import 'package:online_reservation/Features/Issue/Presentation/widget/listItem.dart';
 import 'package:online_reservation/Features/Issue/Presentation/widget/search.widget.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Features/Resident/Domain/resident.repository.dart';
 import 'package:provider/provider.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
 import 'package:online_reservation/Core/Presentation/route/route.generator.dart';
@@ -40,6 +41,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     final task = [
       context.read<ProfileProvider>().getProfile(),
       context.read<IssueProvider>().getIssues(),
+      context.read<ResidentProvider>().getResidents()
     ];
     await Future.wait(task);
   }
@@ -58,6 +60,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       ];
       await Future.wait(task);
     }
+    await context.read<IssueProvider>().getIssues();
   }
 
   @override
@@ -71,6 +74,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isResident = context.read<ProfileProvider>().user?.isResident ?? false;
     return ResponsiveLayout(
       currentRoute: IssuesListScreen.screenId,
       title: const Text(IssuesListScreen.title),
@@ -79,6 +83,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
           icon: const Icon(Icons.refresh),
           onPressed: () => context.read<IssueProvider>().getIssues(),
         ),
+        if(isResident)
         IconButton(
           icon: const Icon(Icons.add),
           onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),

@@ -2,33 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
 
-extension RoleTypeExtension on RoleType {
-  String get displayName {
-    switch (this) {
-      case RoleType.GUARD:
-        return 'Guard';
-      case RoleType.OFFICER:
-        return 'Officer';
-      case RoleType.RESIDENT:
-        return 'Resident';
-      case RoleType.ALL:
-        return 'All';
-    }
-  }
 
-  IconData get icon {
-    switch (this) {
-      case RoleType.GUARD:
-        return Icons.security;
-      case RoleType.OFFICER:
-        return Icons.badge;
-      case RoleType.RESIDENT:
-        return Icons.person;
-      case RoleType.ALL:
-        return Icons.people;
-    }
-  }
-}
 
 class RoleFilterDropdown extends StatefulWidget {
   final ValueChanged<RoleType?> onRoleChanged;

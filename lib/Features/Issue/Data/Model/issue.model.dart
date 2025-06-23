@@ -138,6 +138,8 @@ class Issue {
   final DateTime? resolvedDate;
   final String? userFullName;
   final int? userId;
+  final String? assigneeFullName;
+  final int? assigneeId;
 
   Issue({
     this.id,
@@ -150,6 +152,8 @@ class Issue {
     this.resolvedDate,
     this.userFullName,
     this.userId,
+    this.assigneeFullName,
+    this.assigneeId,
   });
 
   factory Issue.fromJson(Map<String, dynamic> json) => Issue(
@@ -163,6 +167,8 @@ class Issue {
         resolvedDate: json['resolved_date'] != null ? DateTime.parse(json['resolved_date']) : null,
         userFullName: json['user_full_name'],
         userId: json['user'],
+        assigneeFullName: json['assigned_to_full_name'],
+        assigneeId: json['assigned_to'],
       );
 
   Map<String, dynamic> toJson() {
@@ -171,6 +177,7 @@ class Issue {
       'description': description,
       'status': status.jsonName,
       'priority': priority.jsonName,
+      'assigned_residence_id': assigneeId,
     };
   }
 
@@ -183,6 +190,8 @@ class Issue {
     String? imageUrl,
     String? userFullName,
     int? userId,
+    String? assigneeFullName,
+    int? assigneeId,
     DateTime? reportedDate,
     DateTime? resolvedDate,
   }) {
@@ -195,6 +204,8 @@ class Issue {
       imageUrl: imageUrl ?? this.imageUrl,
       userFullName: userFullName ?? this.userFullName,
       userId: userId ?? this.userId,
+      assigneeFullName: assigneeFullName ?? this.assigneeFullName,
+      assigneeId: assigneeId ?? this.assigneeId,
       reportedDate: reportedDate ?? this.reportedDate,
       resolvedDate: resolvedDate ?? this.resolvedDate,
     );

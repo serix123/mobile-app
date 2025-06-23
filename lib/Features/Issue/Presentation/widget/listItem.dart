@@ -41,61 +41,79 @@ class IssueListItem extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: (issue.imageUrl != null)
-                            ? ClipRRect(
-                                // Optional: Clip corners for a nicer look
-                                borderRadius: BorderRadius.circular(8.0),
-                                child: Image.network(
-                                  issue.imageUrl!,
-                                  width: 150, // Take full width of the card
-                                  height: 150, // Fixed height, adjust as needed
-                                  fit: BoxFit
-                                      .contain, // Cover the area, cropping if necessary
-                                  loadingBuilder: (BuildContext context,
-                                      Widget child,
-                                      ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress.expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null,
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final imageSize =
+                              (constraints.maxWidth * 0.3).clamp(80.0, 150.0);
+                          return ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: imageSize,
+                              maxHeight: imageSize,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: (issue.imageUrl != null)
+                                  ? ClipRRect(
+                                      // Optional: Clip corners for a nicer look
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: Image.network(
+                                        issue.imageUrl!,
+                                        width: double.infinity,
+                                        height: double
+                                            .infinity, // Fixed height, adjust as needed
+                                        fit: BoxFit
+                                            .contain, // Cover the area, cropping if necessary
+                                        loadingBuilder: (BuildContext context,
+                                            Widget child,
+                                            ImageChunkEvent? loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            alignment: Alignment.center,
+                                            height: 150,
+                                            color: Colors.grey[200],
+                                            child: const Icon(
+                                                Icons.broken_image,
+                                                size: 50,
+                                                color: Colors.grey),
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
+                                    )
+                                  : Container(
+                                      // Placeholder when no image URL
                                       alignment: Alignment.center,
-                                      height: 150,
-                                      color: Colors.grey[200],
-                                      child: const Icon(Icons.broken_image,
-                                          size: 50, color: Colors.grey),
-                                    );
-                                  },
-                                ),
-                              )
-                            : Container(
-                                // Placeholder when no image URL
-                                alignment: Alignment.center,
-                                width: 150,
-                                height: 150,
-                                color: Colors.grey[
-                                    350], // Light grey background for the icon
-                                child: const Icon(
-                                  Icons.image, // The image icon
-                                  size: 50, // Size of the icon
-                                  color: Colors.grey, // Color of the icon
-                                ),
-                              ),
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      color: Colors.grey[
+                                          350], // Light grey background for the icon
+                                      child: const Icon(
+                                        Icons.image, // The image icon
+                                        size: 50, // Size of the icon
+                                        color: Colors.grey, // Color of the icon
+                                      ),
+                                    ),
+                            ),
+                          );
+                        },
                       ),
                       Expanded(
+                        flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
@@ -125,14 +143,18 @@ class IssueListItem extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          issue.priority.displayName.toUpperCase(),
+                                          issue.priority.displayName
+                                              .toUpperCase(),
                                           style: const TextStyle(
-                                              color: Colors.white, fontSize: 16),
+                                              color: Colors.white,
+                                              fontSize: 16),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(width: 10,),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
@@ -144,9 +166,11 @@ class IssueListItem extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          issue.status.displayName.toUpperCase(),
+                                          issue.status.displayName
+                                              .toUpperCase(),
                                           style: const TextStyle(
-                                              color: Colors.white, fontSize: 16),
+                                              color: Colors.white,
+                                              fontSize: 16),
                                         ),
                                       ],
                                     ),
@@ -163,43 +187,43 @@ class IssueListItem extends StatelessWidget {
                 ),
               ),
               // if (isOfficer)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
-                    itemBuilder: (BuildContext context) => [
-                      // if (issue.resolvedDate == null)
-                      //   const PopupMenuItem<String>(
-                      //     value: 'resolve',
-                      //     child: ListTile(
-                      //       leading: Icon(Icons.check_box, color: Colors.green),
-                      //       title: Text('Resolve'),
-                      //     ),
-                      //   ),
-                      const PopupMenuItem<String>(
-                        value: 'edit',
-                        child: ListTile(
-                          leading: Icon(Icons.edit, color: Colors.blue),
-                          title: Text('Edit'),
-                        ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  itemBuilder: (BuildContext context) => [
+                    // if (issue.resolvedDate == null)
+                    //   const PopupMenuItem<String>(
+                    //     value: 'resolve',
+                    //     child: ListTile(
+                    //       leading: Icon(Icons.check_box, color: Colors.green),
+                    //       title: Text('Resolve'),
+                    //     ),
+                    //   ),
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: ListTile(
+                        leading: Icon(Icons.edit, color: Colors.blue),
+                        title: Text('Edit'),
                       ),
-                      // const PopupMenuItem<String>(
-                      //   value: 'delete',
-                      //   child: ListTile(
-                      //     leading: Icon(Icons.delete, color: Colors.red),
-                      //     title: Text('Delete'),
-                      //   ),
-                      // ),
-                    ],
-                    onSelected: (String value) {
-                      // if (value == 'resolve') onResolve();
-                      if (value == 'edit') onEdit != null ? onEdit!() : () {};
-                      // if (value == 'delete')
-                      //   onDelete != null ? onDelete!() : () {};
-                    },
-                  ),
-                )
+                    ),
+                    // const PopupMenuItem<String>(
+                    //   value: 'delete',
+                    //   child: ListTile(
+                    //     leading: Icon(Icons.delete, color: Colors.red),
+                    //     title: Text('Delete'),
+                    //   ),
+                    // ),
+                  ],
+                  onSelected: (String value) {
+                    // if (value == 'resolve') onResolve();
+                    if (value == 'edit') onEdit != null ? onEdit!() : () {};
+                    // if (value == 'delete')
+                    //   onDelete != null ? onDelete!() : () {};
+                  },
+                ),
+              )
               // else if (issue.status != IssueStatus.RESOLVED)
               //   Positioned(
               //     right: 0,

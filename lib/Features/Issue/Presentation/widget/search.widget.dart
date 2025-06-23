@@ -33,7 +33,7 @@ class _SearchFieldsState extends State<SearchFields> {
           return const Center(child: CircularProgressIndicator());
         }
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             TextField(
               controller: _searchController,
@@ -54,12 +54,12 @@ class _SearchFieldsState extends State<SearchFields> {
   }
 
   Widget _buildButtonsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      mainAxisSize: MainAxisSize.max,
+    return Wrap(
+      spacing: 10,
+      runSpacing: 8,
+      alignment: WrapAlignment.end,
       children: [
         ElevatedButton(
-
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.teal, // ✅ Make it green
             foregroundColor: Colors.white, // ✅ White text
@@ -73,7 +73,6 @@ class _SearchFieldsState extends State<SearchFields> {
           },
           child: const Text('Search'),
         ),
-        const SizedBox(width: 10),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
               foregroundColor: Colors.teal,

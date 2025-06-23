@@ -54,6 +54,8 @@ class IssueProvider with ChangeNotifier {
         imageUrl: issue.imageUrl,
         userFullName: issue.userFullName,
         userId: issue.userId,
+        assigneeFullName: issue.assigneeFullName,
+        assigneeId: issue.assigneeId,
         reportedDate: issue.reportedDate,
         resolvedDate: issue.resolvedDate,
       );

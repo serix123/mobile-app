@@ -28,10 +28,11 @@ class CommentListWidget extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text(comment.comment),
+          subtitle: Text(comment.comment,overflow: TextOverflow.ellipsis,),
           trailing: Text(Utils.formatCommentTimestamp(comment.createdAt ?? DateTime.now()),
             // "${comment.createdAt?.hour.toString().padLeft(2, '0')}:${comment.createdAt?.minute.toString().padLeft(2, '0')}",
             style: const TextStyle(fontSize: 12),
+            overflow: TextOverflow.ellipsis,
           ),
         );
       },

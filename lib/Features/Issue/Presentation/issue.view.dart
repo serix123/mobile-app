@@ -1186,6 +1186,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
           (res) => res.id == _selectedAssignee,
     )
         : null;
+    final isResident = context.read<ProfileProvider>().user!.isResident;
     return Row(
       children: [
         const Text('Assigned Authority:',
@@ -1198,7 +1199,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
           TextButton.icon(
             icon: const Icon(Icons.person_add),
             label: const Text('Assign Personnel'),
-            onPressed: _showAssignModal,
+            onPressed: isResident ? _showAssignModal : null,
           ),
       ],
     );

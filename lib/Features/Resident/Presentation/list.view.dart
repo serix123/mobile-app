@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
 import 'package:online_reservation/Features/Resident/Data/Model/resident.model.dart';
 import 'package:online_reservation/config/app.color.dart';
+import 'package:provider/provider.dart';
+
 
 class ResidentListItem extends StatelessWidget {
   final Resident resident;
@@ -19,10 +22,11 @@ class ResidentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildResidentList();
+    return buildResidentList(context);
   }
 
-  Card buildResidentList() {
+  Card buildResidentList(BuildContext context) {
+    final isOfficer = context.read<ProfileProvider>().user!.isOfficer ?? false;
     return Card(
       child: Stack(
         children: [
@@ -65,6 +69,7 @@ class ResidentListItem extends StatelessWidget {
                     title: Text('Edit'),
                   ),
                 ),
+                if(isOfficer)
                 const PopupMenuItem<String>(
                   value: 'delete',
                   child: ListTile(

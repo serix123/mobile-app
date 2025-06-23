@@ -1193,7 +1193,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               (res) => res.id == _selectedAssignee,
         )
             : null;
-        final isResident = context.read<ProfileProvider>().user!.isResident;
+        final isResident = context.read<ProfileProvider>().user!.isResident ?? false;
         return Row(
           children: [
             const Text('Assigned Authority:',

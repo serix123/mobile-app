@@ -212,4 +212,22 @@ class Issue {
   }
 
   bool isOwner(int user) => user == userId;
+
+  @override
+  String toString() {
+    return 'Issue('
+        'id: $id, '
+        'title: $title, '
+        'description: $description, '
+        'status: ${status.name}, '
+        'priority: ${priority.name}, '
+        'imageUrl: $imageUrl, '
+        'reportedDate: $reportedDate, '
+        'resolvedDate: $resolvedDate, '
+        'userFullName: $userFullName, '
+        'userId: $userId, '
+        'assigneeFullName: $assigneeFullName, '
+        'assigneeId: $assigneeId'
+        ')';
+  }
 }

@@ -52,6 +52,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       context.read<ResidentProvider>().getResidents()
     ];
     await Future.wait(task);
+    print(widget.initialData?.toString());
   }
 
   @override
@@ -451,10 +452,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget buildForm() {
-    final profileProvider = context.read<ProfileProvider>();
-    final isResident = profileProvider.user!.isResident;
-    return Consumer<IssueProvider>(
-      builder: (context, issueProvider, child) {
+
+    return Consumer3<IssueProvider,ProfileProvider,ResidentProvider>(
+      builder: (context, issueProvider,profileProvider,residentProvider, child) {
+        final isResident = profileProvider.user!.isResident;
+        if (issueProvider.isLoading ||profileProvider.isLoading ||residentProvider.isLoading ) return const Center(child: CircularProgressIndicator());
         switch (formFieldMode) {
           case FormFieldMode.CREATE:
             return Padding(
@@ -1182,28 +1184,33 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget _buildSelectAssignee() {
-    Resident? assignee = _selectedAssignee != null
-        ? context.read<ResidentProvider>().residents
-        .firstWhere(
-          (res) => res.id == _selectedAssignee,
-    )
-        : null;
-    final isResident = context.read<ProfileProvider>().user!.isResident;
-    return Row(
-      children: [
-        const Text('Assigned Authority:',
-            style: TextStyle(fontSize: 16)),
-        const SizedBox(width: 12),
-        // if(assignee != null)
-        Text(assignee?.fullName ?? "No User Assigned"),
-        const SizedBox(width: 12),
-        if(formFieldMode == FormFieldMode.CREATE || formFieldMode == FormFieldMode.UPDATE)
-          TextButton.icon(
-            icon: const Icon(Icons.person_add),
-            label: const Text('Assign Personnel'),
-            onPressed: isResident ? _showAssignModal : null,
-          ),
-      ],
+
+    return Consumer<ResidentProvider>(
+      builder: (context, residentProvider, child) {
+        Resident? assignee = _selectedAssignee != null
+            ? context.read<ResidentProvider>().residents
+            .firstWhere(
+              (res) => res.id == _selectedAssignee,
+        )
+            : null;
+        final isResident = context.read<ProfileProvider>().user!.isResident;
+        return Row(
+          children: [
+            const Text('Assigned Authority:',
+                style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 12),
+            // if(assignee != null)
+            Text(assignee?.fullName ?? "No User Assigned"),
+            const SizedBox(width: 12),
+            if(formFieldMode == FormFieldMode.CREATE || formFieldMode == FormFieldMode.UPDATE)
+              TextButton.icon(
+                icon: const Icon(Icons.person_add),
+                label: const Text('Assign Personnel'),
+                onPressed: isResident ? _showAssignModal : null,
+              ),
+          ],
+        );
+      },
     );
   }
 }

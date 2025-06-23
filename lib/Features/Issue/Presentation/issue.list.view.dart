@@ -74,23 +74,27 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isResident = context.read<ProfileProvider>().user?.isResident ?? false;
-    return ResponsiveLayout(
-      currentRoute: IssuesListScreen.screenId,
-      title: const Text(IssuesListScreen.title),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: () => context.read<IssueProvider>().getIssues(),
-        ),
-        if(isResident)
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),
-        )
-      ],
-      desktopBody: _buildMobile(),
-      mobileBody: _buildMobile(),
+    return Consumer<ProfileProvider>(
+      builder: (context, provider, child) {
+        final isResident = provider.user?.isResident ?? false;
+        return ResponsiveLayout(
+          currentRoute: IssuesListScreen.screenId,
+          title: const Text(IssuesListScreen.title),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => context.read<IssueProvider>().getIssues(),
+            ),
+            if(isResident)
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),
+              )
+          ],
+          desktopBody: _buildMobile(),
+          mobileBody: _buildMobile(),
+        );
+      },
     );
   }
 

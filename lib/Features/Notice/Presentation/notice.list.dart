@@ -12,7 +12,7 @@ import 'package:online_reservation/Features/Profile/Domain/profile.repository.da
 
 class NoticeListScreen extends StatefulWidget {
   static const String screenId = "/notices";
-  static const String title = "Notices";
+  static const String title = "Community Notice";
   const NoticeListScreen({super.key});
 
   @override

@@ -10,6 +10,27 @@ class ResidentApiService extends TokenService {
 
   ResidentApiService({required super.storage, required super.client});
 
+  Future<Map<String, dynamic>> getResidentSummary() async {
+
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${baseUrl}population_summary/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data;
+      }
+      throw Exception('Failed to get residents: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get residents: $e');
+    }
+  }
+
   Future<PaginatedResults<Resident>> getResidents(
       {int page = 1, String query = "", RoleType role = RoleType.RESIDENT}) async {
     final String roleQuery;

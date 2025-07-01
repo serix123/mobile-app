@@ -1,3 +1,5 @@
+import 'package:online_reservation/Utils/utils.dart';
+
 class Comment {
   final int? id;
   final int issueId;
@@ -25,7 +27,7 @@ class Comment {
       userEmail: json['user_email'],
       userFullName: json['user_full_name'],
       comment: json['comment'] ?? "",
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: Utils.parseAndRoundToQuarter(json['created_at']),
     );
   }
 

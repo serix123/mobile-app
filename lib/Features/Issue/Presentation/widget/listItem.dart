@@ -120,7 +120,7 @@ class IssueListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildInfoRow('Title', issue.title),
-                              _buildInfoRow('Description', issue.description),
+                              _buildInfoRow('Type', issue.issueType.displayName),
                               if (issue.userFullName != null)
                                 _buildInfoRow('Author', issue.userFullName!),
                               if (issue.reportedDate != null)

@@ -1,10 +1,114 @@
+import 'package:online_reservation/Utils/utils.dart';
+
+enum Location {
+  BLOCK_1,
+  BLOCK_2A,
+  BLOCK_2A1,
+  BLOCK_2B,
+  BLOCK_2C,
+  BLOCK_3,
+  BLOCK_4,
+  BLOCK_5,
+  BLOCK_6A,
+  BLOCK_6B,
+  BLOCK_7,
+  BLOCK_8,
+  BLOCK_9,
+  BLOCK_10,
+  BLOCK_11,
+  BLOCK_12,
+}
+extension LocationExtension on Location {
+  String get displayName {
+    switch (this) {
+      case Location.BLOCK_1:
+        return 'Block 1';
+      case Location.BLOCK_2A:
+        return 'Block 2A';
+      case Location.BLOCK_2A1:
+        return 'Block 2A1';
+      case Location.BLOCK_2B:
+        return 'Block 2B';
+      case Location.BLOCK_2C:
+        return 'Block 2C';
+      case Location.BLOCK_3:
+        return 'Block 3';
+      case Location.BLOCK_4:
+        return 'Block 4';
+      case Location.BLOCK_5:
+        return 'Block 5';
+      case Location.BLOCK_6A:
+        return 'Block 6A';
+      case Location.BLOCK_6B:
+        return 'Block 6B';
+      case Location.BLOCK_7:
+        return 'Block 7';
+      case Location.BLOCK_8:
+        return 'Block 8';
+      case Location.BLOCK_9:
+        return 'Block 9';
+      case Location.BLOCK_10:
+        return 'Block 10';
+      case Location.BLOCK_11:
+        return 'Block 11';
+      case Location.BLOCK_12:
+        return 'Block 12';
+    }
+  }
+
+  String get jsonName => displayName; // use displayName directly
+
+  static Location fromJson(String? json) {
+    if (json == null) {
+      throw ArgumentError('Location cannot be null');
+    }
+    switch (json) {
+      case 'Block 1':
+        return Location.BLOCK_1;
+      case 'Block 2A':
+        return Location.BLOCK_2A;
+      case 'Block 2A1':
+        return Location.BLOCK_2A1;
+      case 'Block 2B':
+        return Location.BLOCK_2B;
+      case 'Block 2C':
+        return Location.BLOCK_2C;
+      case 'Block 3':
+        return Location.BLOCK_3;
+      case 'Block 4':
+        return Location.BLOCK_4;
+      case 'Block 5':
+        return Location.BLOCK_5;
+      case 'Block 6A':
+        return Location.BLOCK_6A;
+      case 'Block 6B':
+        return Location.BLOCK_6B;
+      case 'Block 7':
+        return Location.BLOCK_7;
+      case 'Block 8':
+        return Location.BLOCK_8;
+      case 'Block 9':
+        return Location.BLOCK_9;
+      case 'Block 10':
+        return Location.BLOCK_10;
+      case 'Block 11':
+        return Location.BLOCK_11;
+      case 'Block 12':
+        return Location.BLOCK_12;
+      default:
+        throw ArgumentError('Unknown location: $json');
+    }
+  }
+}
+
 class Event {
   final int id;
   final String name;
   final DateTime date;
+  final Duration duration;
   final String? imageUrl;
   final String details;
-  final String location;
+  final Location location;
   final int creatorId;
   final String creatorName;
   final int attendeesCount;
@@ -17,6 +121,7 @@ class Event {
     required this.id,
     required this.name,
     required this.date,
+    required this.duration,
     this.imageUrl,
     required this.details,
     required this.location,
@@ -34,19 +139,20 @@ class Event {
     return Event(
       id: json['id'],
       name: json['name'],
-      date: DateTime.parse(json['date']),
+      date: Utils.parseAndRoundToQuarter(json['date']),
       imageUrl: json['image'] as String?,
       details: json['details'],
-      location: json['location'],
+      location: LocationExtension.fromJson(json['location']),
       creatorId: json['creator'],
       creatorName: json['creator_name'],
       attendeesCount: json['attendees_count'] ?? 0,
       isAttending: json['is_attending'] ?? false,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: Utils.parseAndRoundToQuarter(json['created_at']),
+      updatedAt: Utils.parseAndRoundToQuarter(json['updated_at']),
       attendeesList: (json['attendees_list'] as List<dynamic>?)
           ?.map((e) => EventAttendees.fromJson(e))
           .toList(),
+      duration: Utils.parseDuration(json['duration']),
     );
   }
 
@@ -54,6 +160,7 @@ class Event {
     return {
       'name': name,
       'date': date.toIso8601String(),
+      'duration': Utils.durationToString(duration),
       'details': details,
       'location': location,
     };
@@ -64,6 +171,7 @@ class Event {
       'id': id,
       'name': name,
       'date': date.toIso8601String(),
+      'duration': Utils.durationToString(duration),
       'details': details,
       'location': location,
       'creator': creatorId,
@@ -79,9 +187,10 @@ class Event {
     int? id,
     String? name,
     DateTime? date,
+    Duration? duration,
     String? imageUrl,
     String? details,
-    String? location,
+    Location? location,
     int? creatorId,
     String? creatorName,
     int? attendeesCount,
@@ -94,6 +203,7 @@ class Event {
       id: id ?? this.id,
       name: name ?? this.name,
       date: date ?? this.date,
+      duration: duration ?? this.duration,
       imageUrl: imageUrl ?? this.imageUrl,
       details: details ?? this.details,
       location: location ?? this.location,

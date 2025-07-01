@@ -35,10 +35,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   late FormFieldMode formFieldMode;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
-  late TextEditingController _descriptionController;
+  // late TextEditingController _descriptionController;
   final TextEditingController _commentController = TextEditingController();
   IssueStatus? _selectedStatus;
   IssuePriority? _selectedPriority;
+  IssueType? _selectedType;
   PlatformFile? _selectedFile;
   Uint8List? _selectedFileWeb;
   int? _selectedAssignee;
@@ -66,10 +67,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     formFieldMode = widget.mode;
     _titleController =
         TextEditingController(text: widget.initialData?.title ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.initialData?.description ?? '');
+    // _descriptionController =
+    //     TextEditingController(text: widget.initialData?.description ?? '');
     _selectedStatus = widget.initialData?.status;
     _selectedPriority = widget.initialData?.priority;
+    _selectedType = widget.initialData?.issueType;
     _fileExt = widget.initialData?.imageUrl?.split('.').last ?? "";
     _selectedAssignee = widget.initialData?.assigneeId;
   }
@@ -77,7 +79,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
+    // _descriptionController.dispose();
     _commentController.dispose();
     _selectedFile = null;
     super.dispose();
@@ -139,6 +141,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
           const SnackBar(content: Text('Error: Priority is required.')));
       return;
     }
+    if (_selectedType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Type is required.')));
+      return;
+    }
     if (_selectedStatus == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error: Status is required.')));
@@ -168,7 +175,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     final pendingIssue = Issue(
       id: widget.initialData?.id ?? 0,
       title: _titleController.text,
-      description: _descriptionController.text,
+      // description: _descriptionController.text,
+      issueType: _selectedType!,
       priority: _selectedPriority!,
       assigneeId: _selectedAssignee,
       status: _selectedStatus ?? IssueStatus.DRAFT,
@@ -244,7 +252,8 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     final pendingIssue = Issue(
       id: widget.initialData!.id,
       title: widget.initialData!.title,
-      description: widget.initialData!.description,
+      issueType: _selectedType!,
+      // description: widget.initialData!.description,
       priority: widget.initialData!.priority,
       status: _selectedStatus!,
     );
@@ -477,20 +486,22 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration:
-                          const InputDecoration(labelText: 'Description'),
-                      // maxLines: 2,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
+                    // TextFormField(
+                    //   controller: _descriptionController,
+                    //   decoration:
+                    //       const InputDecoration(labelText: 'Description'),
+                    //   // maxLines: 2,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter a description';
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
+                    // const SizedBox(height: 18),
                     _buildSelectAssignee(),
+                    const SizedBox(height: 18),
+                    buildIssueTypeDropdown(),
                     const SizedBox(height: 18),
 
                     // Dropdowns
@@ -562,21 +573,23 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         },
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        enabled: false,
-                        controller: _descriptionController,
-                        decoration:
-                            const InputDecoration(labelText: 'Description'),
-                        // maxLines: 2,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a description';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 18),
+                      // TextFormField(
+                      //   enabled: false,
+                      //   controller: _descriptionController,
+                      //   decoration:
+                      //       const InputDecoration(labelText: 'Description'),
+                      //   // maxLines: 2,
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'Please enter a description';
+                      //     }
+                      //     return null;
+                      //   },
+                      // ),
+                      // const SizedBox(height: 18),
                       _buildSelectAssignee(),
+                      const SizedBox(height: 18),
+                      buildIssueTypeDropdown(isReadOnly: true),
                       const SizedBox(height: 18),
 
                       // Dropdowns
@@ -673,20 +686,22 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration:
-                          const InputDecoration(labelText: 'Description'),
-                      // maxLines: 2,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
+                    // TextFormField(
+                    //   controller: _descriptionController,
+                    //   decoration:
+                    //       const InputDecoration(labelText: 'Description'),
+                    //   // maxLines: 2,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter a description';
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
+                    // const SizedBox(height: 18),
                     _buildSelectAssignee(),
+                    const SizedBox(height: 18),
+                    buildIssueTypeDropdown(),
                     const SizedBox(height: 18),
                     // Dropdowns
                     Row(
@@ -771,23 +786,24 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      enabled: false,
-                      controller: _descriptionController,
-                      decoration:
-                          const InputDecoration(labelText: 'Description'),
-                      // maxLines: 2,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
+                    // TextFormField(
+                    //   enabled: false,
+                    //   controller: _descriptionController,
+                    //   decoration:
+                    //       const InputDecoration(labelText: 'Description'),
+                    //   // maxLines: 2,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter a description';
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
+                    // const SizedBox(height: 18),
                     _buildSelectAssignee(),
                     const SizedBox(height: 18),
-
+                    buildIssueTypeDropdown(isReadOnly: true),
+                    const SizedBox(height: 18),
                     // Dropdowns
                     Row(
                       children: [
@@ -840,111 +856,6 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               ),
             );
         }
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: <Widget>[
-                TextFormField(
-                  controller: _titleController,
-                  decoration:
-                      const InputDecoration(labelText: 'Title of the Issue'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  // maxLines: 2,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 13),
-
-                // Dropdowns
-                Row(
-                  children: [
-                    Expanded(child: buildIssuePriorityDropdown()),
-                    const SizedBox(width: 10),
-                    Expanded(child: buildIssueStatusDropdown()),
-                  ],
-                ),
-                const SizedBox(height: 30),
-
-                //Image Uploader
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Image Attachment',
-                        style: TextStyle(fontSize: 16)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _pickImage,
-                          child: const Text('Upload Image'),
-                        ),
-                        const SizedBox(width: 16),
-                        if (_selectedFile != null) ...[
-                          Expanded(
-                            child: Text(
-                              _selectedFile?.name ?? "File Not Found",
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (widget.initialData?.imageUrl != null &&
-                              (_fileExt == "jpg" || _fileExt == "png"))
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: _buildImageDisplay(),
-                              ),
-                            )
-                        ] else if (widget.initialData?.imageUrl != null)
-                          Text(widget.initialData!.imageUrl!.split('/').last)
-                        else
-                          const Text('No image uploaded'),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                if (issueProvider.error != null)
-                  ErrorText(issueProvider.error!),
-                if (issueProvider.isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ElevatedButton(
-                    onPressed:
-                        issueProvider.isLoading ? null : () => _submitForm(),
-                    child: Text(formFieldMode == FormFieldMode.CREATE
-                        ? 'Create Issue'
-                        : 'Update Issue'),
-                  ),
-                const SizedBox(height: 12),
-                if (formFieldMode == FormFieldMode.UPDATE)
-                  ElevatedButton(
-                    onPressed: _confirmDelete,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Delete Issue'),
-                  ),
-              ],
-            ),
-          ),
-        );
       },
     );
   }
@@ -1021,7 +932,37 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
             },
       validator: (IssuePriority? value) {
         if (value == null) {
-          return 'Please select an issue status';
+          return 'Please select an issue priority';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget buildIssueTypeDropdown({bool isReadOnly = false}) {
+    return DropdownButtonFormField<IssueType?>(
+      value: _selectedType,
+      decoration: const InputDecoration(
+        labelText: 'Issue Type',
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      items: IssueType.values.map((type) {
+        return DropdownMenuItem<IssueType>(
+          value: type,
+          child: Text(type.displayName, overflow: TextOverflow.ellipsis,),
+        );
+      }).toList(),
+      onChanged: isReadOnly
+          ? null
+          : (IssueType? newValue) {
+              setState(() {
+                _selectedType = newValue;
+              });
+            },
+      validator: (IssueType? value) {
+        if (value == null) {
+          return 'Please select an issue type';
         }
         return null;
       },

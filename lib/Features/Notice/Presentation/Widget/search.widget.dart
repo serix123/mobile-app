@@ -54,13 +54,13 @@ class _SearchFieldsState extends State<SearchFields> {
           },
           child: const Text('Search'),
         ),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.teal,
-              side: const BorderSide(color: Colors.teal)),
-          onPressed: _resetFilters,
-          child: const Text('Reset'),
-        ),
+        // OutlinedButton(
+        //   style: OutlinedButton.styleFrom(
+        //       foregroundColor: Colors.teal,
+        //       side: const BorderSide(color: Colors.teal)),
+        //   onPressed: _resetFilters,
+        //   child: const Text('Reset'),
+        // ),
       ],
     );
   }

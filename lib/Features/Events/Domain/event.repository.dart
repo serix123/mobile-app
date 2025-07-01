@@ -20,6 +20,11 @@ class EventProvider with ChangeNotifier {
   bool get hasNext => _paginatedEvents?.next != null;
   bool get hasPrevious => _paginatedEvents?.previous != null;
 
+  // For dashboard
+  // Number of upcoming events in the current list.
+  List<Event> _upcomingEvents = [];
+  List<Event> get upcomingEvents => _upcomingEvents;
+
   Future<void> getEvents({int page = 1, String query = ""}) async {
     _isLoading = true;
     _error = null;
@@ -72,6 +77,7 @@ class EventProvider with ChangeNotifier {
     try {
       _paginatedEvents = await _apiService.getUpcomingEvents(page: page, query: query);
       _events = _paginatedEvents?.results ?? [];
+      _upcomingEvents = _paginatedEvents?.results ?? [];
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -268,4 +274,5 @@ class EventProvider with ChangeNotifier {
     final uri = Uri.parse(url);
     return int.parse(uri.queryParameters['page'] ?? '1');
   }
+
 }

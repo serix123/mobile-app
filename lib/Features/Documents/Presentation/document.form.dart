@@ -118,6 +118,8 @@ class _DocumentEditScreenState extends State<DocumentEditScreen> {
         id: widget.document?.id ?? 0,
         title: _titleController.text,
         category: _selectedCategory!,
+        createdAt: widget.document?.createdAt ?? DateTime.now().toLocal(),
+        updatedAt: DateTime.now().toLocal(),
       );
       final provider = context.read<DocumentProvider>();
       try {

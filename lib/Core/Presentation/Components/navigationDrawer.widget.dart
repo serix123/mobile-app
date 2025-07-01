@@ -43,6 +43,14 @@ class CustomNavigationDrawer extends StatelessWidget {
                   ),
                   _createDrawerItem(
                     context: context,
+                    icon: Icons.space_dashboard_outlined,
+                    text: 'Dashboard',
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(RouteGenerator.dashboardScreen),
+                    selected: currentRoute == RouteGenerator.dashboardScreen,
+                  ),
+                  _createDrawerItem(
+                    context: context,
                     icon: Icons.campaign_outlined,
                     text: 'Community Notice',
                     onTap: () => Navigator.of(context)
@@ -52,7 +60,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                   _createDrawerItem(
                     context: context,
                     icon: Icons.event_note_outlined,
-                    text: 'Events Upcoming',
+                    text: 'Events   ',
                     onTap: () => Navigator.of(context)
                         .pushNamed(RouteGenerator.eventListScreen),
                     selected: currentRoute == RouteGenerator.eventListScreen,
@@ -60,7 +68,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                   _createDrawerItem(
                     context: context,
                     icon: Icons.approval,
-                    text: 'Report Issue',
+                    text: 'Issues',
                     onTap: () => Navigator.of(context)
                         .pushNamed(RouteGenerator.issuesListScreen),
                     selected: currentRoute == RouteGenerator.issuesListScreen,
@@ -68,7 +76,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                   _createDrawerItem(
                     context: context,
                     icon: Icons.file_copy_outlined,
-                    text: 'Documents',
+                    text: 'Community Documents',
                     onTap: () => Navigator.of(context)
                         .pushNamed(RouteGenerator.documentListScreen),
                     selected: currentRoute == RouteGenerator.documentListScreen,

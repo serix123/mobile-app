@@ -1,6 +1,7 @@
 // models/resident.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:online_reservation/Utils/utils.dart';
 
 enum RoleType { GUARD, OFFICER, RESIDENT, ALL }
 extension RoleTypeExtension on RoleType {
@@ -61,7 +62,7 @@ class Resident {
       role: json['role'] as String,
       contactNumber: json['contact_number'] as String?,
       address: json['address'] as String?,
-      registrationDate: DateTime.parse(json['registration_date'] as String),
+      registrationDate: Utils.parseAndRoundToQuarter(json['registration_date'] as String),
     );
   }
 

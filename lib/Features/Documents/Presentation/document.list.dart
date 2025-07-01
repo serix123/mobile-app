@@ -13,7 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class DocumentListScreen extends StatefulWidget {
   static const String screenId = "/documents";
-  static const String title = "Documents";
+  static const String title = "Community Documents";
   const DocumentListScreen({super.key});
 
   @override

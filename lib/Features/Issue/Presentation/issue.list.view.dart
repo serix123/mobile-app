@@ -29,7 +29,7 @@ const _tableCellStyle = TextStyle(
 
 class IssuesListScreen extends StatefulWidget {
   static const String screenId = "/issues";
-  static const String title = "Issues Logs";
+  static const String title = "Issues";
   const IssuesListScreen({super.key});
 
   @override
@@ -104,8 +104,8 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
       child: Consumer<IssueProvider>(
         builder: (context, provider, child) {
           return SearchFields(
-            onSearch: (text, status, priority) => provider.getIssues(
-                query: text, status: status, priority: priority),
+            onSearch: (text, status, priority, type) => provider.getIssues(
+                query: text, status: status, priority: priority, type: type),
           );
         },
       ),
@@ -250,7 +250,7 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     return DataRow(
       cells: [
         DataCell(Text(issue.title)),
-        DataCell(Text(issue.description)),
+        DataCell(Text(issue.issueType.displayName, overflow: TextOverflow.ellipsis,)),
         DataCell(Text(issue.userFullName!)),
         DataCell(Text(issue.reportedDate != null ? reportedDateTime : "-")),
         DataCell(

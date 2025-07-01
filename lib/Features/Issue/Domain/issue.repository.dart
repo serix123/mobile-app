@@ -21,12 +21,36 @@ class IssueProvider with ChangeNotifier {
   bool get hasNext => _paginatedIssues?.next != null;
   bool get hasPrevious => _paginatedIssues?.previous != null;
 
-  Future<void> getIssues({int page = 1, String query = "",String status = "",String priority = ""}) async {
+  // For Dashboard
+  int draftCount = 0;
+  int openCount = 0;
+  int inProgressCount =  0;
+  int resolvedCount = 0;
+
+  Future<void> getIssuesSummary() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      final PaginatedResults<Issue> paginatedIssues = await _apiService.getIssues(page: page, query: query, status: status, priority: priority);
+      final summaryData = await _apiService.getIssuesSummary();
+      draftCount = summaryData['draft'] ?? 0;
+      openCount = summaryData['open'] ?? 0;
+      inProgressCount = summaryData['in_progress'] ?? 0;
+      resolvedCount = summaryData['resolved'] ?? 0;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getIssues({int page = 1, String query = "",String status = "",String priority = "",String type = ""}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final PaginatedResults<Issue> paginatedIssues = await _apiService.getIssues(page: page, query: query, status: status, priority: priority,type:type );
       _paginatedIssues = paginatedIssues;
       _issues = paginatedIssues.results;
       page_count = Utils.calculateTotalPages(paginatedIssues.count, 10);
@@ -48,7 +72,7 @@ class IssueProvider with ChangeNotifier {
       _issues[index] = _issues[index].copyWith(
         id: issue.id,
         title: issue.title,
-        description: issue.description,
+        issueType: issue.issueType,
         status: issue.status,
         priority: issue.priority,
         imageUrl: issue.imageUrl,

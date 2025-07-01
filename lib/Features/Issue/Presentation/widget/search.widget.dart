@@ -4,7 +4,8 @@ import 'package:online_reservation/Features/Profile/Domain/profile.repository.da
 import 'package:provider/provider.dart';
 
 class SearchFields extends StatefulWidget {
-  final void Function(String text, String status, String priority) onSearch;
+  final void Function(String text, String status, String priority, String type)
+      onSearch;
   const SearchFields({super.key, required this.onSearch});
 
   @override
@@ -15,13 +16,14 @@ class _SearchFieldsState extends State<SearchFields> {
   final TextEditingController _searchController = TextEditingController();
   String? _selectedStatus;
   String? _selectedPriority;
-
+  String? _selectedType;
 
   void _resetFilters() {
     setState(() {
       _searchController.clear();
       _selectedStatus = null;
       _selectedPriority = null;
+      _selectedType = null;
     });
   }
 
@@ -65,21 +67,18 @@ class _SearchFieldsState extends State<SearchFields> {
             foregroundColor: Colors.white, // ✅ White text
           ),
           onPressed: () {
-            widget.onSearch(
-              _searchController.text,
-              _selectedStatus ?? "",
-              _selectedPriority ?? "",
-            );
+            widget.onSearch(_searchController.text, _selectedStatus ?? "",
+                _selectedPriority ?? "", _selectedType ?? "");
           },
           child: const Text('Search'),
         ),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.teal,
-              side: const BorderSide(color: Colors.teal)),
-          onPressed: _resetFilters,
-          child: const Text('Reset'),
-        ),
+        // OutlinedButton(
+        //   style: OutlinedButton.styleFrom(
+        //       foregroundColor: Colors.teal,
+        //       side: const BorderSide(color: Colors.teal)),
+        //   onPressed: _resetFilters,
+        //   child: const Text('Reset'),
+        // ),
       ],
     );
   }
@@ -88,58 +87,95 @@ class _SearchFieldsState extends State<SearchFields> {
     final isOfficer = context.read<ProfileProvider>().user?.isOfficer ?? false;
     return Row(
       children: [
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            value: _selectedStatus,
-            hint: const Text('Select status'),
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-            items: isOfficer ?
-            IssueStatus.values.where((status) => status != IssueStatus.DRAFT).map((status) {
-              final displayName = status.displayName;
-              return DropdownMenuItem(
-                value: status.jsonName,
-                child: Text(displayName),
-              );
-            }).toList()
-            :IssueStatus.values.map((status) {
-              final displayName = status.displayName;
-              return DropdownMenuItem(
-                value: status.jsonName,
-                child: Text(displayName),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedStatus = value;
-              });
-            },
-          ),
-        ),
+        statusDropDown(isOfficer),
         const SizedBox(width: 20),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            value: _selectedPriority,
-            hint: const Text('Select status'),
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-            items: IssuePriority.values.map((priority) {
-              final displayName = priority.displayName;
-              return DropdownMenuItem(
-                value: priority.jsonName,
-                child: Text(displayName),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedPriority = value;
-              });
-            },
-          ),
-        ),
+        priorityDropDown(),
+        const SizedBox(width: 20),
+        typeDropDown(),
       ],
+    );
+  }
+
+  Widget typeDropDown() {
+    return Expanded(
+      child: DropdownButtonFormField<String>(
+        value: _selectedPriority,
+        hint: const Text('Select Type'),
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+        ),
+        items: IssueType.values.map((type) {
+          final displayName = type.jsonName;
+          return DropdownMenuItem(
+            value: type.jsonName,
+            child: Text(displayName.replaceFirst(
+                displayName[0], displayName[0].toUpperCase())),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedType = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget statusDropDown(bool isOfficer) {
+    return Expanded(
+      child: DropdownButtonFormField<String>(
+        value: _selectedStatus,
+        hint: const Text('Select Status'),
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+        ),
+        items: isOfficer
+            ? IssueStatus.values
+                .where((status) => status != IssueStatus.DRAFT)
+                .map((status) {
+                final displayName = status.displayName;
+                return DropdownMenuItem(
+                  value: status.jsonName,
+                  child: Text(displayName),
+                );
+              }).toList()
+            : IssueStatus.values.map((status) {
+                final displayName = status.displayName;
+                return DropdownMenuItem(
+                  value: status.jsonName,
+                  child: Text(displayName),
+                );
+              }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedStatus = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget priorityDropDown() {
+    return Expanded(
+      child: DropdownButtonFormField<String>(
+        value: _selectedPriority,
+        hint: const Text('Select Priority'),
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+        ),
+        items: IssuePriority.values.map((priority) {
+          final displayName = priority.displayName;
+          return DropdownMenuItem(
+            value: priority.jsonName,
+            child: Text(displayName),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedPriority = value;
+          });
+        },
+      ),
     );
   }
 }

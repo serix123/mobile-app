@@ -88,6 +88,67 @@ class Utils {
     );
   }
 
+  static DateTime parseAndRoundToQuarter(String dateStr) {
+    // Parse the date string (which may be in UTC or no timezone).
+    DateTime parsed = DateTime.parse(dateStr);
+
+    // Ensure it's converted to local time.
+    DateTime local = parsed.toLocal();
+
+    int minutes = local.minute;
+    int roundedMinutes = (minutes / 15).round() * 15;
+
+    // Handle overflow when rounding to 60 minutes.
+    if (roundedMinutes == 60) {
+      local = local.add(const Duration(hours: 1));
+      roundedMinutes = 0;
+    }
+
+    // Return a new DateTime with seconds and milliseconds zeroed out.
+    return DateTime(
+      local.year,
+      local.month,
+      local.day,
+      local.hour,
+      roundedMinutes,
+    );
+  }
+
+  static TimeOfDay roundTimeToNearestQuarter(TimeOfDay time) {
+    int totalMinutes = time.hour * 60 + time.minute;
+
+    // Round to nearest multiple of 15 minutes
+    int roundedTotalMinutes = (totalMinutes / 15).round() * 15;
+
+    // Calculate new hour and minute
+    int newHour = roundedTotalMinutes ~/ 60;
+    int newMinute = roundedTotalMinutes % 60;
+
+    // Handle overflow: keep hour within 0-23
+    newHour = newHour % 24;
+
+    return TimeOfDay(hour: newHour, minute: newMinute);
+  }
+
+  static Duration parseDuration(String durationStr) {
+    final parts = durationStr.split(':');
+    if (parts.length != 3) {
+      throw const FormatException('Invalid duration format, expected HH:mm:ss');
+    }
+    int hours = int.parse(parts[0]);
+    int minutes = int.parse(parts[1]);
+    int seconds = int.parse(parts[2]);
+    return Duration(hours: hours, minutes: minutes, seconds: seconds);
+  }
+
+  static String durationToString(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String hours = twoDigits(duration.inHours);
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$hours:$minutes:$seconds';
+  }
+
   static Future<Uint8List?> downloadFile(String? url) async {
     if(url == null) {
       return null;
@@ -160,16 +221,16 @@ class Utils {
     final DateTime postDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
     if (postDate.isAtSameMomentAs(yesterday)) {
-      return 'Yesterday at ${DateFormat('h:mm a').format(dateTime)}';
+      return 'Yesterday at ${DateFormat('h:mm').format(dateTime)}';
     }
 
     // Within the current year (e.g., "May 20 at 5:00 PM")
     if (dateTime.year == referenceTime.year) {
-      return DateFormat('MMM d h:mm a').format(dateTime);
+      return DateFormat('MMM d h:mm').format(dateTime);
     }
 
     // Previous years (e.g., "Dec 20, 2023 at 3:00 PM")
-    return DateFormat('MMM d, yyyy h:mm a').format(dateTime);
+    return DateFormat('MMM d, yyyy h:mm').format(dateTime);
   }
 }
 

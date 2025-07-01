@@ -20,6 +20,24 @@ class ResidentProvider with ChangeNotifier {
   bool get hasNext => _paginatedResidents?.next != null;
   bool get hasPrevious => _paginatedResidents?.previous != null;
 
+  // For Dashboard
+  int residentCount = 0;
+
+  Future<void> getResidentSummary() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final summaryData = await _apiService.getResidentSummary();
+      residentCount = summaryData['total_population'] ?? 0;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> updateResident(Resident resident) async {
     _isLoading = true;
     _error = null;

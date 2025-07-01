@@ -58,11 +58,11 @@ class IssueApiService extends TokenService {
     }
   }
 
-  Future<PaginatedResults<Issue>> getIssues({int page = 1, String query = "",String status = "",String priority = "",}) async {
+  Future<PaginatedResults<Issue>> getIssues({int page = 1, String query = "",String status = "",String priority = "",String type = "",}) async {
     try {
       String? token = await getAccessToken(storage);
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page&q=$query&status=$status&priority=$priority'),
+        Uri.parse('$baseUrl?page=$page&q=$query&status=$status&priority=$priority&issue_type=$type'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -73,6 +73,26 @@ class IssueApiService extends TokenService {
           jsonDecode(response.body),
           (json) => Issue.fromJson(json),
         );
+      }
+      throw Exception('Failed to get issues: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Failed to get issues: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getIssuesSummary() async {
+    try {
+      String? token = await getAccessToken(storage);
+      final response = await client.get(
+        Uri.parse('${baseUrl}status_summary/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data;
       }
       throw Exception('Failed to get issues: ${response.statusCode}');
     } catch (e) {

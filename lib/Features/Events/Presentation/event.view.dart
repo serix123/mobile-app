@@ -11,7 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventViewScreen extends StatelessWidget {
   static const String screenId = "/eventItem";
-  static const String title = "Event";
+  static const String title = "Event Details";
   final Event event;
 
   const EventViewScreen({super.key, required this.event});
@@ -199,7 +199,7 @@ class EventViewScreen extends StatelessWidget {
                 context,
                 icon: Icons.location_on,
                 label: 'Location',
-                value: event.location,
+                value: event.location.displayName,
               ),
               const SizedBox(height: 16),
               _buildDetailRow(
@@ -268,7 +268,6 @@ class EventViewScreen extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 24),
-              if(user.isOfficer)
               _buildAttendeesList(attendees: event.attendeesList)
             ],
           ),

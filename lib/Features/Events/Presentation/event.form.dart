@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
+import 'package:online_reservation/Utils/utils.dart';
 import 'package:path/path.dart' show extension;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,9 +27,11 @@ class EventEditScreen extends StatefulWidget {
 class _EventEditScreenState extends State<EventEditScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _detailsController;
-  late final TextEditingController _locationController;
   late DateTime _selectedDate;
   late TimeOfDay _selectedTime;
+  Location? _selectedLocation;
+  int selectedHours = 1;
+  int selectedMinutes = 0;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -42,17 +45,18 @@ class _EventEditScreenState extends State<EventEditScreen> {
     final event = widget.event;
     _nameController = TextEditingController(text: event?.name ?? '');
     _detailsController = TextEditingController(text: event?.details ?? '');
-    _locationController = TextEditingController(text: event?.location ?? '');
-    _selectedDate = event?.date ?? DateTime.now();
-    _selectedTime = TimeOfDay.fromDateTime(event?.date ?? DateTime.now());
+    _selectedLocation = event?.location;
+    _selectedDate = event?.date ?? DateTime.now().toLocal();
+    _selectedTime = Utils.roundTimeToNearestQuarter(TimeOfDay.fromDateTime(event?.date ?? DateTime.now().toLocal()));
     _fileExt = event?.imageUrl?.split('.').last ?? "";
+    selectedHours = event?.duration.inHours ?? 1;
+    selectedMinutes = event?.duration.inMinutes ?? 0;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _detailsController.dispose();
-    _locationController.dispose();
     _selectedFile = null;
     super.dispose();
   }
@@ -122,13 +126,19 @@ class _EventEditScreenState extends State<EventEditScreen> {
       initialTime: _selectedTime,
     );
     if (picked != null) {
+      TimeOfDay roundedTime = Utils.roundTimeToNearestQuarter(picked);
       setState(() {
-        _selectedTime = picked;
+        _selectedTime = roundedTime;
       });
     }
   }
 
   void _submitForm() async {
+    if (_selectedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Location is required.')));
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       final eventDate = DateTime(
         _selectedDate.year,
@@ -156,18 +166,20 @@ class _EventEditScreenState extends State<EventEditScreen> {
 
       if (shouldSubmit != true) return;
 
+      final duration = Duration(hours: selectedHours, minutes: selectedMinutes);
       final event = Event(
         id: widget.event?.id ?? 0,
         name: _nameController.text,
         date: eventDate,
+        duration: duration,
         details: _detailsController.text,
-        location: _locationController.text,
+        location: _selectedLocation!,
         creatorId: widget.event?.creatorId ?? 1, // Get from auth
         creatorName: widget.event?.creatorName ?? 'Current User',
         attendeesCount: widget.event?.attendeesCount ?? 0,
         isAttending: widget.event?.isAttending ?? false,
-        createdAt: widget.event?.createdAt ?? DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: widget.event?.createdAt ?? DateTime.now().toLocal(),
+        updatedAt: DateTime.now().toLocal(),
         // attendeesList: widget.event?.attendeesList ?? []
       );
       final provider = context.read<EventProvider>();
@@ -293,19 +305,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _locationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Location',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter event location';
-                    }
-                    return null;
-                  },
-                ),
+                _buildLocationDropdown(),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -321,7 +321,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                  DateFormat('MMM d, y').format(_selectedDate)),
+                                  DateFormat('MMM d, y').format(_selectedDate), overflow: TextOverflow.ellipsis,),
                               const Icon(Icons.calendar_today),
                             ],
                           ),
@@ -340,7 +340,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(_selectedTime.format(context)),
+                              Text(_selectedTime.format(context), overflow: TextOverflow.ellipsis,),
                               const Icon(Icons.access_time),
                             ],
                           ),
@@ -349,6 +349,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                _buildDuration(),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -363,7 +365,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                         (_fileExt == "jpg" || _fileExt == "png"))
                       ..._buildImageNetwork()
                     else
-                      const Text('No image uploaded'),
+                      const Text('No image uploaded', overflow: TextOverflow.ellipsis,),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -443,12 +445,12 @@ class _EventEditScreenState extends State<EventEditScreen> {
         )
       ];
     }
-    return [const Text('No image selected.')];
+    return [const Text('No image selected.',overflow: TextOverflow.ellipsis,)];
   }
 
   List<Widget> _buildImageNetwork() {
     return [
-      Expanded(child: Text(widget.event!.imageUrl!.split('/').last)),
+      Expanded(child: Text(widget.event!.imageUrl!.split('/').last,overflow: TextOverflow.ellipsis,)),
       const SizedBox(width: 16),
       ClipRRect(
         // Optional: Clip corners for a nicer look
@@ -485,5 +487,81 @@ class _EventEditScreenState extends State<EventEditScreen> {
         ),
       )
     ];
+  }
+
+  Widget _buildDuration(){
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          child: DropdownButtonFormField<int>(
+            style: const TextStyle(overflow: TextOverflow.ellipsis),
+            value: selectedHours,
+            decoration: const InputDecoration(
+              labelText: 'Hours',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+            items: List.generate(24, (i) => DropdownMenuItem(value: i, child: Text('$i hr'))),
+            onChanged: (value) {
+              setState(() {
+                selectedHours = value!;
+              });
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DropdownButtonFormField<int>(
+            style: const TextStyle(overflow: TextOverflow.ellipsis),
+            value: selectedMinutes,
+            decoration: const InputDecoration(
+              labelText: 'Minutes',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+            items: List.generate(
+              4,
+                  (i) => DropdownMenuItem(value: i * 15, child: Text('${i * 15} min')),
+            ),
+            onChanged: (value) {
+              setState(() {
+                selectedMinutes = value!;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationDropdown({bool isReadOnly = false}) {
+    return DropdownButtonFormField<Location?>(
+      value: _selectedLocation,
+      decoration: const InputDecoration(
+        labelText: 'Select Location',
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      items: Location.values.map((location) {
+        return DropdownMenuItem<Location>(
+          value: location,
+          child: Text(location.displayName, overflow: TextOverflow.ellipsis,),
+        );
+      }).toList(),
+      onChanged: isReadOnly
+          ? null
+          : (Location? newValue) {
+        setState(() {
+          _selectedLocation = newValue;
+        });
+      },
+      validator: (Location? value) {
+        if (value == null) {
+          return 'Please select a location';
+        }
+        return null;
+      },
+    );
   }
 }

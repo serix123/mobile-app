@@ -109,7 +109,7 @@ class EventCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.location_on, size: 16),
                       const SizedBox(width: 4),
-                      Flexible(flex: 1,child: Text(event.location,overflow: TextOverflow.ellipsis)),
+                      Flexible(flex: 1,child: Text(event.location.displayName,overflow: TextOverflow.ellipsis)),
                     ],
                   ),
                   const SizedBox(height: 4),

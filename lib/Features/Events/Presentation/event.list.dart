@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 
 class EventListScreen extends StatefulWidget {
   static const String screenId = "/eventsList";
-  static const String title = "Events List";
+  static const String title = "Events";
   const EventListScreen({super.key});
 
   @override

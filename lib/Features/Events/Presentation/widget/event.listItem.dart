@@ -105,7 +105,7 @@ class EventListItem extends StatelessWidget {
                         _buildInfoRow('Details', event.details),
 
                         // _buildInfoRow('Treatment', event.treatments ?? ""),
-                        _buildInfoRow('Location', event.location ?? ""),
+                        _buildInfoRow('Location', event.location.displayName ?? ""),
                         _buildInfoRow('Date', Utils.formatDateISO(event.date)),
                         _buildInfoRow('Attending', "${event.attendeesCount}"),
                         const SizedBox(height: 8),

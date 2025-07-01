@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class NoticeViewScreen extends StatelessWidget {
   static const String screenId = "/noticeItem";
-  static const String title = "Notice";
+  static const String title = "Notice Details";
   final Notice notice;
   const NoticeViewScreen({super.key, required this.notice});
 

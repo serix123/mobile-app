@@ -5,6 +5,7 @@ import 'package:online_reservation/Features/Authentication/Presentation/login.vi
 import 'package:online_reservation/Features/Authentication/Presentation/register.view.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.list.dart';
 import 'package:online_reservation/Features/CommunityResources/Presentation/resource.view.dart';
+import 'package:online_reservation/Features/Dashboard/dashboard.view.dart';
 import 'package:online_reservation/Features/Documents/Data/Model/document.model.dart';
 import 'package:online_reservation/Features/Documents/Presentation/document.form.dart';
 import 'package:online_reservation/Features/Documents/Presentation/document.list.dart';
@@ -55,6 +56,7 @@ class RouteGenerator {
   static const noticeViewScreen = NoticeViewScreen.screenId;
   static const documentListScreen = DocumentListScreen.screenId;
   static const documentEditScreen = DocumentEditScreen.screenId;
+  static const dashboardScreen = DashboardScreen.screenId;
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -63,8 +65,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (ctx) {
           final isLoggedIn = ctx.read<AuthProvider>().isLoggedIn;
           if (!isLoggedIn) return const LoginScreen();
-          return const IssuesListScreen();
+          return const DashboardScreen();
         });
+      case dashboardScreen:
+        return MaterialPageRoute(builder: (_) => const DashboardScreen());
       case profileScreen:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case residentListScreen:

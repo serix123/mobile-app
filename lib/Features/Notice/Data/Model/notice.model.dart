@@ -1,3 +1,5 @@
+import 'package:online_reservation/Utils/utils.dart';
+
 class Notice {
   final int? id;
   final String title;
@@ -20,8 +22,8 @@ class Notice {
     title: json['title'] ?? "",
     details: json['details'],
     imageUrl: json['image'],
-    createdDate: DateTime.parse(json['created_at']),
-    updatedDate: DateTime.parse(json['updated_at']),
+    createdDate: Utils.parseAndRoundToQuarter(json['created_at']),
+    updatedDate: Utils.parseAndRoundToQuarter(json['updated_at']),
   );
 
   Map<String, dynamic> toJson() {

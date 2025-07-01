@@ -43,10 +43,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _handleEventCreate() async {
     final result =
-    await Navigator.pushNamed(context, RouteGenerator.eventEditScreen);
+        await Navigator.pushNamed(context, RouteGenerator.eventEditScreen);
 
     if (result != null) {
-      if(mounted){
+      if (mounted) {
         final task = [
           context.read<ProfileProvider>().getProfile(),
           context.read<EventProvider>().getUpcomingEvents(),
@@ -59,11 +59,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleIssueCreate() async {
     final result = await Navigator.of(context).pushNamed(
       RouteGenerator.issueFormScreen,
-      arguments: const RouteArguments(mode: FormFieldMode.CREATE,data: null),
+      arguments: const RouteArguments(mode: FormFieldMode.CREATE, data: null),
     );
 
     if (result == true) {
-      if(mounted){
+      if (mounted) {
         final task = [
           context.read<ProfileProvider>().getProfile(),
           context.read<IssueProvider>().getIssues(),
@@ -79,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         arguments: null);
 
     if (result != null) {
-      if(mounted){
+      if (mounted) {
         final task = [
           context.read<ProfileProvider>().getProfile(),
           context.read<NoticeProvider>().getNotices(),
@@ -88,7 +88,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Consumer6<ProfileProvider, IssueProvider, EventProvider,
         DocumentProvider, NoticeProvider, ResidentProvider>(
       builder: (context, profileProvider, issueProvider, eventProvider,
-          documentProvider, noticeProvider,residentProvider, child) {
+          documentProvider, noticeProvider, residentProvider, child) {
         if (profileProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -125,17 +124,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         final isResident = profileProvider.user!.isResident ?? true;
+        final isGuard = profileProvider.user!.isGuard ?? true;
         final fullName = profileProvider.user!.fullName;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              if(isResident)
+              if (isResident)
                 buildGreetingHeader(fullName)
               else
                 buildTotalUsersCard(residentProvider.residentCount),
-
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,15 +150,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
-                        child: _buildIssueStatusSummary(
-                            isResident: isResident)),
+                        child:
+                            _buildIssueStatusSummary(isResident: isResident)),
                     const SizedBox(width: 16),
                     Expanded(child: _buildRecentDocuments()),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-              _buildQuickActions(isOfficer: profileProvider.user!.isOfficer),
+              if (!isGuard)
+                _buildQuickActions(isOfficer: profileProvider.user!.isOfficer),
             ],
           ),
         );
@@ -171,7 +171,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Consumer6<ProfileProvider, IssueProvider, EventProvider,
         DocumentProvider, NoticeProvider, ResidentProvider>(
       builder: (context, profileProvider, issueProvider, eventProvider,
-          documentProvider, noticeProvider,residentProvider, child) {
+          documentProvider, noticeProvider, residentProvider, child) {
         if (profileProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -192,28 +192,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         final isResident = profileProvider.user!.isResident ?? true;
+        final isGuard = profileProvider.user!.isGuard ?? true;
         final fullName = profileProvider.user!.fullName;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              if(isResident)
+              if (isResident)
                 buildGreetingHeader(fullName)
               else
                 buildTotalUsersCard(residentProvider.residentCount),
               const SizedBox(height: 16),
-              _buildQuickActions(isOfficer: profileProvider.user!.isOfficer),
+              if (!isGuard)
+                _buildQuickActions(isOfficer: profileProvider.user!.isOfficer),
               const SizedBox(height: 16),
               _buildUpcomingEvents(),
               const SizedBox(height: 16),
               _buildRecentNotices(),
               const SizedBox(height: 16),
-              _buildIssueStatusSummary(
-                  isResident: isResident),
+              _buildIssueStatusSummary(isResident: isResident),
               const SizedBox(height: 16),
               _buildRecentDocuments(),
-
             ],
           ),
         );
@@ -326,7 +326,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return 'Good evening';
   }
 
-
   Widget _summaryCard(String title, String count) {
     return Expanded(
       child: Card(
@@ -389,8 +388,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       event[0].name,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(DateFormat('MMM d, yyyy · h:mm a')
-                        .format(event[0].date),overflow: TextOverflow.ellipsis,maxLines: 1,),
+                    subtitle: Text(
+                      DateFormat('MMM d, yyyy · h:mm a').format(event[0].date),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                   ListTile(
                     leading: const Icon(Icons.event),
@@ -398,8 +400,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       event[1].name,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(DateFormat('MMM d, yyyy · h:mm a')
-                        .format(event[1].date),overflow: TextOverflow.ellipsis,maxLines: 1,),
+                    subtitle: Text(
+                      DateFormat('MMM d, yyyy · h:mm a').format(event[1].date),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ]
               ],
@@ -452,7 +457,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   subtitle: Text(
-                      'Posted: ${DateFormat('MMM d, yyyy · h:mm a').format(notice[0].createdDate ?? DateTime.now().toLocal())}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                    'Posted: ${DateFormat('MMM d, yyyy · h:mm a').format(notice[0].createdDate ?? DateTime.now().toLocal())}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
                 if (notice.length > 1)
                   ListTile(
@@ -462,7 +470,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                        'Posted: ${DateFormat('MMM d, yyyy · h:mm a').format(notice[1].createdDate ?? DateTime.now().toLocal())}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                      'Posted: ${DateFormat('MMM d, yyyy · h:mm a').format(notice[1].createdDate ?? DateTime.now().toLocal())}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
               ]
             ],
@@ -559,7 +570,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                        'Uploaded: ${DateFormat('MMM d, yyyy · h:mm a').format(document[0].createdAt)}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                      'Uploaded: ${DateFormat('MMM d, yyyy · h:mm a').format(document[0].createdAt)}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                   if (document.length > 1)
                     ListTile(
@@ -569,7 +583,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                          'Uploaded: ${DateFormat('MMM d, yyyy · h:mm a').format(document[1].createdAt)}',overflow: TextOverflow.ellipsis,maxLines: 1,),
+                        'Uploaded: ${DateFormat('MMM d, yyyy · h:mm a').format(document[1].createdAt)}',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                 ]
               ],
@@ -590,11 +607,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           runSpacing: 8,
           alignment: WrapAlignment.center,
           children: [
-            _quickActionButton(Icons.add, 'Create Event', _handleEventCreate,),
-            _quickActionButton(Icons.report, 'Report Issue', _handleIssueCreate,),
-            if(isOfficer) ...[
-            _quickActionButton(Icons.campaign, 'Post Notice', _handleNoticeCreate),
-          ],],
+            if (isOfficer) ...[
+              _quickActionButton(
+                Icons.add,
+                'Create Event',
+                _handleEventCreate,
+              ),
+              _quickActionButton(
+                  Icons.campaign, 'Post Notice', _handleNoticeCreate),
+            ] else ...[
+              _quickActionButton(
+                Icons.report,
+                'Report Issue',
+                _handleIssueCreate,
+              )
+            ],
+          ],
         ),
       ),
     );

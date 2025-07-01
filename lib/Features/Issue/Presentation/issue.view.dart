@@ -465,6 +465,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     return Consumer3<IssueProvider,ProfileProvider,ResidentProvider>(
       builder: (context, issueProvider,profileProvider,residentProvider, child) {
         final isResident = profileProvider.user!.isResident;
+        final isOfficer = profileProvider.user!.isOfficer;
         if (issueProvider.isLoading ||profileProvider.isLoading ||residentProvider.isLoading ) return const Center(child: CircularProgressIndicator());
         switch (formFieldMode) {
           case FormFieldMode.CREATE:
@@ -595,7 +596,10 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                       // Dropdowns
                       Row(
                         children: [
-                          Expanded(child: buildIssuePriorityDropdown()),
+                          if(isOfficer)
+                          Expanded(child: buildIssuePriorityDropdown())
+                          else
+                          Expanded(child: buildIssuePriorityDropdown(isReadOnly: true)),
                           const SizedBox(width: 10),
                           Expanded(child: buildIssueStatusDropdown()),
                         ],
@@ -995,7 +999,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         children: [
           ElevatedButton(
             onPressed: () => _showBottomModal(), // Call our modal function
-            child: const Text('Show Comments'),
+            child: const Text('View Management Response'),
           ),
           const SizedBox(
             height: 5,

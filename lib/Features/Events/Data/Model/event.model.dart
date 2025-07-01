@@ -162,7 +162,7 @@ class Event {
       'date': date.toIso8601String(),
       'duration': Utils.durationToString(duration),
       'details': details,
-      'location': location,
+      'location': location.jsonName,
     };
   }
 
@@ -173,7 +173,7 @@ class Event {
       'date': date.toIso8601String(),
       'duration': Utils.durationToString(duration),
       'details': details,
-      'location': location,
+      'location': location.jsonName,
       'creator': creatorId,
       'creator_name': creatorName,
       'attendees_count': attendeesCount,

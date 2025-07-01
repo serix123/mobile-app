@@ -27,7 +27,7 @@ class _EventListScreenState extends State<EventListScreen>
   void _initData() async {
     final task = [
       context.read<ProfileProvider>().getProfile(),
-    context.read<EventProvider>().getOngoingEvents()
+      context.read<EventProvider>().getOngoingEvents()
     ];
     await Future.wait(task);
   }
@@ -35,7 +35,7 @@ class _EventListScreenState extends State<EventListScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this,initialIndex: 1);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
     _tabController.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initData();
@@ -186,11 +186,11 @@ class _EventListScreenState extends State<EventListScreen>
           icon: const Icon(Icons.refresh),
           onPressed: () => _initData(),
         ),
-        if(isOfficer)
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => _handlePostCreate(),
-        ),
+        if (isOfficer)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _handlePostCreate(),
+          ),
       ],
     );
   }
@@ -238,7 +238,6 @@ class _EventListScreenState extends State<EventListScreen>
       ),
     );
   }
-
 
   Widget _mobileBody() {
     return Column(

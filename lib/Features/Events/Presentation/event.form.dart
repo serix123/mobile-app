@@ -50,7 +50,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _selectedTime = Utils.roundTimeToNearestQuarter(TimeOfDay.fromDateTime(event?.date ?? DateTime.now().toLocal()));
     _fileExt = event?.imageUrl?.split('.').last ?? "";
     selectedHours = event?.duration.inHours ?? 1;
-    selectedMinutes = event?.duration.inMinutes ?? 0;
+    selectedMinutes = event != null ? event.duration.inMinutes % 60 : 0;
   }
 
   @override

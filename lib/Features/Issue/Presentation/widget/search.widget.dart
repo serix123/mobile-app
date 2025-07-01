@@ -48,6 +48,8 @@ class _SearchFieldsState extends State<SearchFields> {
             const SizedBox(height: 10),
             _buildDropdownRow(),
             const SizedBox(height: 10),
+            priorityDropDown(),
+            const SizedBox(height: 10),
             _buildButtonsRow(),
           ],
         );
@@ -89,8 +91,6 @@ class _SearchFieldsState extends State<SearchFields> {
       children: [
         statusDropDown(isOfficer),
         const SizedBox(width: 20),
-        priorityDropDown(),
-        const SizedBox(width: 20),
         typeDropDown(),
       ],
     );
@@ -99,7 +99,7 @@ class _SearchFieldsState extends State<SearchFields> {
   Widget typeDropDown() {
     return Expanded(
       child: DropdownButtonFormField<String>(
-        value: _selectedPriority,
+        value: _selectedType,
         hint: const Text('Select Type'),
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
@@ -156,26 +156,24 @@ class _SearchFieldsState extends State<SearchFields> {
   }
 
   Widget priorityDropDown() {
-    return Expanded(
-      child: DropdownButtonFormField<String>(
-        value: _selectedPriority,
-        hint: const Text('Select Priority'),
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-        ),
-        items: IssuePriority.values.map((priority) {
-          final displayName = priority.displayName;
-          return DropdownMenuItem(
-            value: priority.jsonName,
-            child: Text(displayName),
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            _selectedPriority = value;
-          });
-        },
+    return DropdownButtonFormField<String>(
+      value: _selectedPriority,
+      hint: const Text('Select Priority'),
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
       ),
+      items: IssuePriority.values.map((priority) {
+        final displayName = priority.displayName;
+        return DropdownMenuItem(
+          value: priority.jsonName,
+          child: Text(displayName),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedPriority = value;
+        });
+      },
     );
   }
 }

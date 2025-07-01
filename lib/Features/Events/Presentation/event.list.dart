@@ -201,25 +201,44 @@ class _EventListScreenState extends State<EventListScreen>
       child: Consumer<EventProvider>(
         builder: (context, provider, child) {
           return SearchFields(
-            onSearch: (text) {
+            onSearch: (text, startDate, endDate) {
               switch (_tabController.index) {
                 case 0:
-                  provider.getPastEvents(query: text);
+                  provider.getPastEvents(
+                    query: text,
+                    startDate: startDate,
+                    endDate: endDate,
+                  );
                   break;
                 case 1:
-                  provider.getOngoingEvents(query: text);
+                  provider.getOngoingEvents(
+                    query: text,
+                    startDate: startDate,
+                    endDate: endDate,
+                  );
                   break;
                 case 2:
-                  provider.getUpcomingEvents(query: text);
+                  provider.getUpcomingEvents(
+                    query: text,
+                    startDate: startDate,
+                    endDate: endDate,
+                  );
+                  break;
+                default:
+                  provider.getEvents(
+                    query: text,
+                    startDate: startDate,
+                    endDate: endDate,
+                  );
                   break;
               }
-              // provider.getEvents(query: text);
             },
           );
         },
       ),
     );
   }
+
 
   Widget _mobileBody() {
     return Column(

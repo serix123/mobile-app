@@ -25,12 +25,49 @@ class EventProvider with ChangeNotifier {
   List<Event> _upcomingEvents = [];
   List<Event> get upcomingEvents => _upcomingEvents;
 
-  Future<void> getEvents({int page = 1, String query = ""}) async {
+  Future<void> getEvents({
+    int page = 1,
+    String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _paginatedEvents = await _apiService.getEvents(
+        page: page,
+        query: query,
+        startDate: startDate,
+        endDate: endDate,
+      );
+      _events = _paginatedEvents?.results ?? [];
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> getPastEvents({
+    int page = 1,
+    String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedEvents = await _apiService.getEvents(page: page, query: query);
+      _paginatedEvents = await _apiService.getPastEvents(
+        page: page,
+        query: query,
+        startDate: startDate,
+        endDate: endDate,
+      );
       _events = _paginatedEvents?.results ?? [];
     } catch (e) {
       _error = e.toString();
@@ -40,12 +77,22 @@ class EventProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getPastEvents({int page = 1, String query = ""}) async {
+  Future<void> getOngoingEvents({
+    int page = 1,
+    String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedEvents = await _apiService.getPastEvents(page: page, query: query);
+      _paginatedEvents = await _apiService.getOngoingEvents(
+        page: page,
+        query: query,
+        startDate: startDate,
+        endDate: endDate,
+      );
       _events = _paginatedEvents?.results ?? [];
     } catch (e) {
       _error = e.toString();
@@ -55,27 +102,22 @@ class EventProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getOngoingEvents({int page = 1, String query = ""}) async {
+  Future<void> getUpcomingEvents({
+    int page = 1,
+    String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _paginatedEvents = await _apiService.getOngoingEvents(page: page, query: query);
-      _events = _paginatedEvents?.results ?? [];
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    }
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> getUpcomingEvents({int page = 1, String query = ""}) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    try {
-      _paginatedEvents = await _apiService.getUpcomingEvents(page: page, query: query);
+      _paginatedEvents = await _apiService.getUpcomingEvents(
+        page: page,
+        query: query,
+        startDate: startDate,
+        endDate: endDate,
+      );
       _events = _paginatedEvents?.results ?? [];
       _upcomingEvents = _paginatedEvents?.results ?? [];
     } catch (e) {
@@ -85,6 +127,53 @@ class EventProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+
+  // Future<void> getPastEvents({int page = 1, String query = ""}) async {
+  //   _isLoading = true;
+  //   _error = null;
+  //   notifyListeners();
+  //   try {
+  //     _paginatedEvents = await _apiService.getPastEvents(page: page, query: query);
+  //     _events = _paginatedEvents?.results ?? [];
+  //   } catch (e) {
+  //     _error = e.toString();
+  //     notifyListeners();
+  //   }
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+  //
+  // Future<void> getOngoingEvents({int page = 1, String query = ""}) async {
+  //   _isLoading = true;
+  //   _error = null;
+  //   notifyListeners();
+  //   try {
+  //     _paginatedEvents = await _apiService.getOngoingEvents(page: page, query: query);
+  //     _events = _paginatedEvents?.results ?? [];
+  //   } catch (e) {
+  //     _error = e.toString();
+  //     notifyListeners();
+  //   }
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+  //
+  // Future<void> getUpcomingEvents({int page = 1, String query = ""}) async {
+  //   _isLoading = true;
+  //   _error = null;
+  //   notifyListeners();
+  //   try {
+  //     _paginatedEvents = await _apiService.getUpcomingEvents(page: page, query: query);
+  //     _events = _paginatedEvents?.results ?? [];
+  //     _upcomingEvents = _paginatedEvents?.results ?? [];
+  //   } catch (e) {
+  //     _error = e.toString();
+  //     notifyListeners();
+  //   }
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
 
   Future<void> getEvent(int id) async {
     _isLoading = true;

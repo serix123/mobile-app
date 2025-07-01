@@ -56,22 +56,37 @@ class EventApiService extends TokenService {
   Future<PaginatedResults<Event>> getEvents({
     int page = 1,
     String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       String? token = await getAccessToken(storage);
+
+      // Build the query parameters dynamically
+      final params = {
+        'page': '$page',
+        if (query.isNotEmpty) 'q': query,
+        if (startDate != null) 'date__gte': startDate.toIso8601String(),
+        if (endDate != null) 'date__lt': endDate.toIso8601String(),
+      };
+
+      final uri = Uri.parse(baseUrl).replace(queryParameters: params);
+
       final response = await client.get(
-        Uri.parse('$baseUrl?page=$page&q=$query'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
+
       if (response.statusCode == 200) {
         return PaginatedResults<Event>.fromJson(
           jsonDecode(response.body),
-          (json) => Event.fromJson(json),
+              (json) => Event.fromJson(json),
         );
       }
+
       throw Exception('Failed to get events: ${response.statusCode}');
     } catch (e) {
       throw Exception('Failed to get events: $e');
@@ -81,11 +96,20 @@ class EventApiService extends TokenService {
   Future<PaginatedResults<Event>> getPastEvents({
     int page = 1,
     String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       String? token = await getAccessToken(storage);
+      final uri = Uri.parse('${baseUrl}past/').replace(queryParameters: {
+        'page': page.toString(),
+        if (query.isNotEmpty) 'q': query,
+        if (startDate != null) 'date__gte': startDate.toIso8601String(),
+        if (endDate != null) 'date__lt': endDate.toIso8601String(),
+      });
+
       final response = await client.get(
-        Uri.parse('${baseUrl}past/?page=$page&q=$query'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -94,23 +118,32 @@ class EventApiService extends TokenService {
       if (response.statusCode == 200) {
         return PaginatedResults<Event>.fromJson(
           jsonDecode(response.body),
-          (json) => Event.fromJson(json),
+              (json) => Event.fromJson(json),
         );
       }
-      throw Exception('Failed to get events: ${response.statusCode}');
+      throw Exception('Failed to get past events: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get events: $e');
+      throw Exception('Failed to get past events: $e');
     }
   }
 
   Future<PaginatedResults<Event>> getOngoingEvents({
     int page = 1,
     String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       String? token = await getAccessToken(storage);
+      final uri = Uri.parse('${baseUrl}ongoing_this_month/').replace(queryParameters: {
+        'page': page.toString(),
+        if (query.isNotEmpty) 'q': query,
+        if (startDate != null) 'date__gte': startDate.toIso8601String(),
+        if (endDate != null) 'date__lt': endDate.toIso8601String(),
+      });
+
       final response = await client.get(
-        Uri.parse('${baseUrl}ongoing_this_month/?page=$page&q=$query'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -119,23 +152,32 @@ class EventApiService extends TokenService {
       if (response.statusCode == 200) {
         return PaginatedResults<Event>.fromJson(
           jsonDecode(response.body),
-          (json) => Event.fromJson(json),
+              (json) => Event.fromJson(json),
         );
       }
-      throw Exception('Failed to get events: ${response.statusCode}');
+      throw Exception('Failed to get ongoing events: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get events: $e');
+      throw Exception('Failed to get ongoing events: $e');
     }
   }
 
   Future<PaginatedResults<Event>> getUpcomingEvents({
     int page = 1,
     String query = "",
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       String? token = await getAccessToken(storage);
+      final uri = Uri.parse('${baseUrl}upcoming/').replace(queryParameters: {
+        'page': page.toString(),
+        if (query.isNotEmpty) 'q': query,
+        if (startDate != null) 'date__gte': startDate.toIso8601String(),
+        if (endDate != null) 'date__lt': endDate.toIso8601String(),
+      });
+
       final response = await client.get(
-        Uri.parse('${baseUrl}upcoming/?page=$page&q=$query'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -144,14 +186,90 @@ class EventApiService extends TokenService {
       if (response.statusCode == 200) {
         return PaginatedResults<Event>.fromJson(
           jsonDecode(response.body),
-          (json) => Event.fromJson(json),
+              (json) => Event.fromJson(json),
         );
       }
-      throw Exception('Failed to get events: ${response.statusCode}');
+      throw Exception('Failed to get upcoming events: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Failed to get events: $e');
+      throw Exception('Failed to get upcoming events: $e');
     }
   }
+
+
+  // Future<PaginatedResults<Event>> getPastEvents({
+  //   int page = 1,
+  //   String query = "",
+  // }) async {
+  //   try {
+  //     String? token = await getAccessToken(storage);
+  //     final response = await client.get(
+  //       Uri.parse('${baseUrl}past/?page=$page&q=$query'),
+  //       headers: {
+  //         'Authorization': 'Bearer $token',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       return PaginatedResults<Event>.fromJson(
+  //         jsonDecode(response.body),
+  //         (json) => Event.fromJson(json),
+  //       );
+  //     }
+  //     throw Exception('Failed to get events: ${response.statusCode}');
+  //   } catch (e) {
+  //     throw Exception('Failed to get events: $e');
+  //   }
+  // }
+  //
+  // Future<PaginatedResults<Event>> getOngoingEvents({
+  //   int page = 1,
+  //   String query = "",
+  // }) async {
+  //   try {
+  //     String? token = await getAccessToken(storage);
+  //     final response = await client.get(
+  //       Uri.parse('${baseUrl}ongoing_this_month/?page=$page&q=$query'),
+  //       headers: {
+  //         'Authorization': 'Bearer $token',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       return PaginatedResults<Event>.fromJson(
+  //         jsonDecode(response.body),
+  //         (json) => Event.fromJson(json),
+  //       );
+  //     }
+  //     throw Exception('Failed to get events: ${response.statusCode}');
+  //   } catch (e) {
+  //     throw Exception('Failed to get events: $e');
+  //   }
+  // }
+  //
+  // Future<PaginatedResults<Event>> getUpcomingEvents({
+  //   int page = 1,
+  //   String query = "",
+  // }) async {
+  //   try {
+  //     String? token = await getAccessToken(storage);
+  //     final response = await client.get(
+  //       Uri.parse('${baseUrl}upcoming/?page=$page&q=$query'),
+  //       headers: {
+  //         'Authorization': 'Bearer $token',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       return PaginatedResults<Event>.fromJson(
+  //         jsonDecode(response.body),
+  //         (json) => Event.fromJson(json),
+  //       );
+  //     }
+  //     throw Exception('Failed to get events: ${response.statusCode}');
+  //   } catch (e) {
+  //     throw Exception('Failed to get events: $e');
+  //   }
+  // }
 
   Future<Event> getEvent(int id) async {
     try {

@@ -18,6 +18,7 @@ enum Location {
   BLOCK_11,
   BLOCK_12,
 }
+
 extension LocationExtension on Location {
   String get displayName {
     switch (this) {
@@ -131,11 +132,10 @@ class Event {
     required this.isAttending,
     required this.createdAt,
     required this.updatedAt,
-     this.attendeesList,
+    this.attendeesList,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
-
     return Event(
       id: json['id'],
       name: json['name'],
@@ -226,19 +226,14 @@ class Event {
   }
 }
 
-class EventAttendees{
+class EventAttendees {
   final String fullName;
   final String? email;
   final String? contactNumber;
 
-  EventAttendees({
-    required this.fullName,
-    this.contactNumber,
-    this.email
-  });
+  EventAttendees({required this.fullName, this.contactNumber, this.email});
 
   factory EventAttendees.fromJson(Map<String, dynamic> json) {
-
     return EventAttendees(
       fullName: json['full_name'] ?? "Resident User",
       contactNumber: json['contact_number'] as String?,

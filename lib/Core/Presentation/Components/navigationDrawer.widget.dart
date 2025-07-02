@@ -85,7 +85,7 @@ class CustomNavigationDrawer extends StatelessWidget {
                     _createDrawerItem(
                       context: context,
                       icon: Icons.people,
-                      text: 'Residents',
+                      text: 'GL1 Community',
                       onTap: () => Navigator.of(context)
                           .pushNamed(RouteGenerator.residentListScreen),
                       selected:

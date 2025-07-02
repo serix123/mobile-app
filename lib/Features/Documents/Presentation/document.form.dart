@@ -298,7 +298,7 @@ class _DocumentEditScreenState extends State<DocumentEditScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Document Category',
+                    labelText: 'Document Title',
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -358,7 +358,7 @@ class _DocumentEditScreenState extends State<DocumentEditScreen> {
                 child: AbsorbPointer(
                   child: TextFormField(
                     decoration: const InputDecoration(
-                      labelText: 'Document Name',
+                      labelText: 'Document Category',
                       border: OutlineInputBorder(),
                     ),
                     controller: TextEditingController(

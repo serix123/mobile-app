@@ -95,6 +95,26 @@ class _DocumentEditScreenState extends State<DocumentEditScreen> {
           const SnackBar(content: Text('Error: Category is required.')));
       return;
     }
+    if (_selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Document is required.')));
+      return;
+    }
+    else {
+      final fileName = _selectedFile!.name;
+      final extension = fileName.split('.').last.toLowerCase();
+      if (extension != 'pdf') {
+        // Handle image
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: Document is required must be pdf.')));
+        return;
+      }
+      /*else if (extension == 'jpg' || extension == 'png') {
+        // Handle PDF
+      } else {
+        // Handle other types
+      }*/
+    }
     if (_formKey.currentState!.validate()) {
       final shouldSubmit = await showDialog<bool>(
           context: context,

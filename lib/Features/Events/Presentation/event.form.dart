@@ -53,7 +53,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _selectedTime = Utils.roundTimeToNearestQuarter(TimeOfDay.fromDateTime(event?.date ?? DateTime.now().toLocal()));
     _fileExt = event?.imageUrl?.split('.').last ?? "";
     _selectedDays = event?.duration.inDays ?? 0;
-    _selectedHours = event != null ? event.duration.inHours % 24 : 0;
+    _selectedHours = event != null ? event.duration.inHours % 24 : 1;
     _selectedMinutes = event != null ? event.duration.inMinutes % 60 : 0;
     _endDate = event?.date.add(event.duration) ?? DateTime.now().toLocal().add(Duration(days: _selectedDays,hours: _selectedHours,minutes: _selectedMinutes));
 
@@ -170,6 +170,21 @@ class _EventEditScreenState extends State<EventEditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error: Location is required.')));
       return;
+    }
+    if (_selectedFile != null){
+      final fileName = _selectedFile!.name;
+      final extension = fileName.split('.').last.toLowerCase();
+      if (extension != 'jpg' && extension != 'png')  {
+        // Handle image
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: File is required must be type .jpg or .png.')));
+        return;
+      }
+      /*else if (extension == 'jpg' || extension == 'png') {
+        // Handle PDF
+      } else {
+        // Handle other types
+      }*/
     }
     if (_formKey.currentState!.validate()) {
       final eventDate = DateTime(

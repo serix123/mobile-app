@@ -92,6 +92,21 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
   }
 
   void _submitForm() async {
+    if (_selectedFile != null){
+      final fileName = _selectedFile!.name;
+      final extension = fileName.split('.').last.toLowerCase();
+      if (extension != 'jpg' && extension != 'png') {
+        // Handle image
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: File is required must be type .jpg or .png.')));
+        return;
+      }
+      /*else if (extension == 'jpg' || extension == 'png') {
+        // Handle PDF
+      } else {
+        // Handle other types
+      }*/
+    }
     if (_formKey.currentState!.validate()) {
       final shouldSubmit = await showDialog<bool>(
           context: context,

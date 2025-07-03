@@ -394,6 +394,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       maxLines: 1,
                     ),
                   ),
+                  if (event.length > 1)
                   ListTile(
                     leading: const Icon(Icons.event),
                     title: Text(

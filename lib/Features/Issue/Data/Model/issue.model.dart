@@ -270,7 +270,7 @@ class Issue {
       // 'description': description,
       'issue_type': issueType.jsonName, // ✅ include issueType in JSON
       'status': status.jsonName,
-      'priority': priority.jsonName,
+      // 'priority': priority.jsonName,
       'assigned_residence_id': assigneeId,
     };
   }

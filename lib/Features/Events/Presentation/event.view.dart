@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_reservation/Core/Presentation/Components/text.message.dart';
 import 'package:online_reservation/Features/Profile/Domain/profile.repository.dart';
+import 'package:online_reservation/Utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:online_reservation/Core/Presentation/Components/responsiveLayout.widget.dart';
@@ -33,10 +34,10 @@ class EventViewScreen extends StatelessWidget {
         context, RouteGenerator.eventEditScreen,
         arguments: event);
 
-    if (result != null) {
-      final provider = context.read<EventProvider>();
-      await provider.getEvents();
-    }
+    // if (result != null) {
+    //   final provider = context.read<EventProvider>();
+    //   await provider.getOngoingEvents();
+    // }
   }
 
   void _handleAttending(BuildContext context, bool isAttending) async {
@@ -207,6 +208,20 @@ class EventViewScreen extends StatelessWidget {
                 icon: Icons.calendar_today,
                 label: 'Date & Time',
                 value: dateFormat.format(event.date),
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow(
+                context,
+                icon: Icons.edit_calendar_outlined,
+                label: 'Event End',
+                value: dateFormat.format(event.date.add(event.duration)),
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow(
+                context,
+                icon: Icons.hourglass_bottom_outlined,
+                label: 'Event length',
+                value: Utils.formatDuration(event.duration),
               ),
               const SizedBox(height: 16),
               _buildDetailRow(

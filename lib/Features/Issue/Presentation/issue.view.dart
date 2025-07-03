@@ -70,7 +70,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     // _descriptionController =
     //     TextEditingController(text: widget.initialData?.description ?? '');
     _selectedStatus = widget.initialData?.status;
-    _selectedPriority = widget.initialData?.priority;
+    _selectedPriority = widget.initialData?.priority ?? IssuePriority.MEDIUM;
     _selectedType = widget.initialData?.issueType;
     _fileExt = widget.initialData?.imageUrl?.split('.').last ?? "";
     _selectedAssignee = widget.initialData?.assigneeId;
@@ -136,11 +136,11 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     //       const SnackBar(content: Text('Error: ID Proof is required.')));
     //   return;
     // }
-    if (_selectedPriority == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: Priority is required.')));
-      return;
-    }
+    // if (_selectedPriority == null) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Error: Priority is required.')));
+    //   return;
+    // }
     if (_selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error: Type is required.')));
@@ -206,21 +206,18 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               .getComments(issueId: widget.initialData!.id!);
         }
       }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Submitted successfully!')));
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
-    } finally {
-      if (mounted) {
-        final error = context.read<IssueProvider>().error;
-        if (error == null) {
-          Navigator.pop(context, true);
-        }
+    }
+    if (mounted) {
+      final error = context.read<IssueProvider>().error;
+      if (error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Submitted successfully!')));
+        Navigator.pop(context, true);
       }
     }
   }
@@ -436,7 +433,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     return ResponsiveLayout(
       title: Text(formFieldMode == FormFieldMode.CREATE
           ? 'Report Issue'
-          : 'Update Issue'),
+          : formFieldMode == FormFieldMode.UPDATE ? 'Update Issue': 'Issue Details'),
       desktopBody: body(),
       mobileBody: body(),
       currentRoute: "",
@@ -444,423 +441,438 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget body() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Column(
-          children: [
-            FormContainer(
-              width: MediaQuery.of(context).size.width,
-              child: buildForm(),
-            ),
-            _buildCommentSection()
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // FormContainer(
+          //   width: MediaQuery.of(context).size.width,
+          //   child: buildForm(),
+          // ),
+          buildForm(),
+          _buildCommentSection()
+        ],
       ),
     );
   }
 
   Widget buildForm() {
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Consumer3<IssueProvider, ProfileProvider, ResidentProvider>(
+          builder:
+              (context, issueProvider, profileProvider, residentProvider, child) {
+            final isResident = profileProvider.user!.isResident;
+            final isOfficer = profileProvider.user!.isOfficer;
+            if (issueProvider.isLoading ||
+                profileProvider.isLoading ||
+                residentProvider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            switch (formFieldMode) {
+              case FormFieldMode.CREATE:
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                              labelText: 'Title of the Issue'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a title';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // TextFormField(
+                        //   controller: _descriptionController,
+                        //   decoration:
+                        //       const InputDecoration(labelText: 'Description'),
+                        //   // maxLines: 2,
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return 'Please enter a description';
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // const SizedBox(height: 18),
+                        _buildSelectAssignee(isReadOnly: true),
+                        const SizedBox(height: 18),
+                        _buildIssueTypeDropdown(),
+                        const SizedBox(height: 18),
 
-    return Consumer3<IssueProvider,ProfileProvider,ResidentProvider>(
-      builder: (context, issueProvider,profileProvider,residentProvider, child) {
-        final isResident = profileProvider.user!.isResident;
-        final isOfficer = profileProvider.user!.isOfficer;
-        if (issueProvider.isLoading ||profileProvider.isLoading ||residentProvider.isLoading ) return const Center(child: CircularProgressIndicator());
-        switch (formFieldMode) {
-          case FormFieldMode.CREATE:
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: <Widget>[
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(
-                          labelText: 'Title of the Issue'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a title';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    // TextFormField(
-                    //   controller: _descriptionController,
-                    //   decoration:
-                    //       const InputDecoration(labelText: 'Description'),
-                    //   // maxLines: 2,
-                    //   validator: (value) {
-                    //     if (value == null || value.isEmpty) {
-                    //       return 'Please enter a description';
-                    //     }
-                    //     return null;
-                    //   },
-                    // ),
-                    // const SizedBox(height: 18),
-                    _buildSelectAssignee(),
-                    const SizedBox(height: 18),
-                    buildIssueTypeDropdown(),
-                    const SizedBox(height: 18),
-
-                    // Dropdowns
-                    Row(
-                      children: [
-                        Expanded(child: buildIssuePriorityDropdown()),
-                        const SizedBox(width: 10),
-                        Expanded(child: buildIssueStatusDropdown()),
-                      ],
-                    ),
-
-                    //Image Uploader
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Image Attachment',
-                            style: TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
+                        // Dropdowns
                         Row(
                           children: [
-                            ElevatedButton(
-                              onPressed: _pickImage,
-                              child: const Text('Upload Image'),
-                            ),
-                            const SizedBox(width: 16),
-                            if (_selectedFile != null)
-                              ..._buildUploadedImageDisplay()
-                            else
-                              const Text('No image uploaded'),
+                            Expanded(child: _buildIssuePriorityDropdown(isReadOnly: true)),
+                            const SizedBox(width: 10),
+                            Expanded(child: buildIssueStatusDropdown()),
                           ],
                         ),
+                        const SizedBox(height: 18),
+
+                        //Image Uploader
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Image Attachment',
+                                style: TextStyle(fontSize: 16)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _pickImage,
+                                  child: const Text('Upload Image'),
+                                ),
+                                const SizedBox(width: 16),
+                                if (_selectedFile != null)
+                                  ..._buildUploadedImageDisplay()
+                                else
+                                  const Text('No image uploaded'),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        if (issueProvider.error != null)
+                          ErrorText(issueProvider.error!),
+                        if (issueProvider.isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          ElevatedButton(
+                            onPressed: issueProvider.isLoading
+                                ? null
+                                : () => _submitForm(),
+                            child: const Text('Create Issue'),
+                          ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                  ),
+                );
+              case FormFieldMode.UPDATE:
+                if (!isResident) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          TextFormField(
+                            enabled: false,
+                            controller: _titleController,
+                            decoration: const InputDecoration(
+                                labelText: 'Title of the Issue'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a title';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          // TextFormField(
+                          //   enabled: false,
+                          //   controller: _descriptionController,
+                          //   decoration:
+                          //       const InputDecoration(labelText: 'Description'),
+                          //   // maxLines: 2,
+                          //   validator: (value) {
+                          //     if (value == null || value.isEmpty) {
+                          //       return 'Please enter a description';
+                          //     }
+                          //     return null;
+                          //   },
+                          // ),
+                          // const SizedBox(height: 18),
+                          _buildSelectAssignee(),
+                          const SizedBox(height: 18),
+                          _buildIssueTypeDropdown(isReadOnly: true),
+                          const SizedBox(height: 18),
 
-                    if (issueProvider.error != null)
-                      ErrorText(issueProvider.error!),
-                    if (issueProvider.isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      ElevatedButton(
-                        onPressed: issueProvider.isLoading
-                            ? null
-                            : () => _submitForm(),
-                        child: const Text('Create Issue'),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          case FormFieldMode.UPDATE:
-            if (!isResident) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: ListView(
-                    children: <Widget>[
-                      TextFormField(
-                        enabled: false,
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                            labelText: 'Title of the Issue'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a title';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      // TextFormField(
-                      //   enabled: false,
-                      //   controller: _descriptionController,
-                      //   decoration:
-                      //       const InputDecoration(labelText: 'Description'),
-                      //   // maxLines: 2,
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return 'Please enter a description';
-                      //     }
-                      //     return null;
-                      //   },
-                      // ),
-                      // const SizedBox(height: 18),
-                      _buildSelectAssignee(),
-                      const SizedBox(height: 18),
-                      buildIssueTypeDropdown(isReadOnly: true),
-                      const SizedBox(height: 18),
-
-                      // Dropdowns
-                      Row(
-                        children: [
-                          if(isOfficer)
-                          Expanded(child: buildIssuePriorityDropdown())
-                          else
-                          Expanded(child: buildIssuePriorityDropdown(isReadOnly: true)),
-                          const SizedBox(width: 10),
-                          Expanded(child: buildIssueStatusDropdown()),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-
-                      //Image Uploader
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Image Attachment',
-                              style: TextStyle(fontSize: 16)),
-                          const SizedBox(height: 8),
+                          // Dropdowns
                           Row(
                             children: [
-                              ElevatedButton(
-                                onPressed: widget.initialData?.imageUrl != null
-                                    ? () => _openDocument(
-                                        widget.initialData!.imageUrl!)
-                                    : null,
-                                child: const Text('Open Image'),
-                              ),
-                              const SizedBox(width: 16),
-                              if (_selectedFile != null)
-                                ..._buildUploadedImageDisplay()
-                              else if (widget.initialData?.imageUrl != null &&
-                                  (_fileExt == "jpg" || _fileExt == "png"))
-                                ..._buildImageNetwork()
+                              if (isOfficer)
+                                Expanded(child: _buildIssuePriorityDropdown())
                               else
-                                const Text('No image uploaded'),
+                                Expanded(
+                                    child: _buildIssuePriorityDropdown(
+                                        isReadOnly: true)),
+                              const SizedBox(width: 10),
+                              Expanded(child: buildIssueStatusDropdown()),
                             ],
                           ),
+                          const SizedBox(height: 18),
+
+                          //Image Uploader
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Image Attachment',
+                                  style: TextStyle(fontSize: 16)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: widget.initialData?.imageUrl != null
+                                        ? () => _openDocument(
+                                            widget.initialData!.imageUrl!)
+                                        : null,
+                                    child: const Text('Open Image'),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  if (_selectedFile != null)
+                                    ..._buildUploadedImageDisplay()
+                                  else if (widget.initialData?.imageUrl != null &&
+                                      (_fileExt == "jpg" || _fileExt == "png"))
+                                    ..._buildImageNetwork()
+                                  else
+                                    const Text('No image uploaded'),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+
+                          TextFormField(
+                            maxLines: 2,
+                            controller: _commentController,
+                            decoration: const InputDecoration(
+                              labelText: 'Comment',
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            // maxLines: 2,
+                            // validator: (value) {
+                            //   if (value == null || value.isEmpty) {
+                            //     return 'Please enter a comment';
+                            //   }
+                            //   return null;
+                            // },
+                          ),
+                          const SizedBox(height: 12),
+
+                          if (issueProvider.error != null)
+                            ErrorText(issueProvider.error!),
+                          if (issueProvider.isLoading)
+                            const Center(child: CircularProgressIndicator())
+                          else
+                            ElevatedButton(
+                              onPressed: issueProvider.isLoading
+                                  ? null
+                                  : () => _submitForm(),
+                              child: const Text('Update Issue'),
+                            ),
+                          const SizedBox(height: 18),
                         ],
                       ),
-                      const SizedBox(height: 18),
-
-                      TextFormField(
-                        maxLines: 3,
-                        controller: _commentController,
-                        decoration: const InputDecoration(
-                          labelText: 'Comment',
-                          border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                              labelText: 'Title of the Issue'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a title';
+                            }
+                            return null;
+                          },
                         ),
-                        // maxLines: 2,
-                        // validator: (value) {
-                        //   if (value == null || value.isEmpty) {
-                        //     return 'Please enter a comment';
-                        //   }
-                        //   return null;
-                        // },
-                      ),
-                      const SizedBox(height: 12),
-
-                      if (issueProvider.error != null)
-                        ErrorText(issueProvider.error!),
-                      if (issueProvider.isLoading)
-                        const Center(child: CircularProgressIndicator())
-                      else
-                        ElevatedButton(
-                          onPressed: issueProvider.isLoading
-                              ? null
-                              : () => _submitComment(),
-                          child: const Text('Update Issue'),
+                        const SizedBox(height: 12),
+                        // TextFormField(
+                        //   controller: _descriptionController,
+                        //   decoration:
+                        //       const InputDecoration(labelText: 'Description'),
+                        //   // maxLines: 2,
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return 'Please enter a description';
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // const SizedBox(height: 18),
+                        _buildSelectAssignee(isReadOnly: true),
+                        const SizedBox(height: 18),
+                        _buildIssueTypeDropdown(),
+                        const SizedBox(height: 18),
+                        // Dropdowns
+                        Row(
+                          children: [
+                            Expanded(child: _buildIssuePriorityDropdown(isReadOnly: true)),
+                            const SizedBox(width: 10),
+                            Expanded(child: buildIssueStatusDropdown(isReadOnly: _selectedStatus ==  IssueStatus.IN_PROGRESS)),
+                          ],
                         ),
-                      const SizedBox(height: 18),
-                    ],
+                        const SizedBox(height: 18),
+
+                        //Image Uploader
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Image Attachment',
+                                style: TextStyle(fontSize: 16)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _pickImage,
+                                  child: const Text('Upload Image'),
+                                ),
+                                const SizedBox(width: 16),
+                                if (_selectedFile != null)
+                                  ..._buildUploadedImageDisplay()
+                                else if (widget.initialData?.imageUrl != null &&
+                                    (_fileExt == "jpg" || _fileExt == "png"))
+                                  ..._buildImageNetwork()
+                                else
+                                  const Text('No image uploaded'),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        if (issueProvider.error != null)
+                          ErrorText(issueProvider.error!),
+                        if (issueProvider.isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          ElevatedButton(
+                            onPressed: issueProvider.isLoading
+                                ? null
+                                : () => _submitForm(),
+                            child: Text(formFieldMode == FormFieldMode.CREATE
+                                ? 'Create Issue'
+                                : 'Update Issue'),
+                          ),
+                        const SizedBox(height: 12),
+                        if (formFieldMode == FormFieldMode.UPDATE)
+                          ElevatedButton(
+                            onPressed: _confirmDelete,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            child: const Text('Delete Issue'),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
+              case FormFieldMode.READ:
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        TextFormField(
+                          enabled: false,
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                              labelText: 'Title of the Issue'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a title';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // TextFormField(
+                        //   enabled: false,
+                        //   controller: _descriptionController,
+                        //   decoration:
+                        //       const InputDecoration(labelText: 'Description'),
+                        //   // maxLines: 2,
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return 'Please enter a description';
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // const SizedBox(height: 18),
+                        _buildSelectAssignee(isReadOnly: true),
+                        const SizedBox(height: 18),
+                        _buildIssueTypeDropdown(isReadOnly: true),
+                        const SizedBox(height: 18),
+                        // Dropdowns
+                        Row(
+                          children: [
+                            Expanded(
+                                child:
+                                    _buildIssuePriorityDropdown(isReadOnly: true)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                                child: buildIssueStatusDropdown(isReadOnly: true)),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        //Image Uploader
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Image Attachment',
+                                style: TextStyle(fontSize: 16)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: widget.initialData?.imageUrl != null
+                                      ? () => _openDocument(
+                                          widget.initialData!.imageUrl!)
+                                      : null,
+                                  child: const Text('Open Image'),
+                                ),
+                                const SizedBox(width: 16),
+                                if (_selectedFile != null)
+                                  ..._buildUploadedImageDisplay()
+                                else if (widget.initialData?.imageUrl != null &&
+                                    (_fileExt == "jpg" || _fileExt == "png"))
+                                  ..._buildImageNetwork()
+                                else
+                                  const Text('No image uploaded'),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        if (issueProvider.error != null)
+                          ErrorText(issueProvider.error!),
+                        if (issueProvider.isLoading)
+                          const Center(child: CircularProgressIndicator())
+                      ],
+                    ),
+                  ),
+                );
             }
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: <Widget>[
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(
-                          labelText: 'Title of the Issue'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a title';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    // TextFormField(
-                    //   controller: _descriptionController,
-                    //   decoration:
-                    //       const InputDecoration(labelText: 'Description'),
-                    //   // maxLines: 2,
-                    //   validator: (value) {
-                    //     if (value == null || value.isEmpty) {
-                    //       return 'Please enter a description';
-                    //     }
-                    //     return null;
-                    //   },
-                    // ),
-                    // const SizedBox(height: 18),
-                    _buildSelectAssignee(),
-                    const SizedBox(height: 18),
-                    buildIssueTypeDropdown(),
-                    const SizedBox(height: 18),
-                    // Dropdowns
-                    Row(
-                      children: [
-                        Expanded(child: buildIssuePriorityDropdown()),
-                        const SizedBox(width: 10),
-                        Expanded(child: buildIssueStatusDropdown()),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    //Image Uploader
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Image Attachment',
-                            style: TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              onPressed: _pickImage,
-                              child: const Text('Upload Image'),
-                            ),
-                            const SizedBox(width: 16),
-                            if (_selectedFile != null)
-                              ..._buildUploadedImageDisplay()
-                            else if (widget.initialData?.imageUrl != null &&
-                                (_fileExt == "jpg" || _fileExt == "png"))
-                              ..._buildImageNetwork()
-                            else
-                              const Text('No image uploaded'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    if (issueProvider.error != null)
-                      ErrorText(issueProvider.error!),
-                    if (issueProvider.isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      ElevatedButton(
-                        onPressed: issueProvider.isLoading
-                            ? null
-                            : () => _submitForm(),
-                        child: Text(formFieldMode == FormFieldMode.CREATE
-                            ? 'Create Issue'
-                            : 'Update Issue'),
-                      ),
-                    const SizedBox(height: 12),
-                    if (formFieldMode == FormFieldMode.UPDATE)
-                      ElevatedButton(
-                        onPressed: _confirmDelete,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        child: const Text('Delete Issue'),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          case FormFieldMode.READ:
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: <Widget>[
-                    TextFormField(
-                      enabled: false,
-                      controller: _titleController,
-                      decoration: const InputDecoration(
-                          labelText: 'Title of the Issue'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a title';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    // TextFormField(
-                    //   enabled: false,
-                    //   controller: _descriptionController,
-                    //   decoration:
-                    //       const InputDecoration(labelText: 'Description'),
-                    //   // maxLines: 2,
-                    //   validator: (value) {
-                    //     if (value == null || value.isEmpty) {
-                    //       return 'Please enter a description';
-                    //     }
-                    //     return null;
-                    //   },
-                    // ),
-                    // const SizedBox(height: 18),
-                    _buildSelectAssignee(),
-                    const SizedBox(height: 18),
-                    buildIssueTypeDropdown(isReadOnly: true),
-                    const SizedBox(height: 18),
-                    // Dropdowns
-                    Row(
-                      children: [
-                        Expanded(
-                            child:
-                                buildIssuePriorityDropdown(isReadOnly: true)),
-                        const SizedBox(width: 10),
-                        Expanded(
-                            child: buildIssueStatusDropdown(isReadOnly: true)),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    //Image Uploader
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Image Attachment',
-                            style: TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              onPressed: widget.initialData?.imageUrl != null
-                                  ? () => _openDocument(
-                                      widget.initialData!.imageUrl!)
-                                  : null,
-                              child: const Text('Open Image'),
-                            ),
-                            const SizedBox(width: 16),
-                            if (_selectedFile != null)
-                              ..._buildUploadedImageDisplay()
-                            else if (widget.initialData?.imageUrl != null &&
-                                (_fileExt == "jpg" || _fileExt == "png"))
-                              ..._buildImageNetwork()
-                            else
-                              const Text('No image uploaded'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    if (issueProvider.error != null)
-                      ErrorText(issueProvider.error!),
-                    if (issueProvider.isLoading)
-                      const Center(child: CircularProgressIndicator())
-                  ],
-                ),
-              ),
-            );
-        }
-      },
+          },
+        ),
+      ),
     );
   }
 
@@ -881,8 +893,12 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               return DropdownMenuItem<IssueStatus>(
                 enabled: status != IssueStatus.DRAFT,
                 value: status,
-                child:
-                    Text(status.displayName,style: status == IssueStatus.DRAFT ? TextStyle(color: Theme.of(context).disabledColor):null,), // Use the extension for display
+                child: Text(
+                  status.displayName,
+                  style: status == IssueStatus.DRAFT
+                      ? TextStyle(color: Theme.of(context).disabledColor)
+                      : null,
+                ), // Use the extension for display
               );
             }).toList()
           : IssueStatus.values
@@ -891,10 +907,16 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               //     status != IssueStatus.IN_PROGRESS)
               .map((status) {
               return DropdownMenuItem<IssueStatus>(
-                enabled: status != IssueStatus.RESOLVED && status != IssueStatus.IN_PROGRESS,
+                enabled: status != IssueStatus.RESOLVED &&
+                    status != IssueStatus.IN_PROGRESS,
                 value: status,
-                child:
-                    Text(status.displayName, style: status == IssueStatus.RESOLVED || status == IssueStatus.IN_PROGRESS ? TextStyle(color: Theme.of(context).disabledColor): null,), // Use the extension for display
+                child: Text(
+                  status.displayName,
+                  style: status == IssueStatus.RESOLVED ||
+                          status == IssueStatus.IN_PROGRESS
+                      ? TextStyle(color: Theme.of(context).disabledColor)
+                      : null,
+                ), // Use the extension for display
               );
             }).toList(),
       onChanged: isReadOnly
@@ -913,7 +935,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     );
   }
 
-  Widget buildIssuePriorityDropdown({bool isReadOnly = false}) {
+  Widget _buildIssuePriorityDropdown({bool isReadOnly = false}) {
     return DropdownButtonFormField<IssuePriority?>(
       value: _selectedPriority,
       decoration: const InputDecoration(
@@ -943,7 +965,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     );
   }
 
-  Widget buildIssueTypeDropdown({bool isReadOnly = false}) {
+  Widget _buildIssueTypeDropdown({bool isReadOnly = false}) {
     return DropdownButtonFormField<IssueType?>(
       value: _selectedType,
       decoration: const InputDecoration(
@@ -954,7 +976,10 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
       items: IssueType.values.map((type) {
         return DropdownMenuItem<IssueType>(
           value: type,
-          child: Text(type.displayName, overflow: TextOverflow.ellipsis,),
+          child: Text(
+            type.displayName,
+            overflow: TextOverflow.ellipsis,
+          ),
         );
       }).toList(),
       onChanged: isReadOnly
@@ -994,21 +1019,24 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
   }
 
   Widget _buildCommentSection() {
-    return Center(
-      child: Column(
-        children: [
-          ElevatedButton(
-            onPressed: () => _showBottomModal(), // Call our modal function
-            child: const Text('View Management Response'),
-          ),
-          const SizedBox(
-            height: 5,
-          ),
-          const Icon(
-            Icons.arrow_drop_down_outlined,
-            color: Colors.green,
-          )
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () => _showBottomModal(), // Call our modal function
+              child: const Text('View Management Response'),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            const Icon(
+              Icons.arrow_drop_down_outlined,
+              color: Colors.green,
+            )
+          ],
+        ),
       ),
     );
     // return Consumer<CommentProvider>(
@@ -1128,30 +1156,28 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     ];
   }
 
-  Widget _buildSelectAssignee() {
-
+  Widget _buildSelectAssignee({bool isReadOnly = false}) {
     return Consumer<ResidentProvider>(
       builder: (context, residentProvider, child) {
         Resident? assignee = _selectedAssignee != null
-            ? context.read<ResidentProvider>().residents
+            ? residentProvider.residents
             .firstWhere(
               (res) => res.id == _selectedAssignee,
         )
             : null;
-        final isResident = context.read<ProfileProvider>().user!.isResident ?? false;
         return Row(
           children: [
-            const Text('Assigned Authority:',
-                style: TextStyle(fontSize: 16)),
+            const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
             const SizedBox(width: 12),
             // if(assignee != null)
             Text(assignee?.fullName ?? "No User Assigned"),
             const SizedBox(width: 12),
-            if(formFieldMode == FormFieldMode.CREATE || formFieldMode == FormFieldMode.UPDATE)
+            if (formFieldMode == FormFieldMode.CREATE ||
+                formFieldMode == FormFieldMode.UPDATE)
               TextButton.icon(
                 icon: const Icon(Icons.person_add),
                 label: const Text('Assign Personnel'),
-                onPressed: isResident ? _showAssignModal : null,
+                onPressed: !isReadOnly ? _showAssignModal : null,
               ),
           ],
         );

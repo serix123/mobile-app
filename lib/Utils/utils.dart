@@ -131,26 +131,76 @@ class Utils {
   }
 
   static Duration parseDuration(String durationStr) {
-    final parts = durationStr.split(':');
-    if (parts.length != 3) {
-      throw const FormatException('Invalid duration format, expected HH:mm:ss');
+    final trimmed = durationStr.trim();
+
+    // Try to match with days: "<days> HH:mm:ss"
+    final withDaysRegex = RegExp(r'^(\d+)\s+(\d{2}):(\d{2}):(\d{2})$');
+    final withDaysMatch = withDaysRegex.firstMatch(trimmed);
+
+    if (withDaysMatch != null) {
+      final days = int.parse(withDaysMatch.group(1)!);
+      final hours = int.parse(withDaysMatch.group(2)!);
+      final minutes = int.parse(withDaysMatch.group(3)!);
+      final seconds = int.parse(withDaysMatch.group(4)!);
+      return Duration(
+        days: days,
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds,
+      );
     }
-    int hours = int.parse(parts[0]);
-    int minutes = int.parse(parts[1]);
-    int seconds = int.parse(parts[2]);
-    return Duration(hours: hours, minutes: minutes, seconds: seconds);
+
+    // Try to match plain HH:mm:ss
+    final simpleRegex = RegExp(r'^(\d{2}):(\d{2}):(\d{2})$');
+    final simpleMatch = simpleRegex.firstMatch(trimmed);
+
+    if (simpleMatch != null) {
+      final hours = int.parse(simpleMatch.group(1)!);
+      final minutes = int.parse(simpleMatch.group(2)!);
+      final seconds = int.parse(simpleMatch.group(3)!);
+      return Duration(
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds,
+      );
+    }
+
+    throw const FormatException(
+      'Invalid duration format. Expected "DD HH:mm:ss" or "HH:mm:ss".',
+    );
   }
 
   static String durationToString(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String hours = twoDigits(duration.inHours);
-    String minutes = twoDigits(duration.inMinutes.remainder(60));
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$hours:$minutes:$seconds';
+    final days = duration.inDays;
+    final hours = twoDigits(duration.inHours.remainder(24));
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+
+    if (days > 0) {
+      return '$days $hours:$minutes:$seconds';
+    } else {
+      return '$hours:$minutes:$seconds';
+    }
+  }
+
+  static String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final days = duration.inDays;
+    final hours = twoDigits(duration.inHours.remainder(24));
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+
+    if (days > 0) {
+      return '${days > 1 ? '$days Days' : '$days Day'} ${duration.inHours.remainder(24) > 1 ? '$hours Hours' : '$hours Hour'} ${duration.inMinutes.remainder(60) > 1 ? '$minutes Minutes' : ''}';
+    } else {
+      return '${duration.inHours.remainder(24) > 1 ? '$hours Hours' : '$hours Hour'} ${duration.inMinutes.remainder(60) > 1 ? '$minutes Minutes' : ''}';
+    }
   }
 
   static Future<Uint8List?> downloadFile(String? url) async {
-    if(url == null) {
+    if (url == null) {
       return null;
     }
     try {
@@ -196,8 +246,10 @@ class Utils {
   static int calculateTotalPages(int totalCount, int itemsPerPage) {
     return (totalCount / itemsPerPage).ceil();
   }
+
   static String formatCommentTimestamp(DateTime dateTime, {DateTime? now}) {
-    final DateTime referenceTime = now ?? DateTime.now(); // Use provided 'now' for testing, otherwise actual now
+    final DateTime referenceTime = now ??
+        DateTime.now(); // Use provided 'now' for testing, otherwise actual now
     final Duration difference = referenceTime.difference(dateTime);
 
     // Less than a minute ago (0-59 seconds)
@@ -217,8 +269,10 @@ class Utils {
     }
 
     // Yesterday
-    final DateTime yesterday = DateTime(referenceTime.year, referenceTime.month, referenceTime.day - 1);
-    final DateTime postDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    final DateTime yesterday = DateTime(
+        referenceTime.year, referenceTime.month, referenceTime.day - 1);
+    final DateTime postDate =
+        DateTime(dateTime.year, dateTime.month, dateTime.day);
 
     if (postDate.isAtSameMomentAs(yesterday)) {
       return 'Yesterday at ${DateFormat('h:mm').format(dateTime)}';

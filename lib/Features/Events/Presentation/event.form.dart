@@ -30,8 +30,11 @@ class _EventEditScreenState extends State<EventEditScreen> {
   late DateTime _selectedDate;
   late TimeOfDay _selectedTime;
   Location? _selectedLocation;
-  int selectedHours = 1;
-  int selectedMinutes = 0;
+  int _selectedDays = 0;
+  int _selectedHours = 1;
+  int _selectedMinutes = 0;
+
+  late DateTime _endDate;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -49,8 +52,11 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _selectedDate = event?.date ?? DateTime.now().toLocal();
     _selectedTime = Utils.roundTimeToNearestQuarter(TimeOfDay.fromDateTime(event?.date ?? DateTime.now().toLocal()));
     _fileExt = event?.imageUrl?.split('.').last ?? "";
-    selectedHours = event?.duration.inHours ?? 1;
-    selectedMinutes = event != null ? event.duration.inMinutes % 60 : 0;
+    _selectedDays = event?.duration.inDays ?? 0;
+    _selectedHours = event != null ? event.duration.inHours % 24 : 0;
+    _selectedMinutes = event != null ? event.duration.inMinutes % 60 : 0;
+    _endDate = event?.date.add(event.duration) ?? DateTime.now().toLocal().add(Duration(days: _selectedDays,hours: _selectedHours,minutes: _selectedMinutes));
+
   }
 
   @override
@@ -116,6 +122,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _updateEndDate();
       });
     }
   }
@@ -129,8 +136,33 @@ class _EventEditScreenState extends State<EventEditScreen> {
       TimeOfDay roundedTime = Utils.roundTimeToNearestQuarter(picked);
       setState(() {
         _selectedTime = roundedTime;
+        _updateEndDate();
       });
     }
+  }
+
+  void _updateEndDate() {
+    // Combine the selected date + time into the event start DateTime
+    final startDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+
+    // Calculate the total duration from selected days, hours, and minutes
+    final duration = Duration(
+      days: _selectedDays,
+      hours: _selectedHours,
+      minutes: _selectedMinutes,
+    );
+
+    // Compute the end date
+    _endDate = startDateTime.add(duration);
+
+    // Optional: call setState() if you're updating a widget that uses _endDate
+    // setState(() {});
   }
 
   void _submitForm() async {
@@ -166,7 +198,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
 
       if (shouldSubmit != true) return;
 
-      final duration = Duration(hours: selectedHours, minutes: selectedMinutes);
+      final duration = Duration(days: _selectedDays, hours: _selectedHours, minutes: _selectedMinutes);
       final event = Event(
         id: widget.event?.id ?? 0,
         name: _nameController.text,
@@ -205,6 +237,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
         if (mounted) {
           final error = context.read<EventProvider>().error;
           if (error == null) {
+            Navigator.pop(context, true);
             Navigator.pop(context, true);
           }
         }
@@ -352,6 +385,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
                 const SizedBox(height: 16),
                 _buildDuration(),
                 const SizedBox(height: 16),
+                _buildEndTimeLabel(),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     ElevatedButton(
@@ -489,49 +524,94 @@ class _EventEditScreenState extends State<EventEditScreen> {
     ];
   }
 
-  Widget _buildDuration(){
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildDuration() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: DropdownButtonFormField<int>(
-            style: const TextStyle(overflow: TextOverflow.ellipsis),
-            value: selectedHours,
-            decoration: const InputDecoration(
-              labelText: 'Hours',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        const Text('Event Duration', style: TextStyle(fontSize: 16)),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                style: const TextStyle(overflow: TextOverflow.ellipsis),
+                value: _selectedDays,
+                decoration: const InputDecoration(
+                  labelText: 'Days',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+                items: List.generate(
+                  31,
+                      (i) => DropdownMenuItem(value: i, child: Text('$i d')),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedDays = value!;
+                    _updateEndDate();
+                  });
+                },
+              ),
             ),
-            items: List.generate(24, (i) => DropdownMenuItem(value: i, child: Text('$i hr'))),
-            onChanged: (value) {
-              setState(() {
-                selectedHours = value!;
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: DropdownButtonFormField<int>(
-            style: const TextStyle(overflow: TextOverflow.ellipsis),
-            value: selectedMinutes,
-            decoration: const InputDecoration(
-              labelText: 'Minutes',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                style: const TextStyle(overflow: TextOverflow.ellipsis),
+                value: _selectedHours,
+                decoration: const InputDecoration(
+                  labelText: 'Hours',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+                items: List.generate(
+                  24,
+                      (i) => DropdownMenuItem(value: i, child: Text('$i hr')),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedHours = value!;
+                    _updateEndDate();
+                  });
+                },
+              ),
             ),
-            items: List.generate(
-              4,
-                  (i) => DropdownMenuItem(value: i * 15, child: Text('${i * 15} min')),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                style: const TextStyle(overflow: TextOverflow.ellipsis),
+                value: _selectedMinutes,
+                decoration: const InputDecoration(
+                  labelText: 'Minutes',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+                items: List.generate(
+                  4,
+                      (i) => DropdownMenuItem(value: i * 15, child: Text('${i * 15} min')),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedMinutes = value!;
+                    _updateEndDate();
+                  });
+                },
+              ),
             ),
-            onChanged: (value) {
-              setState(() {
-                selectedMinutes = value!;
-              });
-            },
-          ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildEndTimeLabel() {
+
+    // Format it however you like; here's an example:
+    String formattedEndTime = DateFormat('MMM d, yyyy HH:mm a').format(_endDate);
+
+    return Text(
+      'Ends at: $formattedEndTime',
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
     );
   }
 

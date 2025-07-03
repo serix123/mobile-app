@@ -182,7 +182,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Event Name',
+                    labelText: 'Notice Title',
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {

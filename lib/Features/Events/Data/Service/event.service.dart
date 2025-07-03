@@ -105,7 +105,7 @@ class EventApiService extends TokenService {
         'page': page.toString(),
         if (query.isNotEmpty) 'q': query,
         if (startDate != null) 'date__gte': startDate.toIso8601String(),
-        if (endDate != null) 'date__lt': endDate.toIso8601String(),
+        if (endDate != null) 'date__lte': endDate.toIso8601String(),
       });
 
       final response = await client.get(

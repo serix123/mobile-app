@@ -120,11 +120,12 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
         Expanded(
           child: Consumer2<ProfileProvider, IssueProvider>(
             builder: (context, profileProvider, provider, _) {
+              final isResident =profileProvider.user?.isResident ?? false;
               if (profileProvider.isLoading || provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (provider.error != null) return _buildErrorState();
-              if (provider.issues.isEmpty) return _buildEmptyState();
+              if (provider.error != null) return _buildErrorState(isResident);
+              if (provider.issues.isEmpty) return _buildEmptyState(isResident);
 
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
@@ -172,11 +173,12 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
             Expanded(
               child: Consumer2<ProfileProvider, IssueProvider>(
                 builder: (context, profileProvider, provider, _) {
+                  final isResident =profileProvider.user?.isResident ?? false;
                   if (provider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (provider.error != null) return _buildErrorState();
-                  if (provider.issues.isEmpty) return _buildEmptyState();
+                  if (provider.error != null) return _buildErrorState(isResident);
+                  if (provider.issues.isEmpty) return _buildEmptyState(isResident);
 
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -340,28 +342,27 @@ class _IssuesListScreenState extends State<IssuesListScreen> {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(bool isResident) {
     return GenericEmptyState(
       title: 'No Issue Requests',
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
-      actionButton: ElevatedButton(
-        onPressed: () =>
-            Navigator.of(context).pushNamed(RouteGenerator.issueFormScreen),
+      actionButton: isResident ? ElevatedButton(
+        onPressed: isResident ? () => _navigateToForm(context, FormFieldMode.CREATE) : null,
         child: const Text('Create New Issue'),
-      ),
+      ) : null,
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(bool isResident) {
     return GenericEmptyState(
       title: 'No Issue Requests',
       description: 'When new issue requests are created, they will appear here',
       icon: Icons.assignment_outlined,
-      actionButton: ElevatedButton(
-        onPressed: () => _navigateToForm(context, FormFieldMode.CREATE),
+      actionButton: isResident ? ElevatedButton(
+        onPressed: isResident ? () => _navigateToForm(context, FormFieldMode.CREATE) : null,
         child: const Text('Create New Issue'),
-      ),
+      ): null,
     );
   }
 

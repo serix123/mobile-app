@@ -135,13 +135,13 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
         final docs = entry.value;
 
         return ExpansionTile(
-          title: Text(categoryName),
+          title: Text(categoryName, overflow: TextOverflow.ellipsis),
           children: docs
               .map(
                 (doc) => ListTile(
-                  title: Text(doc.title),
+                  title: Text(doc.title, overflow: TextOverflow.ellipsis),
                   subtitle:
-                      Text(doc.documentUrl?.split('/').last ?? "Empty File"),
+                      Text(doc.documentUrl?.split('/').last ?? "Empty File", overflow: TextOverflow.ellipsis),
                   onTap: doc.documentUrl != null && !isOfficer
                       ? () => _openDocument(doc.documentUrl!)
                       : () => _handleCreateEdit(
@@ -163,7 +163,7 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
       children: topLevelCategories.map((cat) {
         if (cat.subcategories.isEmpty) {
           return ListTile(
-            title: Text(cat.name),
+            title: Text(cat.name, overflow: TextOverflow.ellipsis),
             onTap: () {
               // Handle category tap
             },
@@ -171,10 +171,10 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
         }
 
         return ExpansionTile(
-          title: Text(cat.name),
+          title: Text(cat.name, overflow: TextOverflow.ellipsis),
           children: cat.subcategories.map((sub) {
             return ListTile(
-              title: Text(sub.name),
+              title: Text(sub.name, overflow: TextOverflow.ellipsis),
               onTap: () {
                 // Handle subcategory tap
               },
@@ -215,12 +215,12 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
             childrenPadding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             leading: const Icon(Icons.folder_open, color: Colors.green),
-            title: Text(category.name),
+            title: Text(category.name, overflow: TextOverflow.ellipsis),
             expandedCrossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Documents directly under this category
               ...docsForCategory.map((doc) => ListTile(
-                    title: Text(doc.title),
+                    title: Text(doc.title,  overflow: TextOverflow.ellipsis),
                     leading: const Icon(Icons.picture_as_pdf),
                     onTap: doc.documentUrl != null && !isOfficer
                         ? () => _openDocument(doc.documentUrl!)
@@ -247,7 +247,7 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
           _handleCreateEdit(category: category);
         },
         icon: const Icon(Icons.upload_file),
-        label: const Text("Add File"),
+        label: const Text("Add File", overflow: TextOverflow.ellipsis),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -259,32 +259,20 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
   }
 
   Widget _buildErrorState() {
-    return GenericEmptyState(
+    return const GenericEmptyState(
       title: 'No Documents Found',
       description:
           'When new document requests are created, they will appear here',
       icon: Icons.assignment_outlined,
-      actionButton: ElevatedButton(
-        onPressed: () {},
-        // () =>
-        // Navigator.of(context).pushNamed(RouteGenerator.documentFormScreen),
-        child: const Text('Create New Issue'),
-      ),
     );
   }
 
   Widget _buildEmptyState() {
-    return GenericEmptyState(
+    return const GenericEmptyState(
       title: 'No Documents Available',
       description:
           'When new document requests are created, they will appear here',
       icon: Icons.assignment_outlined,
-      actionButton: ElevatedButton(
-        onPressed: () {},
-        // () =>
-        // Navigator.of(context).pushNamed(RouteGenerator.documentFormScreen),
-        child: const Text('Create New Issue'),
-      ),
     );
   }
 }

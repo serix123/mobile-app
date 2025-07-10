@@ -67,7 +67,7 @@ class _SearchFieldsState extends State<SearchFields> {
                 icon: const Icon(Icons.date_range),
                 label: Text(_startDate != null
                     ? 'Start: ${_formatDate(_startDate!)}'
-                    : 'Select Start Date'),
+                    : 'Select Start Date',overflow: TextOverflow.ellipsis),
                 onPressed: _pickStartDate,
               ),
             ),
@@ -77,7 +77,7 @@ class _SearchFieldsState extends State<SearchFields> {
                 icon: const Icon(Icons.date_range),
                 label: Text(_endDate != null
                     ? 'End: ${_formatDate(_endDate!)}'
-                    : 'Select End Date'),
+                    : 'Select End Date',overflow: TextOverflow.ellipsis),
                 onPressed: _pickEndDate,
               ),
             ),
@@ -107,7 +107,7 @@ class _SearchFieldsState extends State<SearchFields> {
               _endDate,
             );
           },
-          child: const Text('Search'),
+          child: const Text('Search',overflow: TextOverflow.ellipsis),
         ),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
@@ -115,7 +115,7 @@ class _SearchFieldsState extends State<SearchFields> {
             side: const BorderSide(color: Colors.teal),
           ),
           onPressed: _resetFilters,
-          child: const Text('Reset'),
+          child: const Text('Reset',overflow: TextOverflow.ellipsis),
         ),
       ],
     );

@@ -130,53 +130,82 @@ class IssueListItem extends StatelessWidget {
                                 _buildInfoRow('Date resolved',
                                     _formatDate(issue.resolvedDate!)),
                               const SizedBox(height: 8),
-                              Row(
+                              Wrap(
+                                spacing: 10, // space between items horizontally
+                                runSpacing: 8, // space between lines vertically
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: issue.priority.color,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          issue.priority.displayName
-                                              .toUpperCase(),
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      issue.priority.displayName.toUpperCase(),
+                                      style: const TextStyle(color: Colors.white, fontSize: 16),
                                     ),
                                   ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: issue.status.color,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          issue.status.displayName
-                                              .toUpperCase(),
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      issue.status.displayName.toUpperCase(),
+                                      style: const TextStyle(color: Colors.white, fontSize: 16),
                                     ),
                                   ),
                                 ],
                               ),
+                              // Row(
+                              //   children: [
+                              //     Container(
+                              //       padding: const EdgeInsets.symmetric(
+                              //           horizontal: 8, vertical: 4),
+                              //       decoration: BoxDecoration(
+                              //         color: issue.priority.color,
+                              //         borderRadius: BorderRadius.circular(12),
+                              //       ),
+                              //       child: Row(
+                              //         mainAxisSize: MainAxisSize.min,
+                              //         children: [
+                              //           Text(
+                              //             issue.priority.displayName
+                              //                 .toUpperCase(),
+                              //             style: const TextStyle(
+                              //                 color: Colors.white,
+                              //                 fontSize: 16),
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ),
+                              //     const SizedBox(
+                              //       width: 10,
+                              //     ),
+                              //     Container(
+                              //       padding: const EdgeInsets.symmetric(
+                              //           horizontal: 8, vertical: 4),
+                              //       decoration: BoxDecoration(
+                              //         color: issue.status.color,
+                              //         borderRadius: BorderRadius.circular(12),
+                              //       ),
+                              //       child: Row(
+                              //         mainAxisSize: MainAxisSize.min,
+                              //         children: [
+                              //           Text(
+                              //             issue.status.displayName
+                              //                 .toUpperCase(),
+                              //             style: const TextStyle(
+                              //                 color: Colors.white,
+                              //                 fontSize: 16),
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ),
+                              //   ],
+                              // ),
+
                               const SizedBox(height: 8),
                             ],
                           ),
@@ -276,12 +305,12 @@ class IssueListItem extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text('$label:',
+            child: Text('$label:', overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 )),
           ),
-          Expanded(child: Text(value)),
+          Expanded(child: Text(value, overflow: TextOverflow.ellipsis,)),
         ],
       ),
     );

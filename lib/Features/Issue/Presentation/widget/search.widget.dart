@@ -100,7 +100,7 @@ class _SearchFieldsState extends State<SearchFields> {
     return Expanded(
       child: DropdownButtonFormField<String>(
         value: _selectedType,
-        hint: const Text('Select Type'),
+        hint: const Text('Select Type', overflow: TextOverflow.ellipsis),
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
         ),
@@ -125,7 +125,7 @@ class _SearchFieldsState extends State<SearchFields> {
     return Expanded(
       child: DropdownButtonFormField<String>(
         value: _selectedStatus,
-        hint: const Text('Select Status'),
+        hint: const Text('Select Status', overflow: TextOverflow.ellipsis),
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
         ),
@@ -158,7 +158,7 @@ class _SearchFieldsState extends State<SearchFields> {
   Widget priorityDropDown() {
     return DropdownButtonFormField<String>(
       value: _selectedPriority,
-      hint: const Text('Select Priority'),
+      hint: const Text('Select Priority', overflow: TextOverflow.ellipsis),
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
       ),

@@ -519,6 +519,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         //   },
                         // ),
                         // const SizedBox(height: 18),
+                        const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
                         _buildSelectAssignee(isReadOnly: true),
                         const SizedBox(height: 18),
                         _buildIssueTypeDropdown(),
@@ -609,6 +610,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                           //   },
                           // ),
                           // const SizedBox(height: 18),
+                          const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
                           _buildSelectAssignee(),
                           const SizedBox(height: 18),
                           _buildIssueTypeDropdown(isReadOnly: true),
@@ -727,6 +729,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         //   },
                         // ),
                         // const SizedBox(height: 18),
+                        const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
                         _buildSelectAssignee(isReadOnly: true),
                         const SizedBox(height: 18),
                         _buildIssueTypeDropdown(),
@@ -761,7 +764,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                                     (_fileExt == "jpg" || _fileExt == "png"))
                                   ..._buildImageNetwork()
                                 else
-                                  const Text('No image uploaded'),
+                                  const Text('No image uploaded',overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           ],
@@ -829,6 +832,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                         //   },
                         // ),
                         // const SizedBox(height: 18),
+                        const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
                         _buildSelectAssignee(isReadOnly: true),
                         const SizedBox(height: 18),
                         _buildIssueTypeDropdown(isReadOnly: true),
@@ -869,7 +873,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
                                     (_fileExt == "jpg" || _fileExt == "png"))
                                   ..._buildImageNetwork()
                                 else
-                                  const Text('No image uploaded'),
+                                  const Text('No image uploaded',overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           ],
@@ -895,6 +899,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
     final isResident =
         context.read<ProfileProvider>().user?.isResident ?? false;
     return DropdownButtonFormField<IssueStatus?>(
+      isExpanded: true,
       value: _selectedStatus,
       decoration: const InputDecoration(
         labelText: 'Issue Status',
@@ -952,6 +957,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
 
   Widget _buildIssuePriorityDropdown({bool isReadOnly = false}) {
     return DropdownButtonFormField<IssuePriority?>(
+      isExpanded: true,
       value: _selectedPriority,
       decoration: const InputDecoration(
         labelText: 'Issue Priority',
@@ -982,6 +988,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
 
   Widget _buildIssueTypeDropdown({bool isReadOnly = false}) {
     return DropdownButtonFormField<IssueType?>(
+      isExpanded: true,
       value: _selectedType,
       decoration: const InputDecoration(
         labelText: 'Issue Type',
@@ -1127,12 +1134,12 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
         )
       ];
     }
-    return [const Text('No image selected.')];
+    return [const Text('No image selected.',overflow: TextOverflow.ellipsis)];
   }
 
   List<Widget> _buildImageNetwork() {
     return [
-      Expanded(child: Text(widget.initialData!.imageUrl!.split('/').last)),
+      Expanded(child: Text(widget.initialData!.imageUrl!.split('/').last,overflow: TextOverflow.ellipsis)),
       const SizedBox(width: 16),
       ClipRRect(
         // Optional: Clip corners for a nicer look
@@ -1180,15 +1187,28 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               (res) => res.id == _selectedAssignee,
         )
             : null;
-        return Row(
+        // return Row(
+        //   children: [
+        //     const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
+        //     const SizedBox(width: 12),
+        //     // if(assignee != null)
+        //     Text(assignee?.fullName ?? "No User Assigned"),
+        //     const SizedBox(width: 12),
+        //     if (formFieldMode == FormFieldMode.CREATE ||
+        //         formFieldMode == FormFieldMode.UPDATE)
+        //       TextButton.icon(
+        //         icon: const Icon(Icons.person_add),
+        //         label: const Text('Assign Personnel'),
+        //         onPressed: !isReadOnly ? _showAssignModal : null,
+        //       ),
+        //   ],
+        // );
+        return Wrap(
+          spacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text('Assigned Authority:', style: TextStyle(fontSize: 16)),
-            const SizedBox(width: 12),
-            // if(assignee != null)
-            Text(assignee?.fullName ?? "No User Assigned"),
-            const SizedBox(width: 12),
-            if (formFieldMode == FormFieldMode.CREATE ||
-                formFieldMode == FormFieldMode.UPDATE)
+            Text(assignee?.fullName ?? "No User Assigned",overflow: TextOverflow.ellipsis),
+            if (formFieldMode == FormFieldMode.CREATE || formFieldMode == FormFieldMode.UPDATE)
               TextButton.icon(
                 icon: const Icon(Icons.person_add),
                 label: const Text('Assign Personnel'),
@@ -1196,6 +1216,7 @@ class _IssueFormScreenState extends State<IssueFormScreen> {
               ),
           ],
         );
+
       },
     );
   }
